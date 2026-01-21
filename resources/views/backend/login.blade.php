@@ -122,12 +122,7 @@
             <button type="submit" class="btn">
                 <i class="fa fa-sign-in-alt"></i> Login
             </button>
-            <p class="or">Or continue with</p>
-            <div class="socials">
-                <button class="social">G</button>
-                <button class="social">f</button>
-                <button class="social">t</button>
-            </div>
+            
         </form>
 
         <!-- Register Form -->

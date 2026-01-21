@@ -1,0 +1,52 @@
+.form-group {
+      position: relative;
+      margin-bottom: .5rem;
+    }
+
+    .form-control {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 4px 2px;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+
+    .floating-label {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      padding: 3px 3px;
+      margin: 0 4px;
+      color: #5e5c5c;
+      font-size: 10px;
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: #0d6efd;
+      box-shadow: none;
+    }
+
+    .form-control:focus + .floating-label,
+    .form-control:not(:placeholder-shown) + .floating-label {
+      top: 0;
+      transform: translateY(-50%) scale(0.9);
+      color: #094bae;
+      font-size: 9px;
+      filter: blur(0.05px); /* focus বা filled হলে হালকা blur */
+    }
+    /* border cut effect */
+    .form-control:focus + .floating-label::before,
+    .form-control:not(:placeholder-shown) + .floating-label::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      top: 50%;
+      background: #fff;
+      z-index: -1;
+    }

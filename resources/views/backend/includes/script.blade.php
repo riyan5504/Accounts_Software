@@ -218,3 +218,97 @@
     const sparkline3 = new ApexCharts(document.querySelector('#sparkline-3'), option_sparkline3);
     sparkline3.render();
 </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.v_name').autocomplete({
+            source: "{{ route('vendor.search') }}",
+            minLength: 1,
+            select: function(event, ui) {
+                $('.v_name').val(ui.item.value);
+                $('.phone').val(ui.item.phone);
+                $('.email').val(ui.item.email);
+                $('.address').val(ui.item.address);
+            }
+        });
+        // ✅ যখন ইউজার নতুন কিছু টাইপ করবে (autocomplete থেকে না)
+        $('.v_name').on('input', function() {
+            // টাইপ করা value টা নাও
+            const currentValue = $(this).val();
+
+            // যদি ফিল্ডে কিছু লেখা থাকে কিন্তু select করা না হয়
+            if (currentValue.length > 0) {
+                $('.phone').val('');
+                $('.email').val('');
+                $('.address').val('');
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+
+        // ✅ Vendor Name Autocomplete
+        $('.cat_name').autocomplete({
+            source: "{{ route('category.search') }}",
+            minLength: 1
+        });
+
+    });
+</script>
+<script>
+    $(function() {
+        $('.expense_account_id, .payment_account_id').autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "{{ route('account.search') }}",
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.account_name + " (" + item
+                                    .ac_type + ")",
+                                value: item.account_name,
+                                id: item.id
+                            };
+                        }));
+                    }
+                });
+            },
+            select: function(event, ui) {
+                $(this).val(ui.value);
+                $(this).data('account-id', ui.item.id);
+            }
+        });
+    });
+</script>
+<script>
+    $('.created_by').autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "{{ route('user.search') }}",
+                data: {
+                    term: request.term
+                },
+                success: function(data) {
+                    response($.map(data, function(item) {
+                        return {
+                            label: item.name,
+                            value: item.name,
+                            id: item.id
+                        };
+                    }));
+                }
+            });
+        },
+        select: function(event, ui) {
+            $(this).val(ui.value);
+            $(this).data('user-id', ui.item.id);
+        }
+    });
+</script>

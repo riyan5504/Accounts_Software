@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Dashboard</title>
    @include('backend.includes.style')
+   @stack('style')
   </head>
   <!--end::Head-->
   <!--begin::Body-->

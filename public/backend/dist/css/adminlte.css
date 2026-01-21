@@ -428,7 +428,13 @@ caption {
 th {
   text-align: inherit;
   text-align: -webkit-match-parent;
+  background-color: #f2f2f2;
 }
+th, td {
+    border: 2px solid #000; /* প্রতিটি ঘরে কালো লাইন */
+    padding: 8px 10px;
+    text-align: left;
+  }
 
 thead,
 tbody,
@@ -1886,9 +1892,12 @@ progress {
 }
 .table > tbody {
   vertical-align: inherit;
+  font-size: 14px;
 }
 .table > thead {
-  vertical-align: bottom;
+  vertical-align: middle;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .table-group-divider {
@@ -2085,7 +2094,7 @@ progress {
   }
 }
 .form-label {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
 }
 
 .col-form-label {
@@ -2118,16 +2127,16 @@ progress {
   display: block;
   width: 100%;
   padding: 0.375rem 0.75rem;
-  font-size: 1rem;
+  font-size: 0.5rem;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.4;
   color: var(--bs-body-color);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   background-color: var(--bs-body-bg);
   background-clip: padding-box;
-  border: var(--bs-border-width) solid var(--bs-border-color);
+  border: var(--bs-border-width) solid rgb(4, 67, 185);
   border-radius: var(--bs-border-radius);
   box-shadow: var(--bs-box-shadow-inset);
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -2136,6 +2145,11 @@ progress {
   .form-control {
     transition: none;
   }
+}
+input.form-control,
+textarea.form-control,
+select.form-control {
+  font-size: 12.7px !important;
 }
 .form-control[type=file] {
   overflow: hidden;
@@ -3168,10 +3182,10 @@ textarea.form-control-lg {
 
 .btn-light {
   --bs-btn-color: #000;
-  --bs-btn-bg: #f8f9fa;
+  --bs-btn-bg: #023b74;
   --bs-btn-border-color: #f8f9fa;
   --bs-btn-hover-color: #000;
-  --bs-btn-hover-bg: #d3d4d5;
+  --bs-btn-hover-bg: #80b2e3;
   --bs-btn-hover-border-color: #c6c7c8;
   --bs-btn-focus-shadow-rgb: 211, 212, 213;
   --bs-btn-active-color: #000;
@@ -3359,16 +3373,16 @@ textarea.form-control-lg {
 }
 
 .btn-lg, .btn-group-lg > .btn {
-  --bs-btn-padding-y: 0.5rem;
-  --bs-btn-padding-x: 1rem;
-  --bs-btn-font-size: 1.25rem;
+  --bs-btn-padding-y: 0.2rem;
+  --bs-btn-padding-x: 0.3rem;
+  --bs-btn-font-size: .5rem;
   --bs-btn-border-radius: var(--bs-border-radius-lg);
 }
 
 .btn-sm, .btn-group-sm > .btn {
-  --bs-btn-padding-y: 0.25rem;
-  --bs-btn-padding-x: 0.5rem;
-  --bs-btn-font-size: 0.875rem;
+  --bs-btn-padding-y: 0.1rem;
+  --bs-btn-padding-x: 0.2rem;
+  --bs-btn-font-size: 0.4rem;
   --bs-btn-border-radius: var(--bs-border-radius-sm);
 }
 
@@ -3858,6 +3872,9 @@ textarea.form-control-lg {
   background: none;
   border: 0;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+.nav-item.d-none {
+  display: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .nav-link {
@@ -4403,8 +4420,8 @@ textarea.form-control-lg {
 }
 
 .card {
-  --bs-card-spacer-y: 0.3rem;
-  --bs-card-spacer-x: 0.3rem;
+  --bs-card-spacer-y: 0.1rem;
+  --bs-card-spacer-x: 0.1rem;
   --bs-card-title-spacer-y: 0rem;
   --bs-card-title-color: ;
   --bs-card-subtitle-color: ;
@@ -4413,8 +4430,8 @@ textarea.form-control-lg {
   --bs-card-border-radius: var(--bs-border-radius);
   --bs-card-box-shadow: ;
   --bs-card-inner-border-radius: calc(var(--bs-border-radius) - (var(--bs-border-width)));
-  --bs-card-cap-padding-y: 0.5rem;
-  --bs-card-cap-padding-x: 1rem;
+  --bs-card-cap-padding-y: 0.2rem;
+  --bs-card-cap-padding-x: 0.1rem;
   --bs-card-cap-bg: rgba(var(--bs-body-color-rgb), 0.03);
   --bs-card-cap-color: ;
   --bs-card-height: ;
@@ -4465,7 +4482,7 @@ textarea.form-control-lg {
 }
 
 .card-title {
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   padding: 0px;
   color: var(--bs-card-title-color);
 }
@@ -13202,7 +13219,7 @@ textarea.form-control-lg {
   padding-left: 0;
 }
 .sidebar-mini.sidebar-collapse.nav-indent .app-sidebar:hover .nav-treeview .nav-item {
-  padding-left: 0.5rem;
+  padding-left: 0.3rem;
 }
 
 .sidebar-collapse.nav-compact.nav-indent .nav-treeview .nav-item {
@@ -13850,6 +13867,12 @@ body:not(.app-loaded) .app-footer {
     transition: none;
   }
 }
+/* app.css বা blade-এর <style> */
+.app-content + .app-content {
+  margin-top: 3px;
+  margin-bottom: 5px; /* gap খুব ছোট করতে */
+}
+
 .app-main .app-content-header {
   padding: 0.5rem 0.5rem;
 }

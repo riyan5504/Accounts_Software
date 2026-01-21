@@ -8,7 +8,7 @@
             <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0 mt-0">Purchase Entry</h3>
+                    <h3 class="mb-0 mt-0">Purchase Edit</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
@@ -63,11 +63,11 @@
             <div class="card card-primary card-outline mb-2">
                 <!--begin::Header-->
                 <div class="card-header">
-                    <div class="card-title">Entry Purchase Item</div>
+                    <div class="card-title">Edit Purchase Item</div>
                 </div>
                 <!--end::Header-->
                 <!--begin::Form-->
-                <form action="{{ url('/purchase/store') }}" method="POST">
+                <form action="{{ url('/purchase/update/' . $purchase->id) }}" method="POST">
                     @csrf
                     <!--begin::Body-->
                     <div class="card-body">
@@ -75,38 +75,39 @@
                         <div id="vendorContainer" class="border-0 shadow-sm ms-0">
                             <div
                                 class="bg-success text-white d-flex justify-content-between align-vendors-center mb-3 px-1 py-1 rounded">
-                                <h6 class="mb-0 ms-1">Vendor Details</h6>
+                                <h4 class="mb-0 ms-1">Vendor Details</h4>
                             </div>
                             <!-- ✅ Proper Row Structure -->
-                            <div class="row g-2 align-vendor-end mb-1">
-                                <div class="form-group col-md-5 mb-1">
-                                    <input type="text" name="v_name" class="form-control v_name" placeholder=" "
-                                        required />
+                            <div class="row g-2 align-vendor-end mt-2">
+                                <div class="form-group col-md-5 mb-2">
+                                    <input type="text" value="{{ $purchase->vendor->v_name }}" name="v_name"
+                                        class="form-control v_name" placeholder=" " required />
                                     <label for="v_name" class="floating-label">Vendor Name</label>
                                 </div>
 
-                                <div class="form-group col-md-3 mb-1">
-                                    <input type="text" name="phone" class="form-control phone" placeholder=" "
-                                        required />
+                                <div class="form-group col-md-3 mb-2">
+                                    <input type="text" value="{{ $purchase->vendor->phone }}" name="phone"
+                                        class="form-control phone" placeholder=" " required />
                                     <label for="phone" class="floating-label">Phone</label>
                                 </div>
-                                <div class="form-group col-md-4 mb-1">
-                                    <input type="email" name="email" class="form-control email" placeholder=" " />
+                                <div class="form-group col-md-4 mb-2">
+                                    <input type="email" value="{{ $purchase->vendor->email }}" name="email"
+                                        class="form-control email" placeholder=" " />
                                     <label for="email" class="floating-label">Email</label>
                                 </div>
-                                <div class="form-group col-md-8 mb-1">
-                                    <textarea name="address" class="form-control address" rows="1" placeholder=" " required></textarea>
+                                <div class="form-group col-md-8 mb-2">
+                                    <textarea name="address" class="form-control address" rows="1" placeholder=" " required>{{ $purchase->vendor->address }}</textarea>
                                     <label for="address" class="floating-label">Address</label>
                                 </div>
-                                <div class="form-group col-md-2 mb-1">
-                                    <input type="date" value="{{ date('Y-m-d') }}" name="date"
-                                        class="form-control date" placeholder="" required />
+                                <div class="form-group col-md-2 mb-2">
+                                    <input type="date" value="{{ $purchase->date }}" name="date"
+                                        class="form-control date" placeholder=" " required />
                                     <label for="date" class="floating-label">Date</label>
                                 </div>
 
-                                <div class="form-group col-md-2 mb-1">
-                                    <input type="text" name="invoice_no" class="form-control invoice_no" id="invoice_no"
-                                        value="{{ $newPurchaseNo }}" placeholder=" " readonly />
+                                <div class="form-group col-md-2 mb-2">
+                                    <input type="text" value="{{ $purchase->invoice_no }}" name="invoice_no"
+                                        class="form-control invoice_no" id="invoice_no" placeholder=" " readonly />
                                     <label for="invoice_no" class="floating-label">Invoice Number</label>
                                 </div>
                             </div>
@@ -115,126 +116,143 @@
                         <div id="itemsContainer" class="border-0 shadow-sm">
                             <div
                                 class="bg-success text-white d-flex justify-content-between align-items-center mb-3 px-1 py-1 rounded">
-                                <h6 class="mb-0 ms-1">Item Details</h6>
+                                <h4 class="mb-0 ms-1">Item Details</h4>
                                 <button type="button" id="addItem" class="btn btn-light btn-sm text-dark fw-bold">
                                     + Add Item
                                 </button>
                             </div>
 
                             <!-- ✅ Proper Row Structure -->
-                            <div class="item-row row g-2 align-items-end mb-2">
-                                <div class="form-group col-sm-6 col-md-2 mb-1">
-                                    <input type="text" name="item_name[]" class="form-control item_name" placeholder=" "
-                                        required />
-                                    <label for="item_name" class="floating-label">Item Name</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="text" name="item_code[]" class="form-control item_code" placeholder=" "
-                                        readonly />
-                                    <label for="item_code" class="floating-label">Item Code</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="text" name="cat_name[]" class="form-control cat_name"
-                                        placeholder=" " required />
-                                    <label for="cat_name" class="floating-label">Category</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="text" name="size[]" class="form-control size" placeholder=" " />
-                                    <label for="size" class="floating-label">Pack Size</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="number" step="0.01" name="qty[]" class="form-control qty"
-                                        placeholder=" " required />
-                                    <label for="qty" class="floating-label">Quantity</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="number" step="0.01" name="unit_price[]"
-                                        class="form-control unit_price" placeholder=" " required />
-                                    <label for="unit_price" class="floating-label">Unit Price</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="number" step="0.01" name="price[]" class="form-control price"
-                                        placeholder=" " required />
-                                    <label for="price" class="floating-label">Price</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="number" step="0.01" name="vat_percent[]"
-                                        class="form-control vat_percent" placeholder=" " />
-                                    <label for="vat_percent" class="floating-label">Vat(%)</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-1 mb-1">
-                                    <input type="number" step="0.01" name="vat_amount[]"
-                                        class="form-control vat_amount" placeholder=" " readonly />
-                                    <label for="vat_amount" class="floating-label">Vat Amount</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-2 d-flex align-items-end mb-1">
-                                    <div class="w-100">
-                                        <input type="number" step="0.01" name="total_price[]"
-                                            class="form-control total_price" placeholder=" " readonly>
-                                        <label for="total_price" class="floating-label">Total Amount</label>
+                            @foreach ($purchase->purchaseItems as $pItem)
+                                <div class="item-row row g-2 align-items-end mt-2 mb-2">
+                                    <div class="form-group col-sm-6 col-md-3 mb-1">
+                                        <input type="text" value="{{ $pItem->item->item_name }}" name="item_name[]"
+                                            class="form-control item_name" placeholder=" " required />
+                                        <label for="item_name" class="floating-label">Item Name</label>
                                     </div>
-                                    <button type="button" class="btn btn-danger btn-sm ms-2 removeItem">
-                                        ×
-                                    </button>
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
+                                        <input type="text" value="{{ $pItem->item->item_code }}" name="item_code[]"
+                                            class="form-control item_code" placeholder=" " readonly />
+                                        <label for="item_code" class="floating-label">Item Code</label>
+                                    </div>
+                                    <div class="form-group col-sm-6 col-md-2 mb-1">
+                                        <input type="text" value="{{ $pItem->item->category->cat_name }}"
+                                            name="cat_name[]" class="form-control cat_name" placeholder=" " required />
+                                        <label for="cat_name" class="floating-label">Category</label>
+                                    </div>
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
+                                        <input type="text" value="{{ $pItem->item->size }}" name="size[]"
+                                            class="form-control size" placeholder=" " />
+                                        <label for="size" class="floating-label">Pack Size</label>
+                                    </div>
+                                    
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
+                                        <input type="number" value="{{ $pItem->qty }}" name="qty[]"
+                                            class="form-control qty" placeholder=" " required />
+                                        <label for="qty" class="floating-label">Quantity</label>
+                                    </div>
+
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
+                                        <input type="number" step="0.01" name="unit_price[]"
+                                            value="{{ $pItem->unit_price }}" class="form-control unit_price"
+                                            placeholder=" " required />
+                                        <label for="unit_price" class="floating-label">Unit Price</label>
+                                    </div>
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
+                                        <input type="number" step="0.01" name="price[]" value="{{ $pItem->price }}"
+                                            class="form-control price" placeholder=" " required />
+                                        <label for="price" class="floating-label">Price</label>
+                                    </div>
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
+                                        <input type="number" step="0.01" name="vat_percent[]"
+                                            value="{{ $pItem->vat_percent }}" class="form-control vat_percent"
+                                            placeholder=" " />
+                                        <label for="vat_percent" class="floating-label">Vat(%)</label>
+                                    </div>
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
+                                        <input type="number" step="0.01" name="vat_amount[]"
+                                            value="{{ $pItem->vat_amount }}" class="form-control vat_amount"
+                                            placeholder=" " readonly />
+                                        <label for="vat_amount" class="floating-label">Vat Amount</label>
+                                    </div>
+                                    <div class="form-group col-sm-6 col-md-2 mb-1 d-flex align-items-end">
+                                        <div class="w-100">
+                                            <input type="number" value="{{ $pItem->total_price }}" step="0.01"
+                                                name="total_price[]" class="form-control total_price" placeholder=" "
+                                                readonly>
+                                            <label for="total_price" class="floating-label">Total Price</label>
+                                        </div>
+                                        <button type="button" class="btn btn-danger btn-sm ms-2 removeItem">
+                                            ×
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            @endforeach
                         </div>
-                        <hr>
-                        <div class="row g-2">
-                            <div class="form-group col-2 mt-2 mb-2">
-                                <input type="number" name="dis_percent" class="form-control dis_percent"
+                        <div class="row g-2 mt-2">
+                            <div class="form-group col-2 mt-2 mb-1">
+                                <input type="number" step="0.01" name="dis_percent"
+                                    value="{{ $purchase->dis_percent }}" class="form-control dis_percent"
                                     placeholder=" ">
                                 <label for="dis_percent" class="floating-label">Discount(%)</label>
                             </div>
-                            <div class="form-group col-2 mt-2 mb-2">
-                                <input type="number" step="0.01" name="dis_amt" class="form-control dis_amt"
-                                    placeholder=" " readonly>
+                            <div class="form-group col-2 mt-2 mb-1">
+                                <input type="number" step="0.01" name="dis_amt" value="{{ $purchase->dis_amt }}"
+                                    class="form-control dis_amt" placeholder=" " readonly>
                                 <label for="dis_amt" class="floating-label">Discount Amount</label>
                             </div>
-                            <div class="form-group col-2 mt-2 mb-2">
-                                <input type="number" step="0.01" name="vat_amt" class="form-control vat_amt"
-                                    placeholder=" " readonly>
+                            
+                            <div class="form-group col-2 mt-2 mb-1">
+                                <input type="number" step="0.01" name="vat_amt" value="{{ $purchase->vat_amt }}"
+                                    class="form-control vat_amt" placeholder=" " readonly>
                                 <label for="vat_amt" class="floating-label">Total VAT Amount</label>
                             </div>
-                            <div class="form-group col-2 mt-2 mb-2">
-                                <input type="number" step="0.01" name="sub_total" class="form-control sub_total"
-                                    placeholder=" " readonly>
+                            <div class="form-group col-2 mt-2 mb-1">
+                                <input type="number" step="0.01" name="sub_total"
+                                    value="{{ $purchase->sub_total }}" class="form-control sub_total" placeholder=" "
+                                    readonly>
                                 <label for="sub_total" class="floating-label">Sub Total</label>
                             </div>
-                            <div class="form-group col-2 mt-2 mb-2">
-                                <input type="number" step="0.01" name="grand_total" class="form-control grand_total"
+
+                            <div class="form-group col-2 mt-2 mb-1">
+                                <input type="number" step="0.01" name="grand_total"
+                                    value="{{ $purchase->grand_total }}" class="form-control grand_total"
                                     placeholder=" " readonly>
                                 <label for="grand_total" class="floating-label">Grand Total</label>
                             </div>
-                            <div class="form-group col-2 mt-2 mb-2">
-                                <input type="number" step="0.01" name="paid_amt" class="form-control paid_amt"
-                                    placeholder=" ">
+
+                            <div class="form-group col-3 mt-2 mb-2">
+                                <input type="number" step="0.01" name="paid_amt" value="{{ $purchase->paid_amt }}"
+                                    class="form-control paid_amt" placeholder=" ">
                                 <label for="paid_amt" class="floating-label">Paid Amount</label>
                             </div>
-                            <div class="form-group col-3 mt-2 mb-2">
-                                <input type="number" step="0.01" name="due_amt" class="form-control due_amt"
-                                    placeholder=" " readonly>
+                            <div class="form-group col-2 mt-2 mb-2">
+                                <input type="number" step="0.01" name="due_amt" value="{{ $purchase->due_amt }}"
+                                    class="form-control due_amt" placeholder=" " readonly>
                                 <label for="due_amt" class="floating-label">Due Amount</label>
                             </div>
 
+
                             <div class="form-group col-sm-6 col-md-3 mb-2">
-                                <input type="text" name="reference_no" class="form-control reference_no"
-                                    placeholder=" " />
+                                <input type="text" name="reference_no" value="{{ $purchase->reference_no }}"
+                                    class="form-control reference_no" placeholder=" " />
                                 <label for="reference_no" class="floating-label">Reference</label>
                             </div>
 
-                            <div class="form-group col-sm-6 col-md-3 mb-2">
-                                <input type="text" name="created_by" class="form-control created_by"
-                                    placeholder=" " />
+
+                            <div class="form-group col-sm-6 col-md-2 mb-2">
+                                <input type="text" name="created_by" value="{{ $purchase->user->name }}"
+                                    class="form-control created_by" placeholder=" " required />
                                 <label for="created_by" class="floating-label">Posting By</label>
                             </div>
-                            <div class="form-group col-sm-6 col-md-3 mb-2">
-                                <input type="text" name="pay_to" class="form-control pay_to" placeholder=" " />
+                            <div class="form-group col-sm-6 col-md-2 mb-2">
+                                <input type="text" name="pay_to" value="{{ $purchase->pay_to }}"
+                                    class="form-control pay_to" placeholder=" " required />
                                 <label for="pay_to" class="floating-label">Pay To..</label>
                             </div>
                             <div class="form-group col-sm-6 col-md-2 mb-2">
                                 <select id="purchase_type" name="purchase_type" class="form-control" required>
-                                    <option selected disabled>Select Purchase Type</option>
+                                    <option value="">Select Purchase Type</option>
                                     <option value="expense">Expense Purchase</option>
                                     <option value="asset">Asset Purchase</option>
                                     <option value="inventory">Inventory/Stock Purchase</option>
@@ -258,31 +276,36 @@
 
                                 <label class="floating-label">Account Category</label>
                             </div>
+
                             <div class="form-group col-sm-6 col-md-2 mb-2">
                                 <select name="payment_method" class="form-control payment_method" placeholder=" "
                                     required>
-                                    <option selected disabled>Select Payment Method</option>
-                                    <option value="cash">Cash</option>
-                                    <option value="bank">Bank</option>
-                                    <option value="cheque">Cheque</option>
-                                    <option value="mobile_bank">Mobile Banking</option>
-                                    <option value="due">Due</option>
+                                    <option value="cash" @if ($purchase->payment_method == 'cash') selected @endif>Cash</option>
+                                    <option value="bank" @if ($purchase->payment_method == 'bank') selected @endif>Bank</option>
+                                    <option value="cheque" @if ($purchase->payment_method == 'cheque') selected @endif>Cheque
+                                    </option>
+                                    <option value="mobile_bank" @if ($purchase->payment_method == 'mobile_bank') selected @endif>Mobile
+                                        Banking</option>
+                                    <option value="due" @if ($purchase->payment_method == 'due') selected @endif>Due</option>
                                 </select>
-                                <label for="payment_method" class="floating-label">Payment Method</label>
+                                <label for="unit" class="floating-label">Payment Method</label>
                             </div>
+
                             <div class="form-group col-sm-6 col-md-2 mb-2">
                                 <select name="payment_status" class="form-control payment_status" placeholder=" "
                                     required>
                                     <option selected disabled>Select Payment Status</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="unpaid">Unpaid</option>
-                                    <option value="partial">Partial</option>
+                                    <option value="paid" @if ($purchase->payment_method == 'paid') selected @endif>Paid</option>
+                                    <option value="unpaid" @if ($purchase->payment_method == 'unpaid') selected @endif>Unpaid
+                                    </option>
+                                    <option value="partial" @if ($purchase->payment_method == 'partial') selected @endif>Partial
+                                    </option>
                                 </select>
-                                <label for="payment_status" class="floating-label">Payment Status</label>
+                                <label for="unit" class="floating-label">Payment Status</label>
                             </div>
+
                             <div class="form-group col-sm-6 col-md-2 mb-2">
                                 <select name="debit_account_id" class="form-control debit_account_id" required>
-                                    <option selected disabled>Select Debit Account</option>
                                     @foreach ($accounts as $account)
                                         <option value="{{ $account->id }}" data-ac_cat="{{ $account->ac_cat }}">
                                             {{ $account->account_name }}
@@ -293,9 +316,11 @@
                             </div>
                             <div class="form-group col-sm-6 col-md-2 mb-2">
                                 <select name="payment_account_id" class="form-control payment_account_id" required>
-                                    <option selected disabled>Select Credit Account</option>
+                                    <option selected disabled>Select Payment Account</option>
                                     @foreach ($accounts as $account)
-                                        <option value="{{ $account->id }}">{{ $account->account_name }}</option>
+                                        <option value="{{ $account->id }}"
+                                            @if ($purchase->payment_account_id == $account->id) selected @endif>
+                                            {{ $account->account_name }}</option>
                                     @endforeach
                                 </select>
                                 <label class="floating-label">Credit Account</label>
@@ -304,7 +329,7 @@
                         <!--end::Body-->
                         <!--begin::Footer-->
                         <div class="card-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">Update</button>
                         </div>
                         <!--end::Footer-->
                 </form>
@@ -396,8 +421,8 @@
 
 
             /* =========================
-           DISCOUNT + GRAND TOTAL
-        ==========================*/
+               DISCOUNT + GRAND TOTAL
+            ==========================*/
             function calculateGrandTotal() {
 
                 const subTotal = parseFloat($('.sub_total').val()) || 0;
@@ -421,16 +446,16 @@
 
             // ✅ প্রতিটি row এর জন্য event attach
             function attachRowListeners(row) {
-                    const qtyInput = row.find('.qty');
-                    const priceInput = row.find('.unit_price');
-                    const vatInput = row.find('.vat_percent');
-                    const totalVatInput = row.find('.vat_amount');
-                    const totalPriceInput = row.find('.price');
-                    const totalAmountInput = row.find('.total_price');
-                    const itemNameInput = row.find('.item_name');
-                    const itemCodeInput = row.find('.item_code');
-                    const catNameInput = row.find('.cat_name');
-                    const sizeInput = row.find('.size');
+                const qtyInput = row.find('.qty');
+                const priceInput = row.find('.unit_price');
+                const vatInput = row.find('.vat_percent');
+                const totalVatInput = row.find('.vat_amount');
+                const totalPriceInput = row.find('.price');
+                const totalAmountInput = row.find('.total_price');
+                const itemNameInput = row.find('.item_name');
+                const itemCodeInput = row.find('.item_code');
+                const catNameInput = row.find('.cat_name');
+                const sizeInput = row.find('.size');
                 const priceField = row.find('.unit_price');
 
                 // 🔹 Quantity বা Price পরিবর্তন হলে total হিসাব করো
