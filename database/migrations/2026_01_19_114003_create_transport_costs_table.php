@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('transport_costs', function (Blueprint $table) {
             $table->id();
-            $table->string('transport_type');
-            $table->decimal('transport_amt', 10, 2);
+            $table->unsignedBigInteger('production_id');
+            $table->string('transport_type')->nullable();
+            $table->decimal('transport_amt', 10, 2)->nullable();
             $table->timestamps();
         });
     }

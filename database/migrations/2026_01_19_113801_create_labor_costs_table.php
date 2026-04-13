@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('labor_costs', function (Blueprint $table) {
             $table->id();
-            $table->string('labor_name');
-            $table->double('duty_day', 10, 2);
-            $table->decimal('d_pay', 10, 2);
-            $table->decimal('total_pay', 10, 2);
+            $table->unsignedBigInteger('production_id');
+            $table->string('labor_name')->nullable();
+            $table->double('duty_day', 10, 2)->nullable();
+            $table->decimal('d_pay', 10, 2)->nullable();
+            $table->decimal('total_pay', 10, 2)->nullable();
             $table->timestamps();
         });
     }

@@ -128,6 +128,7 @@
         <!-- Register Form -->
         <form id="registerForm" class="form" action="{{route('register')}}" method="POST">
             @csrf
+            <input type="text" name="company_name" placeholder="Company Name" required />
             <input type="text" name="name" placeholder="Full Name" required />
             <input type="email" name="email" placeholder="Email" required />
             <input type="password" name="password" placeholder="Password" required />

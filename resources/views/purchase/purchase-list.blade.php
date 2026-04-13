@@ -69,7 +69,7 @@
                         </div>
                         <div class="card mt-3 ms-1 me-1 mb-3">
                             <div class="card-body p-0">
-                                <table class="table table-sm">
+                                <table class="table table-sm table-bordered">
                                     <thead>
                                         <tr>
                                             <th style="width: 80px">Sl. No.</th>

@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('qc_costs', function (Blueprint $table) {
+        Schema::create('companies', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('production_id');
-            $table->string('test_name')->nullable();
-            $table->decimal('qc_amt', 10, 2)->nullable();
+            $table->string('name');
+            $table->string('email')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('qc_costs');
+        Schema::dropIfExists('companies');
     }
 };

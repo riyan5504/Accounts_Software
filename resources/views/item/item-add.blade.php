@@ -86,7 +86,7 @@
                                     <label for="item_code" class="floating-label">Item Code</label>
                                 </div>
                                 <div class="form-group col-sm-6 col-md-4 mb-1">
-                                    <input type="text" name="cat_name" class="form-control cat_name" placeholder=" " required />
+                                    <input type="text" name="cat_name" class="form-control cat_name" placeholder=" " required/>
                                     <label for="cat_id" class="floating-label">Category</label>
                                 </div>
                                 <div class="form-group col-sm-6 col-md-4 mb-1">

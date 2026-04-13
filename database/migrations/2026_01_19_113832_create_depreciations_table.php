@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('depreciations', function (Blueprint $table) {
             $table->id();
-            $table->string('machine_name');
-            $table->decimal('machine_cost_amt', 10, 2);
+            $table->unsignedBigInteger('production_id');
+            $table->string('machine_name')->nullable();
+            $table->decimal('machine_cost_amt', 10, 2)->nullable();
             $table->timestamps();
         });
     }

@@ -106,7 +106,7 @@
                         </div>
                         <div class="card mt-3 ms-1 me-1 mb-3">
                             <div class="card-body p-0">
-                                <table class="table table-bordered align-middle">
+                                <table class="table table-bordered table-sm align-middle">
                                     <thead class="table-light">
                                         <tr>
                                             <th style="width: 100px">Sl. No.</th>

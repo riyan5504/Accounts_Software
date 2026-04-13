@@ -1884,7 +1884,7 @@ progress {
   border-color: var(--bs-table-border-color);
 }
 .table > :not(caption) > * > * {
-  padding: 0.5rem 0.5rem;
+  padding: 0.3rem 0.3rem;
   color: var(--bs-table-color-state, var(--bs-table-color-type, var(--bs-table-color)));
   background-color: var(--bs-table-bg);
   border-bottom-width: var(--bs-border-width);
@@ -1892,11 +1892,11 @@ progress {
 }
 .table > tbody {
   vertical-align: inherit;
-  font-size: 14px;
+  font-size: 12px;
 }
 .table > thead {
   vertical-align: middle;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -1909,7 +1909,7 @@ progress {
 }
 
 .table-sm > :not(caption) > * > * {
-  padding: 0.25rem 0.25rem;
+  padding: 0.15rem 0.15rem;
 }
 
 .table-bordered > :not(caption) > * {

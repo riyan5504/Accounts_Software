@@ -194,9 +194,60 @@ class JournalService
      */
     private function vendorPayableAccountId($vendor)
     {
-        return $vendor->account_id 
-        ?? Account::where('account_name','Accounts Payable')
-            ->where('ac_type','Liability')
+        return $vendor->account_id
+            ?? Account::where('account_name', 'Accounts Payable')
+            ->where('ac_type', 'Liability')
             ->value('id');
+    }
+
+    public function createProductionJournal($production, $sectionTotal)
+    {
+        $this->removeOldEntries('production', $production->id);
+
+        $date = $production->date;
+        $user = Auth::id();
+
+        $wipAccount = Account::where('account_name', 'Work In Process')->value('id');
+
+        $sections = [
+            'Raw Material Expense'   => $sectionTotal->raw_grand_price,
+            'Packaging Expense'      => $sectionTotal->pack_grand_price,
+            'Labor Expense'          => $sectionTotal->labor_grand_price,
+            'Depreciation Expense'   => $sectionTotal->depreciation_grand_price,
+            'Utility Expense'        => $sectionTotal->utility_grand_price,
+            'Factory Overhead'       => $sectionTotal->overhead_grand_price,
+            'Transport Expense'      => $sectionTotal->transport_grand_price,
+            'QC Expense'             => $sectionTotal->qc_grand_price,
+        ];
+
+        foreach ($sections as $accountName => $amount) {
+            if (!$amount || $amount <= 0) continue;
+
+            $expenseAccount = Account::where('account_name', $accountName)->value('id');
+
+            // DR Expense
+            JournalEntry::create([
+                'module_type' => 'production',
+                'module_id'   => $production->id,
+                'account_id'  => $expenseAccount,
+                'debit'       => $amount,
+                'credit'      => 0,
+                'date'        => $date,
+                'particulars' => "Production {$accountName}",
+                'created_by'  => $user,
+            ]);
+
+            // CR WIP
+            JournalEntry::create([
+                'module_type' => 'production',
+                'module_id'   => $production->id,
+                'account_id'  => $wipAccount,
+                'debit'       => 0,
+                'credit'      => $amount,
+                'date'        => $date,
+                'particulars' => "WIP credited for {$accountName}",
+                'created_by'  => $user,
+            ]);
+        }
     }
 }

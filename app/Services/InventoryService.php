@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\InventoryLedger;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class InventoryService
 {
@@ -26,11 +26,9 @@ class InventoryService
             return;
         }
 
-        // Edit safe
         $this->removeOldStock('purchase', $purchase->id);
 
         foreach ($purchase->purchaseItems as $row) {
-
             InventoryLedger::create([
                 'item_id'     => $row->item_id,
                 'module_type' => 'purchase',
@@ -40,13 +38,13 @@ class InventoryService
                 'unit_cost'   => (float) $row->unit_price,
                 'total_cost'  => (float) ($row->qty * $row->unit_price),
                 'date'        => $purchase->date,
-                'created_by'  => $userId,
+                'created_by'  => $userId ?? Auth::id(),
             ]);
         }
     }
 
     /**
-     * Get current stock
+     * Get current stock (ledger based)
      */
     public function getCurrentStock(int $itemId): float
     {
@@ -57,13 +55,55 @@ class InventoryService
     }
 
     /**
-     * Get average cost
+     * Consume stock for production
      */
-    public function getAverageCost(int $itemId): float
-    {
-        $qty   = InventoryLedger::where('item_id', $itemId)->sum('qty_in');
-        $value = InventoryLedger::where('item_id', $itemId)->sum('total_cost');
+    public function consumeForProduction(
+        int $itemId,
+        float $qty,
+        float $unitCost,
+        int $productionId,
+        string $date
+    ): void {
 
-        return $qty > 0 ? $value / $qty : 0;
+        $stock = $this->getCurrentStock($itemId);
+
+        if ($stock < $qty) {
+            throw new \Exception("Insufficient stock for item ID {$itemId}");
+        }
+
+        InventoryLedger::create([
+            'item_id'     => $itemId,
+            'module_type' => 'production',
+            'module_id'   => $productionId,
+            'qty_in'      => 0,
+            'qty_out'     => $qty,
+            'unit_cost'   => $unitCost,
+            'total_cost'  => $qty * $unitCost,
+            'date'        => $date,
+            'created_by'  => Auth::id(),
+        ]);
+    }
+
+    /**
+     * Finished goods stock in
+     */
+    public function addFinishedGoods(
+        int $itemId,
+        float $qty,
+        float $unitCost,
+        int $productionId,
+        string $date
+    ): void {
+        InventoryLedger::create([
+            'item_id'     => $itemId,
+            'module_type' => 'production',
+            'module_id'   => $productionId,
+            'qty_in'      => $qty,
+            'qty_out'     => 0,
+            'unit_cost'   => $unitCost,
+            'total_cost'  => $qty * $unitCost,
+            'date'        => $date,
+            'created_by'  => Auth::id(),
+        ]);
     }
 }

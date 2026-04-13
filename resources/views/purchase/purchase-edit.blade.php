@@ -124,8 +124,8 @@
 
                             <!-- ✅ Proper Row Structure -->
                             @foreach ($purchase->purchaseItems as $pItem)
-                                <div class="item-row row g-2 align-items-end mt-2 mb-2">
-                                    <div class="form-group col-sm-6 col-md-3 mb-1">
+                                <div class="item-row row g-2 align-items-end mb-2">
+                                    <div class="form-group col-sm-6 col-md-2 mb-1">
                                         <input type="text" value="{{ $pItem->item->item_name }}" name="item_name[]"
                                             class="form-control item_name" placeholder=" " required />
                                         <label for="item_name" class="floating-label">Item Name</label>
@@ -135,7 +135,7 @@
                                             class="form-control item_code" placeholder=" " readonly />
                                         <label for="item_code" class="floating-label">Item Code</label>
                                     </div>
-                                    <div class="form-group col-sm-6 col-md-2 mb-1">
+                                    <div class="form-group col-sm-6 col-md-1 mb-1">
                                         <input type="text" value="{{ $pItem->item->category->cat_name }}"
                                             name="cat_name[]" class="form-control cat_name" placeholder=" " required />
                                         <label for="cat_name" class="floating-label">Category</label>
@@ -145,7 +145,7 @@
                                             class="form-control size" placeholder=" " />
                                         <label for="size" class="floating-label">Pack Size</label>
                                     </div>
-                                    
+
                                     <div class="form-group col-sm-6 col-md-1 mb-1">
                                         <input type="number" value="{{ $pItem->qty }}" name="qty[]"
                                             class="form-control qty" placeholder=" " required />
@@ -201,7 +201,7 @@
                                     class="form-control dis_amt" placeholder=" " readonly>
                                 <label for="dis_amt" class="floating-label">Discount Amount</label>
                             </div>
-                            
+
                             <div class="form-group col-2 mt-2 mb-1">
                                 <input type="number" step="0.01" name="vat_amt" value="{{ $purchase->vat_amt }}"
                                     class="form-control vat_amt" placeholder=" " readonly>
@@ -221,12 +221,12 @@
                                 <label for="grand_total" class="floating-label">Grand Total</label>
                             </div>
 
-                            <div class="form-group col-3 mt-2 mb-2">
+                            <div class="form-group col-2 mt-2 mb-2">
                                 <input type="number" step="0.01" name="paid_amt" value="{{ $purchase->paid_amt }}"
                                     class="form-control paid_amt" placeholder=" ">
                                 <label for="paid_amt" class="floating-label">Paid Amount</label>
                             </div>
-                            <div class="form-group col-2 mt-2 mb-2">
+                            <div class="form-group col-3 mt-2 mb-2">
                                 <input type="number" step="0.01" name="due_amt" value="{{ $purchase->due_amt }}"
                                     class="form-control due_amt" placeholder=" " readonly>
                                 <label for="due_amt" class="floating-label">Due Amount</label>
@@ -240,12 +240,12 @@
                             </div>
 
 
-                            <div class="form-group col-sm-6 col-md-2 mb-2">
+                            <div class="form-group col-sm-6 col-md-3 mb-2">
                                 <input type="text" name="created_by" value="{{ $purchase->user->name }}"
                                     class="form-control created_by" placeholder=" " required />
                                 <label for="created_by" class="floating-label">Posting By</label>
                             </div>
-                            <div class="form-group col-sm-6 col-md-2 mb-2">
+                            <div class="form-group col-sm-6 col-md-3 mb-2">
                                 <input type="text" name="pay_to" value="{{ $purchase->pay_to }}"
                                     class="form-control pay_to" placeholder=" " required />
                                 <label for="pay_to" class="floating-label">Pay To..</label>
@@ -536,7 +536,11 @@
             }
 
             // ✅ প্রথম row এ listener attach করা
-            attachRowListeners(container.find('.item-row').first());
+            // সব existing row এ listener attach করো
+            container.find('.item-row').each(function() {
+                attachRowListeners($(this));
+            });
+
 
             // ✅ নতুন row add করা
             addButton.on('click', function() {
@@ -558,10 +562,12 @@
                 if (rows.length > 1) {
                     $(this).closest('.item-row').remove();
                     calculateSubTotal();
+                    calculateTotalVat();
                 } else {
                     alert('At least one item row is required!');
                 }
             });
+
 
             // ✅ Discount বা VAT পরিবর্তন হলে হিসাব চালু হবে
             $('.dis_percent, .vat, .paid_amt').on('input', function() {

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
 {
     use HasFactory;
+    use CompanyScope;
     protected $guarded = [];
 
     public function category()
@@ -26,5 +28,13 @@ class Item extends Model
     public function production()
     {
         return $this->hasMany(Production::class, 'item_id', 'id');
+    }
+    public function chemicals()
+    {
+        return $this->hasMany(Chemicals::class, 'item_id', 'id');
+    }
+    public function packagingMaterials()
+    {
+        return $this->hasMany(PackagingMaterial::class, 'item_id', 'id');
     }
 }

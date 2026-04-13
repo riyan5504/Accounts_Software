@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('chemicals', function (Blueprint $table) {
             $table->id();
-            $table->string('raw_name');
+            $table->unsignedBigInteger('production_id');
+            $table->unsignedBigInteger('item_id');
             $table->double('used_percent', 10, 2);
             $table->double('used_qty', 10, 2);
             $table->string('ch_unit', 10)->nullable();

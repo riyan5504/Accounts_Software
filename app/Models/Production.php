@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Production extends Model
 {
     use HasFactory;
+    use CompanyScope;
 
     protected $guarded = [];
 
@@ -49,7 +51,7 @@ class Production extends Model
     }
     public function sectionTotalCost()
     {
-        return $this->hasMany(SectionTotalCost::class, 'production_id', 'id');
+        return $this->hasOne(SectionTotalCost::class, 'production_id', 'id');
     }
     public function transportCost()
     {

@@ -41,7 +41,7 @@
         <!--end::Container-->
     </div>
     <!--end::App Content Header-->
-    
+
     <!--begin::App Content-->
     <div class="app-content">
         <!--begin::Container-->
@@ -53,7 +53,7 @@
                     <!--begin::Quick Example-->
                     <div class="card card-primary card-outline mb-4">
                         <!--begin::Form-->
-                        <form action="{{ url('/production/product/store') }}" method="POST">
+                        <form action="{{ url('/production/product/update/' . $production->id) }}" method="POST">
                             @csrf
                             <!--begin::Product-->
                             <div class="card-body">
@@ -63,24 +63,25 @@
                                         <h6 class="mb-0">Production</h6>
                                     </div>
                                     <div class="form-group col-md-3 mb-0">
-                                        <input type="text" name="name" class="form-control name" id="name"
-                                            placeholder=" " required />
+                                        <input type="text" name="name" value="{{ $production->name }}"
+                                            class="form-control name" id="name" placeholder=" " required />
                                         <label for="name" class="floating-label">Product Name</label>
                                     </div>
                                     <div class="form-group col-md-3 mb-0">
                                         <input type="date" name="date" class="form-control date"
-                                            value="{{ date('Y-m-d') }}" id="date" placeholder=" " required />
+                                            value="{{ optional($production->date)->format('Y-m-d') }}" id="date"
+                                            placeholder=" " required />
                                         <label for="date" class="floating-label">Production Date</label>
                                     </div>
 
                                     <div class="form-group col-md-3 mb-0">
                                         <input type="text" name="batch_no" class="form-control batch_no" id="batch_no"
-                                            value="{{ $nextBatch }}" placeholder=" " readonly />
+                                            value="{{ $production->batch_no }}" placeholder=" " readonly />
                                         <label for="batch_no" class="floating-label">Batch Number</label>
                                     </div>
                                     <div class="form-group col-md-3 mb-0">
-                                        <input type="text" name="batch_size" class="form-control batch_size"
-                                            id="batch_size" placeholder=" " readonly />
+                                        <input type="text" name="batch_size" value="{{ $production->batch_size }}"
+                                            class="form-control batch_size" id="batch_size" placeholder=" " readonly />
                                         <label for="batch_size" class="floating-label">Batch Size</label>
                                     </div>
                                     <div
@@ -89,70 +90,81 @@
                                     </div>
                                     <div class="ra_row row align-items-start g-2">
                                         <div class="form-group col-md-2 mb-0">
-                                            <input type="text" name="ra_name" class="form-control ra_name"
+                                            <input type="text" name="ra_name"
+                                                value="{{ $production->items->item_name }}" class="form-control ra_name"
                                                 id="ra_name" placeholder=" " required />
                                             <label for="ra_name" class="floating-label">Raw Name</label>
                                         </div>
                                         <div class="form-group col-md-1 mb-0">
-                                            <input type="number" name="raw_qty" class="form-control raw_qty" id="raw_qty"
-                                                placeholder=" " required />
+                                            <input type="number" name="raw_qty" value="{{ $production->raw_qty }}"
+                                                class="form-control raw_qty" id="raw_qty" placeholder=" " required />
                                             <label for="raw_qty" class="floating-label">Raw Qty</label>
                                         </div>
                                         <div class="form-group col-md-1 mb-0">
                                             <select name="raw_unit" class="form-control raw_unit" id="raw_unit">
-                                                <option selected disabled>Select Unit</option>
-                                                <option value="ml">ml</option>
-                                                <option value="gm">gm</option>
-                                                <option value="kg">Kg</option>
-                                                <option value="ltr">Ltr</option>
+                                                <option value="ml"
+                                                    {{ $production->raw_unit == 'ml' ? 'selected' : '' }}>ml</option>
+                                                <option value="gm"
+                                                    {{ $production->raw_unit == 'gm' ? 'selected' : '' }}>gm</option>
+                                                <option value="kg"
+                                                    {{ $production->raw_unit == 'kg' ? 'selected' : '' }}>kg</option>
+                                                <option value="ltr"
+                                                    {{ $production->raw_unit == 'ltr' ? 'selected' : '' }}>ltr</option>
                                             </select>
                                             <label for="raw_unit" class="floating-label">Unit</label>
                                         </div>
                                         <div class="form-group col-md-1 mb-0">
                                             <input type="number" step="0.01" name="raw_u_price"
-                                                class="form-control raw_u_price" id="raw_u_price" placeholder=" "
-                                                required />
+                                                value="{{ $production->raw_u_price }}" class="form-control raw_u_price"
+                                                id="raw_u_price" placeholder=" " required />
                                             <label for="raw_u_price" class="floating-label">Unit Price</label>
                                         </div>
                                         <div class="form-group col-md-2 mb-0">
                                             <input type="number" step="0.01" name="raw_t_price"
-                                                class="form-control raw_t_price" id="raw_t_price" placeholder=" "
-                                                readonly />
+                                                value="{{ $production->raw_t_price }}" class="form-control raw_t_price"
+                                                id="raw_t_price" placeholder=" " readonly />
                                             <label for="raw_t_price" class="floating-label">Total Price</label>
                                         </div>
 
                                         <div class="form-group col-md-1 mb-0">
-                                            <input type="number" name="yield" class="form-control yield"
-                                                id="yield" placeholder=" " />
+                                            <input type="number" name="yield" value="{{ $production->yield }}"
+                                                class="form-control yield" id="yield" placeholder=" " />
                                             <label for="yield" class="floating-label">Yield Qty</label>
                                         </div>
                                         <div class="form-group col-md-1 mb-0">
                                             <select name="yield_unit" class="form-control yield_unit" id="yield_unit">
-                                                <option selected disabled>Select Unit</option>
-                                                <option value="ml">ml</option>
-                                                <option value="gm">gm</option>
-                                                <option value="kg">Kg</option>
-                                                <option value="ltr">Ltr</option>
+                                                <option value="ml"
+                                                    {{ $production->yield_unit == 'ml' ? 'selected' : '' }}>ml</option>
+                                                <option value="gm"
+                                                    {{ $production->yield_unit == 'gm' ? 'selected' : '' }}>gm</option>
+                                                <option value="kg"
+                                                    {{ $production->yield_unit == 'kg' ? 'selected' : '' }}>kg</option>
+                                                <option value="ltr"
+                                                    {{ $production->yield_unit == 'ltr' ? 'selected' : '' }}>ltr</option>
                                             </select>
                                             <label for="yield_unit" class="floating-label">Unit</label>
                                         </div>
                                         <div class="form-group col-md-1 mb-0">
-                                            <input type="number" step="0.01" name="ex_qty"
+                                            <input type="number" name="ex_qty" value="{{ $production->ex_qty }}"
                                                 class="form-control ex_qty" id="ex_qty" placeholder=" " required />
                                             <label for="ex_qty" class="floating-label">Extract Qty</label>
                                         </div>
                                         <div class="form-group col-md-1 mb-0">
                                             <select name="ex_unit" class="form-control ex_unit" id="ex_unit">
-                                                <option selected disabled>Select Unit</option>
-                                                <option value="ml">ml</option>
-                                                <option value="gm">gm</option>
-                                                <option value="kg">Kg</option>
-                                                <option value="ltr">Ltr</option>
+                                                <option value="ml"
+                                                    {{ $production->ex_unit == 'ml' ? 'selected' : '' }}>ml</option>
+                                                <option value="gm"
+                                                    {{ $production->ex_unit == 'gm' ? 'selected' : '' }}>gm</option>
+                                                <option value="kg"
+                                                    {{ $production->ex_unit == 'kg' ? 'selected' : '' }}>kg</option>
+                                                <option value="ltr"
+                                                    {{ $production->ex_unit == 'ltr' ? 'selected' : '' }}>ltr</option>
                                             </select>
                                             <label for="ex_unit" class="floating-label">Unit</label>
                                         </div>
                                         <div class="form-group col-md-1 mb-0">
                                             <input type="number" step="0.01" name="yield_percent"
+                                                value="{{ $production->yield_percent }}"
                                                 class="form-control yield_percent" id="yield_percent" placeholder=" "
                                                 readonly />
                                             <label for="yield_percent" class="floating-label">Extract (%)</label>
@@ -173,51 +185,67 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="raw-material-row row g-2 align-items-start">
-                                                <div class="form-group mb-1 col-md-3">
-                                                    <input type="text" name="raw_name[]" class="form-control raw_name"
-                                                        placeholder=" " required>
-                                                    <label class="floating-label">Chemical Name</label>
-                                                </div>
-                                                <div class="form-group mb-1 col-md-1">
-                                                    <input type="number" step="0.01" name="used_percent[]"
-                                                        class="form-control used_percent" placeholder=" " required />
-                                                    <label class="floating-label">Used (%)</label>
-                                                </div>
-                                                <div class="form-group mb-1 col-md-2">
-                                                    <input type="number" step="0.01" name="used_qty[]"
-                                                        class="form-control used_qty" placeholder=" " readonly />
-                                                    <label class="floating-label">Used Qty</label>
-                                                </div>
-                                                <div class="form-group col-md-1 mb-0">
-                                                    <select name="ch_unit[]" class="form-control ch_unit" id="ch_unit">
-                                                        <option selected disabled>Select Unit</option>
-                                                        <option value="ml">ml</option>
-                                                        <option value="gm">gm</option>
-                                                        <option value="kg">Kg</option>
-                                                        <option value="ltr">Ltr</option>
-                                                    </select>
-                                                    <label for="ch_unit" class="floating-label">Unit</label>
-                                                </div>
-                                                <div class="form-group mb-1 col-md-2">
-                                                    <input type="number" step="0.01" name="u_price[]"
-                                                        class="form-control u_price" placeholder=" " readonly />
-                                                    <label class="floating-label">Unit Price</label>
-                                                </div>
-                                                <div class="form-group mb-1 col-md-3 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" step="0.01" name="t_price[]"
-                                                            class="form-control t_price" placeholder=" " readonly />
-                                                        <label class="floating-label">Total Price</label>
+                                            @foreach ($production->chemicals as $chemical)
+                                                <div class="raw-material-row row g-2 align-items-start">
+                                                    <div class="form-group mb-1 col-md-3">
+                                                        <input type="text" name="raw_name[]"
+                                                            value="{{ $chemical->items->item_name }}"
+                                                            class="form-control raw_name" placeholder=" " required>
+                                                        <label class="floating-label">Chemical Name</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removeRawMaterial mt-auto">×</button>
+                                                    <div class="form-group mb-1 col-md-1">
+                                                        <input type="number" step="0.01" name="used_percent[]"
+                                                            value="{{ $chemical->used_percent }}"
+                                                            class="form-control used_percent" placeholder=" " required />
+                                                        <label class="floating-label">Used (%)</label>
+                                                    </div>
+                                                    <div class="form-group mb-1 col-md-2">
+                                                        <input type="number" step="0.01" name="used_qty[]"
+                                                            value="{{ $chemical->used_qty }}"
+                                                            class="form-control used_qty" placeholder=" " readonly />
+                                                        <label class="floating-label">Used Qty</label>
+                                                    </div>
+                                                    <div class="form-group col-md-1 mb-0">
+                                                        <select name="ch_unit[]" class="form-control ch_unit"
+                                                            id="ch_unit">
+                                                            <option value="ml"
+                                                                {{ $chemical->ch_unit == 'ml' ? 'selected' : '' }}>ml
+                                                            </option>
+                                                            <option value="gm"
+                                                                {{ $chemical->ch_unit == 'gm' ? 'selected' : '' }}>gm
+                                                            </option>
+                                                            <option value="kg"
+                                                                {{ $chemical->ch_unit == 'kg' ? 'selected' : '' }}>kg
+                                                            </option>
+                                                            <option value="ltr"
+                                                                {{ $chemical->ch_unit == 'ltr' ? 'selected' : '' }}>ltr
+                                                            </option>
+                                                        </select>
+                                                        <label for="ch_unit" class="floating-label">Unit</label>
+                                                    </div>
+                                                    <div class="form-group mb-1 col-md-2">
+                                                        <input type="number" step="0.01" name="u_price[]"
+                                                            value="{{ $chemical->u_price }}" class="form-control u_price"
+                                                            placeholder=" " readonly />
+                                                        <label class="floating-label">Unit Price</label>
+                                                    </div>
+                                                    <div class="form-group mb-1 col-md-3 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" step="0.01" name="t_price[]"
+                                                                value="{{ $chemical->t_price }}"
+                                                                class="form-control t_price" placeholder=" " readonly />
+                                                            <label class="floating-label">Total Price</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removeRawMaterial mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group mb-1">
                                                 <input type="number" step="0.01" name="raw_grand_price"
+                                                    value="{{ $production->sectionTotalCost->raw_grand_price }}"
                                                     class="form-control raw_grand_price" id="raw_grand_price"
                                                     placeholder=" " readonly />
                                                 <label for="raw_grand_price" class="floating-label">Total Chemical
@@ -240,41 +268,50 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="pack-row row align-items-start g-2">
-                                                <div class="form-group col-md-3 mb-1">
-                                                    <input type="text" name="pack_name[]"
-                                                        class="form-control pack_name" placeholder=" " required>
-                                                    <label class="floating-label">Name</label>
-                                                </div>
-                                                <div class="form-group col-md-2 mb-1">
-                                                    <input type="text" name="pack_size[]"
-                                                        class="form-control pack_size" placeholder=" " />
-                                                    <label class="floating-label">Size</label>
-                                                </div>
-                                                <div class="form-group col-md-2 mb-1">
-                                                    <input type="number" name="pack_qty[]" class="form-control pack_qty"
-                                                        placeholder=" " />
-                                                    <label class="floating-label">Quantity</label>
-                                                </div>
-                                                <div class="form-group col-md-2 mb-1">
-                                                    <input type="number" step="0.01" name="pack_price[]"
-                                                        class="form-control pack_price" placeholder=" " readonly />
-                                                    <label class="floating-label">Unit Price</label>
-                                                </div>
-                                                <div class="form-group col-md-3 mb-1 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" step="0.01" name="total_price[]"
-                                                            class="form-control total_price" placeholder=" " readonly />
-                                                        <label class="floating-label">Total Price</label>
+                                            @foreach ($production->packagingMaterial as $pack)
+                                                <div class="pack-row row align-items-start g-2">
+                                                    <div class="form-group col-md-3 mb-1">
+                                                        <input type="text" name="pack_name[]"
+                                                            value="{{ $pack->items->item_name }}"
+                                                            class="form-control pack_name" placeholder=" " required>
+                                                        <label class="floating-label">Name</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removePack mt-auto">×</button>
+                                                    <div class="form-group col-md-2 mb-1">
+                                                        <input type="text" name="pack_size[]"
+                                                            value="{{ $pack->pack_size }}" class="form-control pack_size"
+                                                            placeholder=" " />
+                                                        <label class="floating-label">Size</label>
+                                                    </div>
+                                                    <div class="form-group col-md-2 mb-1">
+                                                        <input type="number" name="pack_qty[]"
+                                                            value="{{ $pack->pack_qty }}" class="form-control pack_qty"
+                                                            placeholder=" " />
+                                                        <label class="floating-label">Quantity</label>
+                                                    </div>
+                                                    <div class="form-group col-md-2 mb-1">
+                                                        <input type="number" step="0.01" name="pack_price[]"
+                                                            value="{{ $pack->pack_price }}"
+                                                            class="form-control pack_price" placeholder=" " readonly />
+                                                        <label class="floating-label">Unit Price</label>
+                                                    </div>
+                                                    <div class="form-group col-md-3 mb-1 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" step="0.01" name="total_price[]"
+                                                                value="{{ $pack->total_price }}"
+                                                                class="form-control total_price" placeholder=" "
+                                                                readonly />
+                                                            <label class="floating-label">Total Price</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removePack mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-2 mb-1">
                                             <div class="form-group">
                                                 <input type="number" step="0.01" name="pack_grand_price"
+                                                    value="{{ $production->sectionTotalCost->pack_grand_price }}"
                                                     class="form-control pack_grand_price" id="pack_grand_price"
                                                     placeholder=" " readonly />
                                                 <label for="pack_grand_price" class="floating-label">Total Packaging
@@ -298,37 +335,43 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="labor-row row g-2 align-items-start">
-                                                <div class="form-group col-md-4 mb-1">
-                                                    <input type="text" name="labor_name[]"
-                                                        class="form-control labor_name" placeholder=" " />
-                                                    <label class="floating-label">Name</label>
-                                                </div>
-                                                <div class="form-group col-md-2 mb-1">
-                                                    <input type="number" name="duty_day[]" class="form-control duty_day"
-                                                        placeholder=" " />
-                                                    <label class="floating-label">Total Duty Day</label>
-                                                </div>
-                                                <div class="form-group col-md-2 mb-1">
-                                                    <input type="number" name="d_pay[]" class="form-control d_pay"
-                                                        placeholder=" " />
-                                                    <label class="floating-label">Daily Pay</label>
-                                                </div>
-                                                <div class="form-group col-md-4 mb-1 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" name="total_pay[]"
-                                                            class="form-control total_pay" placeholder=" " readonly />
-                                                        <label class="floating-label">Total Pay</label>
+                                            @foreach ($production->laborCost as $labor)
+                                                <div class="labor-row row g-2 align-items-start">
+                                                    <div class="form-group col-md-4 mb-1">
+                                                        <input type="text" name="labor_name[]"
+                                                            value="{{ $labor->labor_name }}"
+                                                            class="form-control labor_name" placeholder=" " />
+                                                        <label class="floating-label">Name</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removeLabor mt-auto">×</button>
+                                                    <div class="form-group col-md-2 mb-1">
+                                                        <input type="number" name="duty_day[]"
+                                                            value="{{ $labor->duty_day }}" class="form-control duty_day"
+                                                            placeholder=" " />
+                                                        <label class="floating-label">Total Duty Day</label>
+                                                    </div>
+                                                    <div class="form-group col-md-2 mb-1">
+                                                        <input type="number" name="d_pay[]" value="{{ $labor->d_pay }}"
+                                                            class="form-control d_pay" placeholder=" " />
+                                                        <label class="floating-label">Daily Pay</label>
+                                                    </div>
+                                                    <div class="form-group col-md-4 mb-1 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" name="total_pay[]"
+                                                                value="{{ $labor->total_pay }}"
+                                                                class="form-control total_pay" placeholder=" " readonly />
+                                                            <label class="floating-label">Total Pay</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removeLabor mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-2 mb-1 ms-0">
                                             <div class="form-group">
                                                 <input type="number" step="0.01" name="labor_grand_price"
                                                     class="form-control labor_grand_price" id="labor_grand_price"
+                                                    value="{{ $production->sectionTotalCost->labor_grand_price }}"
                                                     placeholder=" " readonly />
                                                 <label for="labor_grand_price" class="floating-label">Total Labor
                                                     Cost</label>
@@ -351,27 +394,33 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="machine-row row align-items-start g-2">
-                                                <div class="form-group col-md-7 mb-1">
-                                                    <input type="text" name="machine_name[]"
-                                                        class="form-control machine_name" placeholder=" " />
-                                                    <label class="floating-label">Machine Name</label>
-                                                </div>
-                                                <div class="form-group col-md-5 mb-1 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" step="0.01" name="machine_cost_amt[]"
-                                                            class="form-control machine_cost_amt" placeholder=" " />
-                                                        <label class="floating-label">Cost
-                                                            Amount</label>
+                                            @foreach ($production->depreciation as $dep)
+                                                <div class="machine-row row align-items-start g-2">
+                                                    <div class="form-group col-md-7 mb-1">
+                                                        <input type="text" name="machine_name[]"
+                                                            value="{{ $dep->machine_name }}"
+                                                            class="form-control machine_name" placeholder=" " />
+                                                        <label class="floating-label">Machine Name</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removeMachine mt-auto">×</button>
+                                                    <div class="form-group col-md-5 mb-1 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" step="0.01"
+                                                                name="machine_cost_amt[]"
+                                                                value="{{ $dep->machine_cost_amt }}"
+                                                                class="form-control machine_cost_amt" placeholder=" " />
+                                                            <label class="floating-label">Cost
+                                                                Amount</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removeMachine mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-2 mb-1">
                                             <div class="form-group">
                                                 <input type="number" step="0.01" name="depreciation_grand_price"
+                                                    value="{{ $production->sectionTotalCost->depreciation_grand_price }}"
                                                     class="form-control depreciation_grand_price"
                                                     id="depreciation_grand_price" placeholder=" " readonly />
                                                 <label for="depreciation_grand_price" class="floating-label">Total
@@ -396,26 +445,31 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="utility-row row align-items-start g-2">
-                                                <div class="form-group col-md-7 mb-1">
-                                                    <input type="text" name="utility_name[]"
-                                                        class="form-control utility_name" placeholder=" " />
-                                                    <label class="floating-label">Name</label>
-                                                </div>
-                                                <div class="form-group col-md-5 mb-1 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" step="0.01" name="cost_amt[]"
-                                                            class="form-control cost_amt" placeholder=" " />
-                                                        <label class="floating-label">Cost Amount</label>
+                                            @foreach ($production->utilityCost as $utility)
+                                                <div class="utility-row row align-items-start g-2">
+                                                    <div class="form-group col-md-7 mb-1">
+                                                        <input type="text" name="utility_name[]"
+                                                            value="{{ $utility->utility_name }}"
+                                                            class="form-control utility_name" placeholder=" " />
+                                                        <label class="floating-label">Name</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removeUtility mt-auto">×</button>
+                                                    <div class="form-group col-md-5 mb-1 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" step="0.01" name="cost_amt[]"
+                                                                value="{{ $utility->cost_amt }}"
+                                                                class="form-control cost_amt" placeholder=" " />
+                                                            <label class="floating-label">Cost Amount</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removeUtility mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-2 mb-1">
                                             <div class="form-group">
                                                 <input type="number" step="0.01" name="utility_grand_price"
+                                                    value="{{ $production->sectionTotalCost->utility_grand_price }}"
                                                     class="form-control utility_grand_price" id="utility_grand_price"
                                                     placeholder=" " readonly />
                                                 <label for="utility_grand_price" class="floating-label">Total Utility
@@ -439,25 +493,29 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="overhead-row row align-items-start g-2">
-                                                <div class="form-group col-md-9 mb-1">
-                                                    <textarea name="overhead_type[]" class="form-control overhead_type" rows="1" placeholder=" "></textarea>
-                                                    <label class="floating-label">Description</label>
-                                                </div>
-                                                <div class="form-group col-md-3 mb-1 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" step="0.01" name="fo_cost_amt[]"
-                                                            class="form-control fo_cost_amt" placeholder=" " />
-                                                        <label class="floating-label">Cost Amount</label>
+                                            @foreach ($production->overHeadCost as $overHead)
+                                                <div class="overhead-row row align-items-start g-2">
+                                                    <div class="form-group col-md-9 mb-1">
+                                                        <textarea name="overhead_type[]" class="form-control overhead_type" rows="1" placeholder=" ">{{ $overHead->overhead_type }}</textarea>
+                                                        <label class="floating-label">Description</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removeOverhead mt-auto">×</button>
+                                                    <div class="form-group col-md-3 mb-1 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" step="0.01" name="fo_cost_amt[]"
+                                                                value="{{ $overHead->fo_cost_amt }}"
+                                                                class="form-control fo_cost_amt" placeholder=" " />
+                                                            <label class="floating-label">Cost Amount</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removeOverhead mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class=" col-md-2 mb-1">
                                             <div class="form-group">
                                                 <input type="number" step="0.01" name="overhead_grand_price"
+                                                    value="{{ $production->sectionTotalCost->overhead_grand_price }}"
                                                     class="form-control overhead_grand_price" id="overhead_grand_price"
                                                     placeholder=" " readonly />
                                                 <label for="overhead_grand_price" class="floating-label">Total Overhead
@@ -481,26 +539,31 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="transport-row row align-items-start g-2">
-                                                <div class="form-group col-md-9 mb-1">
-                                                    <input type="text" name="transport_type[]"
-                                                        class="form-control transport_type" placeholder=" " />
-                                                    <label class="floating-label">Transport Type</label>
-                                                </div>
-                                                <div class="form-group col-md-3 mb-1 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" step="0.01" name="transport_amt[]"
-                                                            class="form-control transport_amt" placeholder=" " />
-                                                        <label class="floating-label">Cost Amount</label>
+                                            @foreach ($production->transportCost as $transport)
+                                                <div class="transport-row row align-items-start g-2">
+                                                    <div class="form-group col-md-9 mb-1">
+                                                        <input type="text" name="transport_type[]"
+                                                            value="{{ $transport->transport_type }}"
+                                                            class="form-control transport_type" placeholder=" " />
+                                                        <label class="floating-label">Transport Type</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removeTransport mt-auto">×</button>
+                                                    <div class="form-group col-md-3 mb-1 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" step="0.01" name="transport_amt[]"
+                                                                value="{{ $transport->transport_amt }}"
+                                                                class="form-control transport_amt" placeholder=" " />
+                                                            <label class="floating-label">Cost Amount</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removeTransport mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-2 mb-1">
                                             <div class="form-group">
                                                 <input type="number" step="0.01" name="transport_grand_price"
+                                                    value="{{ $production->sectionTotalCost->transport_grand_price }}"
                                                     class="form-control transport_grand_price" id="transport_grand_price"
                                                     placeholder=" " readonly />
                                                 <label for="transport_grand_price" class="floating-label">Total Transport
@@ -524,26 +587,31 @@
                                     <!-- ✅ First Row (with labels) -->
                                     <div class="row">
                                         <div class="col-md-10">
-                                            <div class="qc-row row g-2 align-items-start">
-                                                <div class="form-group col-md-8 mb-1">
-                                                    <input type="text" name="test_name[]"
-                                                        class="form-control test_name" placeholder=" " />
-                                                    <label class="floating-label">Test Name</label>
-                                                </div>
-                                                <div class="form-group col-md-4 mb-1 d-flex">
-                                                    <div class="w-100">
-                                                        <input type="number" step="0.01" name="qc_amt[]"
-                                                            class="form-control qc_amt" placeholder=" " />
-                                                        <label class="floating-label">Cost Amount</label>
+                                            @foreach ($production->qcCost as $qc)
+                                                <div class="qc-row row g-2 align-items-start">
+                                                    <div class="form-group col-md-8 mb-1">
+                                                        <input type="text" name="test_name[]"
+                                                            value="{{ $qc->test_name }}" class="form-control test_name"
+                                                            placeholder=" " />
+                                                        <label class="floating-label">Test Name</label>
                                                     </div>
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm ms-2 removeQc mt-auto">×</button>
+                                                    <div class="form-group col-md-4 mb-1 d-flex">
+                                                        <div class="w-100">
+                                                            <input type="number" step="0.01" name="qc_amt[]"
+                                                                value="{{ $qc->qc_amt }}" class="form-control qc_amt"
+                                                                placeholder=" " />
+                                                            <label class="floating-label">Cost Amount</label>
+                                                        </div>
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm ms-2 removeQc mt-auto">×</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-2 mb-1">
                                             <div class="form-group">
                                                 <input type="number" step="0.01" name="qc_grand_price"
+                                                    value="{{ $production->sectionTotalCost->qc_grand_price }}"
                                                     class="form-control qc_grand_price" id="qc_grand_price"
                                                     placeholder=" " readonly />
                                                 <label for="qc_grand_price" class="floating-label">Total QC
@@ -561,26 +629,32 @@
                             <div class="row mt-2">
                                 <div class="form-group col-md-3 ms-3 mt-1 mb-2">
                                     <input type="number" step="0.01" name="grand_total"
-                                        class="form-control grand_total" id="grand_total" placeholder=" " readonly />
+                                        value="{{ $production->grand_total }}" class="form-control grand_total"
+                                        id="grand_total" placeholder=" " readonly />
                                     <label for="grand_total" class="floating-label">Grand Total</label>
                                 </div>
                                 <div class="form-group col-md-3 mt-1 mb-2">
-                                    <input type="number" step="0.01" name="final_qty" class="form-control final_qty"
+                                    <input type="number" step="0.01" name="final_qty"
+                                        value="{{ $production->final_qty }}" class="form-control final_qty"
                                         id="final_qty" placeholder=" " required />
                                     <label for="final_qty" class="floating-label">Actual Production Qty</label>
                                 </div>
                                 <div class="form-group col-md-2 mt-1 mb-2">
                                     <select name="final_unit" class="form-control" id="final_unit">
-                                        <option selected disabled>Select Unit</option>
-                                        <option value="ml">ml</option>
-                                        <option value="gm">gm</option>
-                                        <option value="kg">Kg</option>
-                                        <option value="ltr">Ltr</option>
+                                        <option value="ml" {{ $production->final_unit == 'ml' ? 'selected' : '' }}>ml
+                                        </option>
+                                        <option value="gm" {{ $production->final_unit == 'gm' ? 'selected' : '' }}>gm
+                                        </option>
+                                        <option value="kg" {{ $production->final_unit == 'kg' ? 'selected' : '' }}>kg
+                                        </option>
+                                        <option value="ltr" {{ $production->final_unit == 'ltr' ? 'selected' : '' }}>
+                                            ltr</option>
                                     </select>
                                     <label for="final_unit" class="floating-label">Unit</label>
                                 </div>
                                 <div class="form-group col-md-3 mt-1 mb-2">
-                                    <input type="number" step="0.01" name="unit_cost" class="form-control unit_cost"
+                                    <input type="number" step="0.01" name="unit_cost"
+                                        value="{{ $production->unit_cost }}" class="form-control unit_cost"
                                         id="unit_cost" placeholder=" " readonly />
                                     <label for="unit_cost" class="floating-label">Cost per Unit</label>
                                 </div>
@@ -588,7 +662,7 @@
                             <!--end::Body-->
                             <!--begin::Footer-->
                             <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="submit" class="btn btn-primary">Update</button>
                             </div>
                             <!--end::Footer-->
                         </form>
@@ -605,41 +679,6 @@
 @endsection
 
 @push('script')
-    <!-- Batch Number -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateInput = document.getElementById('date');
-            const batchInput = document.getElementById('batch_no');
-            const serial = "{{ $newSerial }}";
-
-            dateInput.addEventListener('change', function() {
-                if (this.value) {
-                    const d = new Date(this.value);
-                    const dd = String(d.getDate()).padStart(2, '0');
-                    const mm = String(d.getMonth() + 1).padStart(2, '0');
-                    const yy = String(d.getFullYear()).slice(-2);
-                    batchInput.value = `${dd}${mm}${yy}${serial}`;
-                }
-            });
-        });
-    </script>
-
-    <!-- Batch Size -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const exQty = document.getElementById('ex_qty');
-            const exUnit = document.getElementById('ex_unit');
-            const batchSize = document.getElementById('batch_size');
-
-            function update() {
-                batchSize.value = exQty.value && exUnit.value ? exQty.value + ' ' + exUnit.value : '';
-            }
-
-            exQty.addEventListener('input', update);
-            exUnit.addEventListener('change', update);
-        });
-    </script>
-
     <script>
         $(document).ready(function() {
 
@@ -680,9 +719,18 @@
             }
 
             // প্রথম row
-            initAutocomplete($('.ra_row'));
-            initAutocomplete($('.raw-material-row'));
-            initAutocomplete($('.pack-row'));
+            $('.ra_row').each(function() {
+                initAutocomplete($(this));
+            });
+
+            $('.raw-material-row').each(function() {
+                initAutocomplete($(this));
+            });
+
+            $('.pack-row').each(function() {
+                initAutocomplete($(this));
+            });
+
 
             // নতুন raw row add হলে
             $('#addRawMaterial').on('click', function() {
@@ -700,8 +748,6 @@
 
         });
     </script>
-
-
     <!-- Raw Material Main Calculation -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -800,7 +846,10 @@
                 }
             });
 
-            attachRow(container.querySelector('.raw-material-row'));
+            container.querySelectorAll('.raw-material-row').forEach(row => {
+                attachRow(row);
+            });
+
         });
     </script>
 
@@ -850,7 +899,10 @@
                 }
             });
 
-            attach(container.querySelector('.labor-row'));
+            container.querySelectorAll('.labor-row').forEach(row => {
+                attach(row);
+            });
+
         });
     </script>
 
@@ -912,7 +964,10 @@
                 }
             });
 
-            attach(container.querySelector('.pack-row'));
+            container.querySelectorAll('.pack-row').forEach(row => {
+                attach(row);
+            });
+
         });
     </script>
 
@@ -958,7 +1013,10 @@
                     }
                 });
 
-                attachRow(container.querySelector('.' + config.rowClass));
+                container.querySelectorAll('.' + config.rowClass).forEach(row => {
+                    attachRow(row);
+                });
+
             }
 
             // Utility

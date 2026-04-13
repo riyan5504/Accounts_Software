@@ -76,3 +76,4 @@ Route::get('/production/list', [ProductionController::class, 'productionList']);
 Route::get('/production/edit/{id}', [ProductionController::class, 'productionEdit']);
 Route::get('/production/delete/{id}', [ProductionController::class, 'productionDelete']);
 Route::post('/production/update/{id}', [ProductionController::class, 'productionUpdate']);
+Route::get('/production/details/{id}', [ProductionController::class, 'productionDetails']);

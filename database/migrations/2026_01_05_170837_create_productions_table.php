@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('batch_no');
             $table->string('batch_size');
             $table->date('date');
+            $table->string('ra_name');
             $table->double('raw_qty', 10, 2);
             $table->string('raw_unit', 10)->nullable();
             $table->decimal('raw_u_price', 10, 2);

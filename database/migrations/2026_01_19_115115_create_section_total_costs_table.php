@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('section_total_costs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('production_id');
             $table->decimal('raw_grand_price', 10, 2);
             $table->decimal('pack_grand_price', 10, 2);
-            $table->decimal('labor_grand_price', 10, 2);
-            $table->decimal('depreciation_grand_price', 10, 2);
-            $table->decimal('utility_grand_price', 10, 2);
-            $table->decimal('overhead_grand_price', 10, 2);
-            $table->decimal('transport_grand_price', 10, 2);
-            $table->decimal('qc_grand_price', 10, 2);
+            $table->decimal('labor_grand_price', 10, 2)->nullable();
+            $table->decimal('depreciation_grand_price', 10, 2)->nullable();
+            $table->decimal('utility_grand_price', 10, 2)->nullable();
+            $table->decimal('overhead_grand_price', 10, 2)->nullable();
+            $table->decimal('transport_grand_price', 10, 2)->nullable();
+            $table->decimal('qc_grand_price', 10, 2)->nullable();
             $table->timestamps();
         });
     }

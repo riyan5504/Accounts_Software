@@ -11,6 +11,11 @@ class Chemicals extends Model
 
     protected $guarded = [];
 
+    public function items()
+    {
+        return $this->belongsTo(Item::class, 'item_id', 'id');
+    }
+
     public function production()
     {
         return $this->belongsTo(Production::class, 'production_id', 'id');
