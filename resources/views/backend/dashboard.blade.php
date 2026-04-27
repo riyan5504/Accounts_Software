@@ -2,25 +2,39 @@
 
 @section('content')
     <!--begin::App Content Header-->
-    <div class="app-content-header">
-        <!--begin::Container-->
+    <div class="app-content-header bg-white shadow-sm rounded-3 px-3 py-2 mb-3">
         <div class="container-fluid">
-            <!--begin::Row-->
-            <div class="row">
-                <div class="col-sm-6">
-                    <h3 class="mb-0">Dashboard</h3>
+            <div class="row align-items-center">
+
+                <!-- Left Time -->
+                <div class="col-md-4 text-start">
+                    <h6 class="mb-0 fw-bold text-primary">
+                        <i class="far fa-clock me-1"></i>
+                        <span id="liveTime"></span>
+                    </h6>
+                    <small class="text-muted" id="dayName"></small>
                 </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
+
+                <!-- Center Title -->
+                <div class="col-md-4 text-center">
+                    <h3 class="mb-0 fw-bold text-dark">
+                        Veshoz Village Account
+                    </h3>
                 </div>
+
+                <!-- Right Date -->
+                <div class="col-md-4 text-end">
+                    <h6 class="mb-0 fw-bold text-danger">
+                        <i class="far fa-calendar-alt me-1"></i>
+                        <span id="liveDate"></span>
+                    </h6>
+                    <small class="text-muted">Today</small>
+                </div>
+
             </div>
-            <!--end::Row-->
         </div>
-        <!--end::Container-->
     </div>
+
     <!--end::App Content Header-->
     <!--begin::App Content-->
     <div class="app-content">
@@ -33,7 +47,7 @@
                     <!--begin::Small Box Widget 1-->
                     <div class="small-box text-bg-primary">
                         <div class="inner">
-                            <h3>{{$purchases}}</h3>
+                            <h3>{{ $purchases }}</h3>
                             <p>Purchase</p>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
@@ -176,3 +190,34 @@
     </div>
     <!--end::App Content-->
 @endsection
+@push('script')
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+
+            // Bangladesh Time
+            const time = now.toLocaleTimeString('en-BD', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const date = now.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            const day = now.toLocaleDateString('en-US', {
+                weekday: 'long'
+            });
+
+            document.getElementById('liveTime').innerHTML = time;
+            document.getElementById('liveDate').innerHTML = date;
+            document.getElementById('dayName').innerHTML = day;
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+    </script>
+@endpush

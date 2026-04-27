@@ -1,53 +1,118 @@
 <nav class="app-header navbar navbar-expand bg-body">
     <!--begin::Container-->
-    <div class="container-fluid">
+    <div class="container-fluid ps-0">
         <!--begin::Start Navbar Links-->
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
-                    <i class="bi bi-list"></i>
-                </a>
+                <a class="nav-link" href="#" role="button">
+                    <i class="fas fa-bars" id="menuToggle" style="display: none;"></i></a>
             </li>
-            <li class="nav-item d-none d-md-block"><a href="{{url('/admin/dashboard')}}" class="nav-link">Home</a></li>
+            <!--end::Start Navbar Links-->
         </ul>
-        <!--end::Start Navbar Links-->
-        <!--begin::End Navbar Links-->
-        <ul class="navbar-nav ms-auto">
-            <!--begin::Navbar Search-->
-            <li class="nav-item">
-                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
-                    <i class="bi bi-search"></i>
-                </a>
-            </li>
-            <!--end::Navbar Search-->
-            
-            <!--begin::Fullscreen Toggle-->
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-lte-toggle="fullscreen">
-                    <i data-lte-icon="maximize" class="bi bi-arrows-fullscreen"></i>
-                    <i data-lte-icon="minimize" class="bi bi-fullscreen-exit" style="display: none"></i>
-                </a>
-            </li>
-            <!--end::Fullscreen Toggle-->
-            <!--begin::User Menu Dropdown-->
-            <li class="nav-item dropdown user-menu">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="{{asset('backend/dist/assets/img/user2-160x160.jpg')}}" class="user-image rounded-circle shadow"
-                        alt="User Image" />
-                    <span class="d-none d-md-inline">Ahsan Habib</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                    <!--begin::Menu Footer-->
-                    <li class="user-footer">
-                        <a href="#" class="btn btn-default btn-flat">Profile</a>
-                        <a href="{{ route('admin.logout') }}" class="btn btn-default btn-flat float-end">Sign out</a>
-                    </li>
-                    <!--end::Menu Footer-->
-                </ul>
-            </li>
-            <!--end::User Menu Dropdown-->
-        </ul>
-        <!--end::End Navbar Links-->
+
+        <div class="container-fluid d-flex align-items-center">
+
+            <!-- LEFT MENU --> 
+            <ul class="navbar-nav d-flex flex-row gap-3 flex-wrap">
+
+                <li class="nav-item text-center">
+                    <a href="{{ route('dashboard') }}" class="nav-link nav-item-custom {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="{{ route('purchase.index') }}"
+                        class="nav-link nav-item-custom {{ request()->routeIs('purchase.*') ? 'active' : '' }}">
+                        <i class="fas fa-box"></i>
+                        <span class="nav-text">Purchase</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="{{ route('production.index') }}"
+                        class="nav-link nav-item-custom {{ request()->routeIs('production.*') ? 'active' : '' }}">
+                        <i class="fas fa-industry"></i>
+                        <span>Manufacturing</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="#" class="nav-link nav-item-custom">
+                        <i class="fas fa-quote-right text-success"></i>
+                        <span>Quotation</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="#" class="nav-link nav-item-custom">
+                        <i class="fas fa-shopping-cart text-danger"></i>
+                        <span>Sales</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="#" class="nav-link nav-item-custom">
+                        <i class="fas fa-warehouse"></i>
+                        <span>Inventory</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="#" class="nav-link nav-item-custom">
+                        <i class="fas fa-users text-primary"></i>
+                        <span>HR & Payroll</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="{{route('account.index')}}" class="nav-link nav-item-custom {{ request()->routeIs('account.*') ? 'active' : '' }}">
+                        <i class="fas fa-calculator"></i>
+                        <span>Accounts</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="{{route('report.stock.report')}}" class="nav-link nav-item-custom text-danger {{ request()->routeIs('report.*') ? 'active' : '' }}">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+
+                {{-- <li class="nav-item text-center">
+                    <a href="#" class="nav-link nav-item-custom">
+                        <i class="fas fa-shopping-bag"></i></i>
+                        <span>Order</span>
+                    </a>
+                </li> --}}
+
+                <li class="nav-item text-center">
+                    <a href="#" class="nav-link nav-item-custom">
+                        <i class="fas fa-tools text-warning"></i></i>
+                        <span>Service</span>
+                    </a>
+                </li>
+
+                <li class="nav-item text-center">
+                    <a href="#" class="nav-link nav-item-custom">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- RIGHT SIDE -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a href="{{ url('/admin/logout') }}" class="nav-link logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Log Out
+                    </a>
+                </li>
+            </ul>
+
+        </div>
     </div>
     <!--end::Container-->
 </nav>

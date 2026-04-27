@@ -312,3 +312,50 @@
         }
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const body = document.body;
+        const menuToggle = document.getElementById("menuToggle");
+        const sidebarCollapse = document.getElementById("sidebarCollapse");
+
+        // Sidebar hide
+        sidebarCollapse.addEventListener("click", function() {
+            body.classList.add("sidebar-collapse");
+
+            menuToggle.style.display = "inline-block";
+            sidebarCollapse.style.display = "none";
+        });
+
+        // Sidebar show (FIXED)
+        menuToggle.addEventListener("click", function() {
+            body.classList.remove("sidebar-collapse");
+
+            menuToggle.style.display = "none";
+            sidebarCollapse.style.display = "inline-block";
+        });
+
+    });
+</script>
+<script>
+    document.querySelectorAll('.nav-item-custom').forEach(item => {
+        item.addEventListener('click', function () {
+            document.querySelectorAll('.nav-item-custom').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toastElList = document.querySelectorAll('.toast');
+
+        toastElList.forEach(function(toastEl) {
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 3000
+            });
+            toast.show();
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

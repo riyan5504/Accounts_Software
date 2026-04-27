@@ -8,7 +8,7 @@
             <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0 mt-0">Vendor Edit</h3>
+                    <h3 class="mb-0 mt-0">Vendor Entry</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
@@ -41,8 +41,8 @@
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ url('/vendor/list') }}"
-                                class="{{ request()->is('vendor/list') ? 'text-primary fw-bold' : 'text-dark' }}">
+                            <a href="{{ route('purchase.vendorlist') }}"
+                                class="{{ request()->routeIs('purchase.vendorlist') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Vendor List
                             </a>
                         </li>
@@ -67,7 +67,7 @@
                 </div>
                 <!--end::Header-->
                 <!--begin::Form-->
-                <form action="{{ url('/vendor/store') }}" method="POST">
+                <form action="{{ route('purchase.vendorstore') }}" method="POST">
                     @csrf
                     <!--begin::Body-->
                     <div class="card-body">

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Vendor;
 use App\Services\InventoryService;
 use App\Services\JournalService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -212,13 +213,39 @@ class PurchaseController extends Controller
         return redirect()->back()->with('success', 'Purchase saved successfully!');
     }
 
-
-
-
-    public function purchaseList()
+    public function purchaseList(Request $request)
     {
-        $purchases = Purchase::with(['vendor', 'purchaseItems.item.category'])->get();
-        return view('purchase.purchase-list', compact('purchases'));
+        if ($request->type == 'all') {
+            $request->merge([
+                'vendor_id' => null,
+                'item_id' => null
+            ]);
+        }
+        $query = Purchase::with(['vendor', 'purchaseItems.item']);
+
+        // Date filter
+        if ($request->from_date && $request->to_date) {
+            $query->whereBetween('date', [$request->from_date, $request->to_date]);
+        }
+
+        // Supplier filter
+        if ($request->type == 'supplier' && $request->vendor_id) {
+            $query->where('vendor_id', $request->vendor_id);
+        }
+
+        // Item filter
+        if ($request->type == 'item' && $request->item_id) {
+            $query->whereHas('purchaseItems', function ($q) use ($request) {
+                $q->where('item_id', $request->item_id);
+            });
+        }
+
+        $purchases = $query->latest()->get();
+
+        $vendors = Vendor::all();
+        $items = Item::all();
+
+        return view('purchase.purchase-list', compact('purchases', 'vendors', 'items'));
     }
 
     public function purchaseEdit($id)
@@ -382,5 +409,42 @@ class PurchaseController extends Controller
     {
         $purchase = Purchase::with(['vendor', 'purchaseItems.item.category'])->find($id);
         return view('purchase.purchase-details', compact('purchase'));
+    }
+
+    public function downloadPdf($id)
+    {
+        $purchase = Purchase::with(['vendor', 'purchaseItems.item'])->findOrFail($id);
+
+        $pdf = Pdf::loadView('purchase.purchase-pdf', compact('purchase'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('Purchase_Invoice_' . $purchase->invoice_no . '.pdf');
+    }
+
+    public function downloadListPdf(Request $request)
+    {
+        $query = Purchase::with(['vendor', 'purchaseItems.item']);
+
+        // filter same logic
+        if ($request->from_date && $request->to_date) {
+            $query->whereBetween('date', [$request->from_date, $request->to_date]);
+        }
+
+        if ($request->type == 'supplier' && $request->vendor_id) {
+            $query->where('vendor_id', $request->vendor_id);
+        }
+
+        if ($request->type == 'item' && $request->item_id) {
+            $query->whereHas('purchaseItems', function ($q) use ($request) {
+                $q->where('item_id', $request->item_id);
+            });
+        }
+
+        $purchases = $query->get();
+
+        $pdf = Pdf::loadView('purchase.purchase-list-pdf', compact('purchases'))
+            ->setPaper('a4', 'Landscape');
+
+        return $pdf->download('Purchase_List.pdf');
     }
 }

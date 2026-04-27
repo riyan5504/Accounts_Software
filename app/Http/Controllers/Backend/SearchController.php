@@ -88,8 +88,8 @@ class SearchController extends Controller
         $data = $categories->map(function ($category) {
             return [
                 'id' => $category->id,
-                'label' => $category->cat_name, // Autocomplete list এ দেখা যাবে
-                'value' => $category->cat_name, // Input field এ বসবে
+                'label' => $category->cat_name,
+                'value' => $category->cat_name,
             ];
         });
 
@@ -113,28 +113,27 @@ class SearchController extends Controller
         return response()->json($users);
     }
 
-    
+
     public function getByStatus(string $type)
-{
-    $type = strtolower($type); // PHPStorm runtime warning কম হবে
+    {
+        $type = strtolower($type); // PHPStorm runtime warning কম হবে
 
-    switch ($type) {
-        case 'paid':
-            $actype = 'Asset';
-            break;
-        case 'unpaid':
-        case 'partial':
-            $actype = 'Liability';
-            break;
-        default:
-            return response()->json(['error' => 'Invalid type'], 400);
+        switch ($type) {
+            case 'paid':
+                $actype = 'Asset';
+                break;
+            case 'unpaid':
+            case 'partial':
+                $actype = 'Liability';
+                break;
+            default:
+                return response()->json(['error' => 'Invalid type'], 400);
+        }
+
+        $accounts = Account::where('ac_type', $actype)
+            ->orderBy('account_name', 'asc')
+            ->get(['id', 'account_name']);
+
+        return response()->json($accounts);
     }
-
-    $accounts = Account::where('ac_type', $actype)
-        ->orderBy('account_name', 'asc')
-        ->get(['id', 'account_name']);
-
-    return response()->json($accounts);
-}
-
 }

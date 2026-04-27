@@ -115,7 +115,7 @@
         </div>
 
         <!-- Login Form -->
-        <form id="loginForm" class="form active" action="{{route('login')}}" method="POST">
+        <form id="loginForm" class="form active" action="{{route('admin.login')}}" method="POST">
             @csrf
             <input type="email" name="email" placeholder="Email" required/>
             <input type="password" name="password" placeholder="Password" required />

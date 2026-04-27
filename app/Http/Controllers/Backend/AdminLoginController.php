@@ -12,6 +12,26 @@ class AdminLoginController extends Controller
     {
         return view('backend.login');
     }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials)) {
+
+            $user = Auth::user();
+
+            session([
+                'company_id' => $user->company_id,
+                'role' => $user->role
+            ]);
+
+            return redirect('/admin/dashboard');
+        }
+
+        return back()->with('error', 'Invalid login credentials');
+    }
+
     public function adminLogOut()
     {
         Auth::logout();

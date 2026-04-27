@@ -13015,7 +13015,7 @@ textarea.form-control-lg {
 .sidebar-brand {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
   height: 3.5rem;
   padding: 0.8125rem 0.5rem;
   overflow: hidden;
@@ -13023,6 +13023,7 @@ textarea.form-control-lg {
   white-space: nowrap;
   border-bottom: 1px solid var(--bs-border-color);
   transition: width 0.3s ease-in-out;
+  margin-left: 0px;
 }
 @media (prefers-reduced-motion: reduce) {
   .sidebar-brand {
@@ -13033,12 +13034,14 @@ textarea.form-control-lg {
   display: flex;
   align-items: center;
   text-decoration: none;
+  margin-left: 0;
 }
 .sidebar-brand .brand-link .brand-image {
   float: left;
   width: auto;
   max-height: 33px;
   line-height: 0.8;
+  margin-left: 0;
 }
 .sidebar-brand .brand-link .brand-image-xs {
   float: left;
@@ -13056,9 +13059,18 @@ textarea.form-control-lg {
   margin-top: -0.3rem;
 }
 .sidebar-brand .brand-text {
-  margin-left: 0.5rem;
+  margin-left: 0.1rem;
+  margin-right: 15px;
+  font-size: 15px;
   color: rgba(var(--bs-emphasis-color-rgb), 0.8);
   transition: flex 0.3s ease-in-out, width 0.3s ease-in-out;
+}
+
+
+/* Chevron animation */
+#sidebarCollapse {
+    cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 @media (prefers-reduced-motion: reduce) {
   .sidebar-brand .brand-text {

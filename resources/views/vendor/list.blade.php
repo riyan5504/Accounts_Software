@@ -41,8 +41,8 @@
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ url('/vendor/list') }}"
-                                class="{{ request()->is('vendor/list') ? 'text-primary fw-bold' : 'text-dark' }}">
+                            <a href="{{ route('purchase.vendorlist') }}"
+                                class="{{ request()->routeIs('purchase.vendorlist') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Vendor List
                             </a>
                         </li>
@@ -67,7 +67,7 @@
                         <div
                             class="bg-success text-white d-flex justify-content-between align-items-center px-1 py-1 rounded">
                             <h5>Vendor List</h5>
-                            <a href="{{ url('/vendor/add') }}" class="btn btn-light btn-sm text-dark fw-bold">
+                            <a href="{{ route('purchase.vendoradd') }}" class="btn btn-light btn-sm text-dark fw-bold">
                                 + Add Vendor
                             </a>
                         </div>
@@ -93,11 +93,11 @@
                                                 <td>{{ $vendor->email }}</td>
                                                 <td>{{ $vendor->address }}</td>
                                                 <td style="text-align: center">
-                                                    <a href="{{ url('/vendor/edit/' . $vendor->id) }}"
+                                                    <a href="{{ route('purchase.vendoredit', $vendor->id) }}"
                                                         class="btn ms-0 me-0">
                                                         <i class="bi bi-pencil text-primary"></i>
                                                     </a>
-                                                    <a href="{{ url('/vendor/delete/' . $vendor->id) }}"
+                                                    <a href="{{ route('purchase.vendordelete', $vendor->id) }}"
                                                         class="btn me-0 ms-0">
                                                         <i class="bi bi-trash text-danger"></i>
                                                     </a>

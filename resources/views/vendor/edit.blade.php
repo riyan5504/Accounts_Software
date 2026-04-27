@@ -41,8 +41,8 @@
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ url('/vendor/list') }}"
-                                class="{{ request()->is('vendor/list') ? 'text-primary fw-bold' : 'text-dark' }}">
+                            <a href="{{ route('purchase.vendorlist') }}"
+                                class="{{ request()->routeIs('purchase.vendorlist') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Vendor List
                             </a>
                         </li>
@@ -67,7 +67,7 @@
                 </div>
                 <!--end::Header-->
                 <!--begin::Form-->
-                <form action="{{ url('/vendor/update/'.$vendor->id) }}" method="POST">
+                <form action="{{ route('purchase.vendorupdate', $vendor->id) }}" method="POST">
                     @csrf
                     <!--begin::Body-->
                     <div class="card-body">

@@ -33,7 +33,9 @@
                     <!--begin::Small Box Widget 1-->
                     <div class="small-box text-bg-primary">
                         <div class="inner">
-                            <p>Purchase Entry</p>
+                            <a href="{{ url('/purchase/entry') }}">
+                                <p>Purchase Entry</p>
+                            </a>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -53,7 +55,9 @@
                     <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-success">
                         <div class="inner">
-                            <a href="{{ url('/purchase/list') }}"><p>Purchase List</p></a>
+                            <a href="{{ url('/purchase/list') }}">
+                                <p>Purchase List</p>
+                            </a>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -67,17 +71,21 @@
                     </div>
                     <!--end::Small Box Widget 2-->
                 </div>
+
                 <div class="col-lg-3 col-6">
                     <!--begin::Small Box Widget 2-->
-                    <div class="small-box text-bg-warning">
+                    <div class="small-box text-bg-info">
                         <div class="inner">
-                            <a href="{{ url('/item/list') }}"><p>Item List</p></a>
+                            <a href="{{ route('purchase.vendoradd') }}">
+                                <p>Vendor Entry</p>
+                            </a>
                         </div>
                         <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                            <path d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
+                            <path
+                                d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                         </svg>
-                        <a href="{{ url('/item/list') }}"
+                        <a href="{{ route('purchase.vendorlist') }}"
                             class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                             Show List <i class="bi bi-link-45deg"></i>
                         </a>
@@ -88,13 +96,16 @@
                     <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-info">
                         <div class="inner">
-                            <a href="{{ url('/vendor/list') }}"><p>Vendor List</p></a>
+                            <a href="{{ route('purchase.vendorlist') }}">
+                                <p>Vendor List</p>
+                            </a>
                         </div>
-                        <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                            viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                        <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path
+                                d="M4 6h2v2H4V6zm0 5h2v2H4v-2zm0 5h2v2H4v-2zM8 6h12v2H8V6zm0 5h8v2H8v-2zm0 5h6v2H8v-2zM19.293 11.293a1 1 0 0 1 1.414 1.414l-3.829 3.829a1 1 0 0 1-1.414 0l-1.829-1.829a1 1 0 1 1 1.414-1.414l1.122 1.121 3.022-3.121z" />
                         </svg>
-                        <a href="{{ url('/vendor/list') }}"
+                        <a href="{{ route('purchase.vendorlist') }}"
                             class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                             Show List <i class="bi bi-link-45deg"></i>
                         </a>
