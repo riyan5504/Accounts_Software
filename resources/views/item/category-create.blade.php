@@ -38,8 +38,12 @@
 
     <section class="mt-1">
         <div class="card">
-            <div class="ps-2 bg-success bg-opacity-50 text-dark">
-                <h5>Category List</h5>
+            <div class="ps-2 bg-success bg-opacity-50 text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Category List</h5>
+                <a href="{{ route('item.category-trash') }}" class="btn btn-warning">
+                    <i class="fas fa-trash"></i>
+                    ({{ \App\Models\Category::onlyTrashed()->count() }})
+                </a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-sm table-bordered custom-table">

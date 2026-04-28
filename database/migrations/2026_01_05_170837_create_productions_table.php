@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('productions', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->string('name');
             $table->string('batch_no');
             $table->string('batch_size');

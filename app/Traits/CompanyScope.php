@@ -10,32 +10,39 @@ trait CompanyScope
     {
         static::addGlobalScope('company', function (Builder $query) {
 
-            if (!auth()->check()) {
-                return;
-            }
+            if (app()->runningInConsole()) return;
+            if (!auth()->check()) return;
 
             $user = auth()->user();
 
-            // super admin bypass
-            if ($user->role === 'super_admin') {
-                return;
-            }
+            if ($user->role === 'super_admin') return;
 
-            if ($user->company_id) {
+            if (!empty($user->company_id)) {
                 $query->where('company_id', $user->company_id);
             }
         });
 
         static::creating(function ($model) {
 
-            if (!auth()->check()) {
-                return;
-            }
+            if (app()->runningInConsole()) return;
+            if (!auth()->check()) return;
 
             $user = auth()->user();
 
-            if ($user->role !== 'super_admin' && $user->company_id) {
+            if ($user->role !== 'super_admin') {
                 $model->company_id = $user->company_id;
+            }
+        });
+
+        static::updating(function ($model) {
+
+            if (app()->runningInConsole()) return;
+            if (!auth()->check()) return;
+
+            $user = auth()->user();
+
+            if ($user->role !== 'super_admin' && $model->isDirty('company_id')) {
+                $model->company_id = $model->getOriginal('company_id');
             }
         });
     }

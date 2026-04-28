@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->string('module_type'); // expense, purchase, sale, income
             $table->unsignedBigInteger('module_id');
             $table->unsignedBigInteger('account_id');
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->date('date');
             $table->string('particulars')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

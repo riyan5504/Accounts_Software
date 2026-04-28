@@ -146,13 +146,26 @@
                         </a>
                         <ul class="nav nav-treeview ms-3">
                             <li class="nav-item">
+                                <a href="{{ url('account/partner/entry') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Partner Entry</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url('/account/investment/entry') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Investment Entry</p>
+                                </a>
+                            </li>                            
+                            <li class="nav-item">
                                 <a href="{{ url('/account/entry') }}" class="nav-link">
                                     <i class="nav-icon bi bi-plus-circle"></i>
                                     <p>Account Entry</p>
                                 </a>
                             </li>
+                            
                             <li class="nav-item">
-                                <a href="{{ url('/expense/entry') }}" class="nav-link">
+                                <a href="{{ url('/account/expense/entry') }}" class="nav-link">
                                     <i class="nav-icon bi bi-plus-circle"></i>
                                     <p>Expense Entry</p>
                                 </a>
@@ -160,7 +173,7 @@
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="nav-icon bi bi-card-list"></i>
-                                    <p>voucher List</p>
+                                    <p>Voucher List</p>
                                 </a>
                             </li>
                         </ul>

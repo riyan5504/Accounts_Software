@@ -26,6 +26,7 @@ class SearchController extends Controller
         }
 
         $vendors = Vendor::where('v_name', 'LIKE', "%{$term}%")
+            ->where('company_id', auth()->user()->company_id)
             ->limit(10)
             ->get(['id', 'v_name', 'phone', 'email', 'address']);
 
@@ -54,6 +55,7 @@ class SearchController extends Controller
 
         $items = Item::with('category:id,cat_name')
             ->where('item_name', 'LIKE', "%{$term}%")
+            ->where('company_id', auth()->user()->company_id)
             ->limit(10)
             ->get(['id', 'item_name', 'item_code', 'cat_id', 'size', 'unit_price']);
 
@@ -82,6 +84,7 @@ class SearchController extends Controller
         }
 
         $categories = Category::where('cat_name', 'LIKE', "%{$term}%")
+            ->where('company_id', auth()->user()->company_id)
             ->limit(10)
             ->get(['id', 'cat_name']);
 
@@ -97,8 +100,13 @@ class SearchController extends Controller
     }
     public function searchAccount(Request $request)
     {
-        $term = $request->get('term');
+        $term = trim($request->get('term', ''));
+
+        if (empty($term)) {
+            return response()->json([]);
+        }
         $accounts = Account::where('account_name', 'LIKE', "%{$term}%")
+            ->where('company_id', auth()->user()->company_id)
             ->select('id', 'account_name', 'ac_cat', 'ac_type')
             ->limit(10)->get();
 
@@ -106,8 +114,13 @@ class SearchController extends Controller
     }
     public function searchUser(Request $request)
     {
-        $term = $request->get('term');
+        $term = trim($request->get('term', ''));
+
+        if (empty($term)) {
+            return response()->json([]);
+        }
         $users = User::where('name', 'LIKE', "%{$term}%")
+            ->where('company_id', auth()->user()->company_id)
             ->select('id', 'name')
             ->limit(10)->get();
         return response()->json($users);
@@ -131,6 +144,7 @@ class SearchController extends Controller
         }
 
         $accounts = Account::where('ac_type', $actype)
+            ->where('company_id', auth()->user()->company_id)
             ->orderBy('account_name', 'asc')
             ->get(['id', 'account_name']);
 

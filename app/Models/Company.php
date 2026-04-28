@@ -9,4 +9,9 @@ class Company extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'email'];
+
+    public function partners()
+    {
+        return $this->hasMany(Partner::class, 'company_id', 'id');
+    }
 }

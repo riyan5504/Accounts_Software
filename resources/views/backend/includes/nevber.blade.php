@@ -12,11 +12,12 @@
 
         <div class="container-fluid d-flex align-items-center">
 
-            <!-- LEFT MENU --> 
-            <ul class="navbar-nav d-flex flex-row gap-3 flex-wrap">
+            <!-- LEFT MENU -->
+            <ul class="navbar-nav d-flex flex-row gap-2 flex-wrap">
 
                 <li class="nav-item text-center">
-                    <a href="{{ route('dashboard') }}" class="nav-link nav-item-custom {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('dashboard') }}"
+                        class="nav-link nav-item-custom {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </a>
@@ -67,14 +68,16 @@
                 </li>
 
                 <li class="nav-item text-center">
-                    <a href="{{route('account.index')}}" class="nav-link nav-item-custom {{ request()->routeIs('account.*') ? 'active' : '' }}">
+                    <a href="{{ route('account.index') }}"
+                        class="nav-link nav-item-custom {{ request()->routeIs('account.*') ? 'active' : '' }}">
                         <i class="fas fa-calculator"></i>
                         <span>Accounts</span>
                     </a>
                 </li>
 
                 <li class="nav-item text-center">
-                    <a href="{{route('report.stock.report')}}" class="nav-link nav-item-custom text-danger {{ request()->routeIs('report.*') ? 'active' : '' }}">
+                    <a href="{{ route('report.stock.report') }}"
+                        class="nav-link nav-item-custom text-danger {{ request()->routeIs('report.*') ? 'active' : '' }}">
                         <i class="fas fa-file-alt"></i>
                         <span>Reports</span>
                     </a>
@@ -100,7 +103,6 @@
                         <span>Settings</span>
                     </a>
                 </li>
-
             </ul>
 
             <!-- RIGHT SIDE -->

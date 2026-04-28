@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Account extends Model
 {
-    use HasFactory;
-    protected $guarded = [];
-
-    protected $casts = [
-        'date' => 'date', // বা 'datetime' যদি time থাকে
+    use HasFactory, CompanyScope, SoftDeletes;
+    protected $fillable = [
+        'company_id',
+        'account_name',
+        'ac_type',
+        'ac_cat',
+        'op_balance'
     ];
     
     // Expense এর expense_account_id এর সাথে relation
@@ -33,5 +37,9 @@ class Account extends Model
     {
         return $this->hasMany(JournalEntry::class, 'account_id', 'id');
     }
-    
+
+    public function partners()
+    {
+        return $this->hasMany(Partner::class, 'account_id', 'id');
+    }   
 }

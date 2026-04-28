@@ -96,7 +96,7 @@
                                 </div>
                                 <div class="form-group col-sm-4 col-md-2 mb-1">
                                     <input type="number" name="opening_stock" class="form-control opening_stock"
-                                        placeholder=" "/>
+                                        placeholder=" " />
                                     <label for="opening_stock" class="floating-label">Opening Stock Qty</label>
                                 </div>
                             </div>
@@ -116,8 +116,12 @@
     </div>
     <section class="mt-1">
         <div class="card">
-            <div class="ps-2 bg-success bg-opacity-50 text-dark">
-                <h5>Category List</h5>
+            <div class="ps-2 bg-success bg-opacity-50 text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Item List</h5>
+                <a href="{{ route('item.trash') }}" class="btn btn-warning">
+                    <i class="fas fa-trash"></i>
+                    ({{ \App\Models\Item::onlyTrashed()->count() }})
+                </a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-sm table-bordered custom-table">

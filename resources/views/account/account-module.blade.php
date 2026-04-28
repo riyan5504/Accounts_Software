@@ -69,6 +69,58 @@
                 </div>
                 <div class="col-lg-3 col-6">
                     <!--begin::Small Box Widget 2-->
+                    <div class="small-box text-bg-success">
+                        <div class="inner">
+                            <a href="{{ url('/account/partner/entry') }}"><p>Partner Entry</p></a>
+                        </div>
+                        <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                            viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                            <path
+                                d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                        </svg>
+                        <a href="{{ url('/account/partner/entry') }}"
+                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                            Entry Here <i class="bi bi-link-45deg"></i>
+                        </a>
+                    </div>
+                    <!--end::Small Box Widget 2-->
+                </div>
+                <div class="col-lg-3 col-6">
+                    <!--begin::Small Box Widget 2-->
+                    <div class="small-box text-bg-success bg-opacity-50">
+                        <div class="inner">
+                            <a href="{{ url('/account/investment/entry') }}"><p>Investment Entry</p></a>
+                        </div>
+                        <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                            viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                            <path d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
+                        </svg>
+                        <a href="{{ url('/account/investment/entry') }}"
+                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                            Entry Here <i class="bi bi-link-45deg"></i>
+                        </a>
+                    </div>
+                    <!--end::Small Box Widget 2-->
+                </div>
+                <div class="col-lg-3 col-6">
+                    <!--begin::Small Box Widget 2-->
+                    <div class="small-box text-bg-secondary">
+                        <div class="inner">
+                            <a href="{{ url('/account/investment/list') }}"><p>Investment List</p></a>
+                        </div>
+                        <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                            viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                            <path d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
+                        </svg>
+                        <a href="{{ url('/account/investment/list') }}"
+                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                            Show List <i class="bi bi-link-45deg"></i>
+                        </a>
+                    </div>
+                    <!--end::Small Box Widget 2-->
+                </div>
+                <div class="col-lg-3 col-6">
+                    <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-info">
                         <div class="inner">
                             <a href="{{ url('/expense/entry') }}"><p>Expense Entry</p></a>

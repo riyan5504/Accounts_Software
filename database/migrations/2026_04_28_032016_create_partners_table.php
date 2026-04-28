@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('accounts', function (Blueprint $table) {
-            $table->id();
+        Schema::create('partners', function (Blueprint $table) {
+            $table->id(); 
             $table->unsignedBigInteger('company_id')->nullable()->index();
-            $table->string('account_name');
-            $table->string('ac_type');
-            $table->string('ac_cat')->nullable();
-            $table->decimal('op_balance', 10, 2)->nullable();            
-            $table->softDeletes()->nullable();
+            $table->string('p_name');
+            $table->string('p_phone');
+            $table->string('p_email');
+            $table->string('p_address');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('accounts');
+        Schema::dropIfExists('partners');
     }
 };

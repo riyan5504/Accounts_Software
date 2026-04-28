@@ -13,7 +13,7 @@
 
     .floating-label {
       position: absolute;
-      left: 8px;
+      left: 5px;
       top: 50%;
       transform: translateY(-50%);
       background: transparent;
@@ -35,7 +35,7 @@
       top: 0;
       transform: translateY(-50%) scale(0.9);
       color: #094bae;
-      font-size: 9px;
+      font-size: 10px;
       filter: blur(0.05px); /* focus বা filled হলে হালকা blur */
     }
     /* border cut effect */

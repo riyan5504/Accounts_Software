@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
             $table->date('date');
+            $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->string('voucher_no');
             $table->string('reference_no')->nullable();
             $table->unsignedBigInteger('expense_account_id'); // GL expense account

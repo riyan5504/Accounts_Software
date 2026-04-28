@@ -16,10 +16,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/admin/login', [AdminLoginController::class, 'adminLogin'])->name('admin.login');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login.submit');
 Route::get('/admin/logout', [AdminLoginController::class, 'adminLogOut'])->name('admin.logout');
+Route::post('/register', [AdminLoginController::class, 'register'])->name('register');
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/admin/dashboard', [AdminController::class, 'adminDashboard'])->name('admin.dashboard');
+    Route::get('/admin/dashboard', [AdminController::class, 'adminDashboard'])->name('dashboard');
 });
 //search route.............
 Route::get('/vendor/search', [SearchController::class, 'vendorSearch'])->name('vendor.search');
@@ -62,7 +63,18 @@ Route::prefix('item')->name('item.')->group(function () {
     Route::post('/store', [ItemController::class, 'itemStore'])->name('item-store');
     Route::get('/edit/{id}', [ItemController::class, 'itemEdit'])->name('item-edit');
     Route::post('/update/{id}', [ItemController::class, 'itemUpdate'])->name('item-update');
-    Route::get('/delete/{id}', [ItemController::class, 'itemDelete'])->name('item-delete');
+    Route::get('/delete/{id}', [ItemController::class, 'itemDelete'])->name('item-delete');    
+
+    //trash..........
+
+    Route::get('/category/trash', [ItemController::class, 'catTrashList'])->name('category-trash');
+    Route::post('/category/restore/{id}', [ItemController::class, 'restoreCat'])->name('category-restore');
+    Route::delete('/category/force-delete/{id}', [ItemController::class, 'forceCatDelete'])->name('category-forceDelete');
+
+    Route::get('/trash', [ItemController::class, 'trashList'])->name('trash');
+    Route::post('/restore/{id}', [ItemController::class, 'restore'])->name('restore');
+    Route::delete('/force-delete/{id}', [ItemController::class, 'forceDelete'])->name('forceDelete');
+
 
     //category.............
 
@@ -83,6 +95,18 @@ Route::prefix('account')->name('account.')->group(function () {
     Route::get('/delete/{id}', [AccountController::class, 'accountDelete'])->name('delete');
     Route::get('/expense/entry', [AccountController::class, 'expenseEntry'])->name('expense.entry');
     Route::post('/expense/store', [AccountController::class, 'expenceStore'])->name('expense.store');
+
+    Route::get('/trash', [ItemController::class, 'accountTrashList'])->name('trash');
+    Route::post('/restore/{id}', [ItemController::class, 'restoreAccount'])->name('restore');
+    Route::delete('/force-delete/{id}', [ItemController::class, 'forceAccountDelete'])->name('forceDelete');
+
+    Route::get('/partner/entry', [AccountController::class, 'partnerEntry'])->name('partner-entry');
+    Route::post('/partner/store', [AccountController::class, 'partnerStore'])->name('partner-store');
+    Route::get('/partner/edit/{id}', [AccountController::class, 'partnerEdit'])->name('partner-edit');
+    Route::post('/partner/update/{id}', [AccountController::class, 'partnerUpdate'])->name('partner-update');
+    Route::get('/investment/entry', [AccountController::class, 'investmentEntry'])->name('investment-entry');
+    Route::post('/investment/store', [AccountController::class, 'investmentStore'])->name('investment-store');
+    Route::get('/investment/list', [AccountController::class, 'investmentList'])->name('investment-list');
 });
 
 //Manufactur............

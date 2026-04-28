@@ -24,7 +24,7 @@
 
                 <!-- Right Date -->
                 <div class="col-md-4 text-end">
-                    <h6 class="mb-0 fw-bold text-danger">
+                    <h6 class="mb-0 fw-bold text-success">
                         <i class="far fa-calendar-alt me-1"></i>
                         <span id="liveDate"></span>
                     </h6>

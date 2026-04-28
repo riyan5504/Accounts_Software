@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ItemController extends Controller
 {
@@ -23,10 +24,16 @@ class ItemController extends Controller
     public function categoryStore(Request $request)
     {
         $request->validate([
-            'cat_name' => 'required|string|max:255|unique:categories,cat_name'
-        ], [
-            'cat_name.unique' => 'This category already exists!'
+            'cat_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')
+                    ->where('company_id', auth()->user()->company_id)
+                    ->whereNull('deleted_at')
+            ]
         ]);
+
         $category = new Category();
 
         $category->cat_name = $request->cat_name;
@@ -38,17 +45,26 @@ class ItemController extends Controller
     public function categoryEdit($id)
     {
         $categories = Category::latest()->get();
-        $category = Category::findOrFail($id);
+        $category = Category::where('company_id', auth()->user()->company_id)
+            ->findOrFail($id);
         return view('item.category-edit', compact('categories', 'category'));
     }
 
     public function categoryUpdate(Request $request, $id)
     {
         $request->validate([
-            'cat_name' => 'required|string|max:255'
+            'cat_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')
+                    ->where('company_id', auth()->user()->company_id)
+                    ->whereNull('deleted_at')
+                    ->ignore($id)
+            ]
         ]);
-        $category = Category::findOrFail($id);
-
+        $category = Category::where('company_id', auth()->user()->company_id)
+            ->findOrFail($id);
         $category->cat_name = $request->cat_name;
         $category->save();
 
@@ -58,9 +74,9 @@ class ItemController extends Controller
     public function categoryDelete($id)
     {
 
-        $category = Category::findOrFail($id);
-
-        $category->delete();
+        Category::where('company_id', auth()->user()->company_id)
+            ->findOrFail($id)
+            ->delete();
 
         return redirect()->back()->with('success', 'Category Delete Successfully');
     }
@@ -69,17 +85,20 @@ class ItemController extends Controller
     {
         return view('item.item-module');
     }
-    public function itemAdd()
+
+    private function getLastSerial()
     {
-        // সর্বশেষ item এর code বের করুন
         $lastItem = Item::latest('id')->first();
 
-        // যদি কিছু না থাকে, তাহলে 0 থেকে শুরু হবে
         if ($lastItem && preg_match('/\d+$/', $lastItem->item_code, $matches)) {
-            $lastSerial = intval($matches[0]);
-        } else {
-            $lastSerial = 0;
+            return intval($matches[0]);
         }
+
+        return 0;
+    }
+    public function itemAdd()
+    {
+        $lastSerial = $this->getLastSerial();
 
         $items = Item::with('category')->latest()->get();
         return view('item.item-add', compact('lastSerial', 'items'));
@@ -94,39 +113,23 @@ class ItemController extends Controller
             'size'          => 'nullable|string|max:50',
             'unit_price'    => 'required|numeric|min:0',
             'opening_stock' => 'nullable|numeric|min:0',
-        ], [
-            'item_code.required' => 'Item code is required',
-            'item_code.unique'   => 'This item code already exists',
-            'cat_id.required'    => 'Category is required',
-            'cat_id.exists'      => 'Invalid category selected',
-            'unit_price.numeric' => 'Price must be a number',
-            'opening_stock.numeric' => 'Stock must be a number',
         ]);
 
-        $item = new Item();
+        Item::create([
+            'company_id'    => auth()->user()->company_id, // 🔥 CompanyScope support
+            'item_code'     => $request->item_code,
+            'item_name'     => $request->item_name,
+            'cat_id'        => $request->cat_id,
+            'size'          => $request->size,
+            'unit_price'    => $request->unit_price,
+            'opening_stock' => $request->opening_stock ?? 0,
+        ]);
 
-        $item->item_code = $request->item_code;
-        $item->item_name = $request->item_name;
-        $item->cat_id = $request->cat_id;
-        $item->size = $request->size;
-        $item->unit_price = $request->unit_price;
-        $item->opening_stock = $request->opening_stock ?? 0;
-
-        $item->save();
-
-        return redirect()->back()->with('success', 'Item saved successfully!');
+        return back()->with('success', 'Item saved successfully!');
     }
     public function itemEdit($id)
     {
-        // সর্বশেষ item এর code বের করুন
-        $lastItem = Item::latest('id')->first();
-
-        // যদি কিছু না থাকে, তাহলে 0 থেকে শুরু হবে
-        if ($lastItem && preg_match('/\d+$/', $lastItem->item_code, $matches)) {
-            $lastSerial = intval($matches[0]);
-        } else {
-            $lastSerial = 0;
-        }
+        $lastSerial = $this->getLastSerial();
 
         $items = Item::with('category')->latest()->get();
         $item = Item::with('category')->findOrFail($id);
@@ -137,7 +140,7 @@ class ItemController extends Controller
     public function itemUpdate(Request $request, $id)
     {
         $request->validate([
-            'item_code'     => 'required|string|max:50',
+            'item_code'     => 'required|string|max:50|unique:items,item_code,' . $id,
             'item_name'     => 'required|string|max:255',
             'cat_id'        => 'required|exists:categories,id',
             'size'          => 'nullable|string|max:50',
@@ -146,22 +149,84 @@ class ItemController extends Controller
         ]);
 
         $item = Item::findOrFail($id);
-        $item->item_name = $request->item_name;
-        $item->item_code = $request->item_code;
-        $item->cat_id = $request->cat_id;
-        $item->size = $request->size;
-        $item->unit_price = $request->unit_price;
-        $item->opening_stock = $request->opening_stock ?? 0;
-        $item->save();
 
-        return redirect('/item/add')->with('success', 'Item Updated successfully!');
+        $item->update([
+            'item_code'     => $request->item_code,
+            'item_name'     => $request->item_name,
+            'cat_id'        => $request->cat_id,
+            'size'          => $request->size,
+            'unit_price'    => $request->unit_price,
+            'opening_stock' => $request->opening_stock ?? 0,
+        ]);
+
+        return redirect()->route('item.item-add')->with('success', 'Item updated successfully!');
     }
 
     public function itemDelete($id)
     {
         $item = Item::findOrFail($id);
 
+        // 🔥 Relation check
+        if (
+            $item->purchaseItems()->exists() ||
+            $item->inventoryLedgers()->exists() ||
+            $item->productions()->exists()
+        ) {
+            return back()->with('error', 'Cannot delete! Item already used.');
+        }
+
         $item->delete();
-        return redirect()->back()->with('success', 'Item Delete successfully!');
+
+        return back()->with('success', 'Item deleted successfully!');
+    }
+
+    public function catTrashList()
+    {
+        $categories = Category::onlyTrashed()->latest()->get();
+
+        return view('item.category-trash', compact('categories'));
+    }
+
+    public function restoreCat($id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+
+        $category->restore();
+
+        return redirect()->route('item.category-add')->with('success', 'Category restored successfully!');
+    }
+
+    public function forceCatDelete($id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+
+        $category->forceDelete(); // 🔥 permanently delete
+
+        return back()->with('success', 'Category permanently deleted!');
+    }
+
+    public function trashList()
+    {
+        $items = Item::onlyTrashed()->with('category')->latest()->get();
+
+        return view('item.trash', compact('items'));
+    }
+
+    public function restore($id)
+    {
+        $item = Item::onlyTrashed()->findOrFail($id);
+
+        $item->restore();
+
+        return redirect()->route('item.item-add')->with('success', 'Item restored successfully!');
+    }
+
+    public function forceDelete($id)
+    {
+        $item = Item::onlyTrashed()->findOrFail($id);
+
+        $item->forceDelete(); // 🔥 permanently delete
+
+        return back()->with('success', 'Item permanently deleted!');
     }
 }
