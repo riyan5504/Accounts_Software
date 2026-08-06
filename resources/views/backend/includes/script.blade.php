@@ -11,6 +11,7 @@
 <!--end::Required Plugin(Bootstrap 5)--><!--begin::Required Plugin(AdminLTE)-->
 <script src="{{ asset('backend/dist/js/adminlte.js') }}"></script>
 <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <script>
     const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
     const Default = {
@@ -221,50 +222,79 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('.v_name').autocomplete({
-            source: "{{ route('vendor.search') }}",
-            minLength: 1,
-            select: function(event, ui) {
-                $('.v_name').val(ui.item.value);
-                $('.phone').val(ui.item.phone);
-                $('.email').val(ui.item.email);
-                $('.address').val(ui.item.address);
-            }
-        });
-        // ✅ যখন ইউজার নতুন কিছু টাইপ করবে (autocomplete থেকে না)
-        $('.v_name').on('input', function() {
-            // টাইপ করা value টা নাও
-            const currentValue = $(this).val();
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
-            // যদি ফিল্ডে কিছু লেখা থাকে কিন্তু select করা না হয়
-            if (currentValue.length > 0) {
-                $('.phone').val('');
-                $('.email').val('');
-                $('.address').val('');
-            }
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('backend/dist/js/purchase-calculations.js') }}"></script>
+
+@stack('script')
+
+<!-- 12. Sidebar/UI scripts -->
+<script>
+    // Sidebar toggle
+    document.addEventListener("DOMContentLoaded", function() {
+        const body = document.body;
+        const menuToggle = document.getElementById("menuToggle");
+        const sidebarCollapse = document.getElementById("sidebarCollapse");
+
+        if (sidebarCollapse) {
+            sidebarCollapse.addEventListener("click", function() {
+                body.classList.add("sidebar-collapse");
+                menuToggle.style.display = "inline-block";
+                sidebarCollapse.style.display = "none";
+            });
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener("click", function() {
+                body.classList.remove("sidebar-collapse");
+                menuToggle.style.display = "none";
+                sidebarCollapse.style.display = "inline-block";
+            });
+        }
+    });
+
+    // Toast notifications
+    document.addEventListener("DOMContentLoaded", function() {
+        const toastElList = document.querySelectorAll('.toast');
+        toastElList.forEach(function(toastEl) {
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 3000
+            });
+            toast.show();
         });
     });
-</script>
 
-<script>
+    // Category autocomplete (only for non-purchase pages)
     $(document).ready(function() {
-
-        // ✅ Vendor Name Autocomplete
-        $('.cat_name').autocomplete({
-            source: "{{ route('category.search') }}",
-            minLength: 1
-        });
-
+        // Only if NOT on purchase create page
+        if (!$('#itemContainer').length) {
+            $('.cat_name').autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "{{ route('search.category') }}",
+                        dataType: 'json',
+                        data: {
+                            term: request.term
+                        },
+                        success: function(data) {
+                            response(data);
+                        }
+                    });
+                },
+                minLength: 1
+            });
+        }
     });
-</script>
-<script>
+
+    // Account autocomplete
     $(function() {
         $('.expense_account_id, .payment_account_id').autocomplete({
             source: function(request, response) {
                 $.ajax({
-                    url: "{{ route('account.search') }}",
+                    url: "{{ route('search.account') }}",
                     data: {
                         term: request.term
                     },
@@ -286,12 +316,12 @@
             }
         });
     });
-</script>
-<script>
+
+    // User autocomplete
     $('.created_by').autocomplete({
         source: function(request, response) {
             $.ajax({
-                url: "{{ route('user.search') }}",
+                url: "{{ route('search.user') }}",
                 data: {
                     term: request.term
                 },
@@ -311,51 +341,103 @@
             $(this).data('user-id', ui.item.id);
         }
     });
-</script>
+</script><script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+        if (!$.fn.DataTable.isDataTable('#accountTable')) {
 
-        const body = document.body;
-        const menuToggle = document.getElementById("menuToggle");
-        const sidebarCollapse = document.getElementById("sidebarCollapse");
-
-        // Sidebar hide
-        sidebarCollapse.addEventListener("click", function() {
-            body.classList.add("sidebar-collapse");
-
-            menuToggle.style.display = "inline-block";
-            sidebarCollapse.style.display = "none";
-        });
-
-        // Sidebar show (FIXED)
-        menuToggle.addEventListener("click", function() {
-            body.classList.remove("sidebar-collapse");
-
-            menuToggle.style.display = "none";
-            sidebarCollapse.style.display = "inline-block";
-        });
-
-    });
-</script>
-<script>
-    document.querySelectorAll('.nav-item-custom').forEach(item => {
-        item.addEventListener('click', function () {
-            document.querySelectorAll('.nav-item-custom').forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const toastElList = document.querySelectorAll('.toast');
-
-        toastElList.forEach(function(toastEl) {
-            const toast = new bootstrap.Toast(toastEl, {
-                delay: 3000
+            var table = $('#accountTable').DataTable({
+                pageLength: 10,
+                dom: 'rtip'
             });
-            toast.show();
-        });
-    });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+            $('#customSearch').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+
+            $('#pageLength').on('change', function() {
+                table.page.len($(this).val()).draw();
+            });
+
+            $('#showAll').on('change', function() {
+
+                if (this.checked) {
+                    table.page.len(-1).draw();
+                } else {
+                    table.page.len($('#pageLength').val()).draw();
+                }
+
+            });
+
+            $('#sortColumn').on('change', function() {
+
+                if ($(this).val() == "") {
+                    table.order([]).draw();
+                } else {
+                    table.order([$(this).val(), 'asc']).draw();
+                }
+
+            });
+            // নিচের pagination লুকিয়ে দিন
+            $('.dataTables_paginate').hide();
+
+            function drawPagination() {
+
+                let info = table.page.info();
+
+                let current = info.page;
+                let total = info.pages;
+
+                let html = '';
+
+                // First
+                if (current > 0) {
+                    html += '<button class="first">&lt;&lt;</button>';
+                }
+
+                // Previous
+                if (current > 0) {
+                    html += '<button class="prev">&lt;</button>';
+                }
+
+                // Current Page
+                html += '<button class="active">' + (current + 1) + '</button>';
+
+                // Next
+                if (current < total - 1) {
+                    html += '<button class="next">&gt;</button>';
+                }
+
+                // Last
+                if (current < total - 1) {
+                    html += '<button class="last">&gt;&gt;</button>';
+                }
+
+                $('#customPagination').html(html);
+
+                $('.first').click(function() {
+                    table.page('first').draw('page');
+                });
+
+                $('.prev').click(function() {
+                    table.page('previous').draw('page');
+                });
+
+                $('.next').click(function() {
+                    table.page('next').draw('page');
+                });
+
+                $('.last').click(function() {
+                    table.page('last').draw('page');
+                });
+
+            }
+
+            drawPagination();
+
+            table.on('draw', function() {
+                drawPagination();
+            });
+        }
+    </script>

@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('qc_costs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->unsignedBigInteger('production_id');
             $table->string('test_name')->nullable();
             $table->decimal('qc_amt', 10, 2)->nullable();
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('expense_items', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->unsignedBigInteger('expense_id');
             $table->string('particulars')->nullable();
             $table->integer('qty');
             $table->decimal('rate');
             $table->decimal('amount');
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

@@ -8,7 +8,7 @@
             <!--begin::Quick Example-->
             <div class="card card-primary card-outline mb-2">
                 <!--begin::Form-->
-                <form action="{{ route('account.partner-store') }}" method="POST">
+                <form action="{{ route('account.partner.store') }}" method="POST">
                     @csrf
                     <!--begin::Body-->
                     <div class="card-body">

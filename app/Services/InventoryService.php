@@ -18,6 +18,44 @@ class InventoryService
     }
 
     /**
+     * Get current stock (ledger based)
+     */
+    public function getCurrentStock(int $itemId): float
+    {
+        $in  = InventoryLedger::where('item_id', $itemId)->sum('qty_in');
+        $out = InventoryLedger::where('item_id', $itemId)->sum('qty_out');
+
+        return $in - $out;
+    }
+
+    /**
+     * Opening stock entry when item created
+     */
+    public function openingStockEntry($item, ?int $userId = null): void
+    {
+        if (!$item || $item->opening_stock <= 0) {
+            return;
+        }
+
+        // 🔥 old opening remove (edit safe)
+        $this->removeOldStock('opening', $item->id);
+
+        InventoryLedger::create([
+            'company_id' => $item->company_id,
+            'item_id'     => $item->id,
+            'module_type' => 'opening',
+            'module_id'   => $item->id,
+            'qty_in'      => (float) $item->opening_stock,
+            'qty_out'     => 0,
+            'unit_cost'   => (float) $item->unit_price,
+            'total_cost'  => (float) ($item->opening_stock * $item->unit_price),
+            'date'        => now(),
+            'created_by'  => $userId ?? Auth::id(),
+        ]);
+    }
+    
+
+    /**
      * Stock IN from purchase
      */
     public function stockInFromPurchase($purchase, ?int $userId = null): void
@@ -30,6 +68,7 @@ class InventoryService
 
         foreach ($purchase->purchaseItems as $row) {
             InventoryLedger::create([
+                'company_id' => Auth::user()->company_id,
                 'item_id'     => $row->item_id,
                 'module_type' => 'purchase',
                 'module_id'   => $purchase->id,
@@ -41,18 +80,7 @@ class InventoryService
                 'created_by'  => $userId ?? Auth::id(),
             ]);
         }
-    }
-
-    /**
-     * Get current stock (ledger based)
-     */
-    public function getCurrentStock(int $itemId): float
-    {
-        $in  = InventoryLedger::where('item_id', $itemId)->sum('qty_in');
-        $out = InventoryLedger::where('item_id', $itemId)->sum('qty_out');
-
-        return $in - $out;
-    }
+    }    
 
     /**
      * Consume stock for production
@@ -65,6 +93,10 @@ class InventoryService
         string $date
     ): void {
 
+    if ($qty <= 0) {
+            return;
+        }
+
         $stock = $this->getCurrentStock($itemId);
 
         if ($stock < $qty) {
@@ -72,6 +104,7 @@ class InventoryService
         }
 
         InventoryLedger::create([
+            'company_id' => Auth::user()->company_id,
             'item_id'     => $itemId,
             'module_type' => 'production',
             'module_id'   => $productionId,
@@ -94,7 +127,11 @@ class InventoryService
         int $productionId,
         string $date
     ): void {
+        if ($qty <= 0) {
+            return;
+        }
         InventoryLedger::create([
+            'company_id' => Auth::user()->company_id,
             'item_id'     => $itemId,
             'module_type' => 'production',
             'module_id'   => $productionId,

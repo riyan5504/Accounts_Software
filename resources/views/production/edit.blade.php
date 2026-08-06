@@ -53,7 +53,7 @@
                     <!--begin::Quick Example-->
                     <div class="card card-primary card-outline mb-4">
                         <!--begin::Form-->
-                        <form action="{{ url('/production/product/update/' . $production->id) }}" method="POST">
+                        <form action="{{ url('/production/update/' . $production->id) }}" method="POST">
                             @csrf
                             <!--begin::Product-->
                             <div class="card-body">
@@ -91,7 +91,7 @@
                                     <div class="ra_row row align-items-start g-2">
                                         <div class="form-group col-md-2 mb-0">
                                             <input type="text" name="ra_name"
-                                                value="{{ $production->items->item_name }}" class="form-control ra_name"
+                                                value="{{ $production->item->item_name }}" class="form-control ra_name"
                                                 id="ra_name" placeholder=" " required />
                                             <label for="ra_name" class="floating-label">Raw Name</label>
                                         </div>
@@ -189,7 +189,7 @@
                                                 <div class="raw-material-row row g-2 align-items-start">
                                                     <div class="form-group mb-1 col-md-3">
                                                         <input type="text" name="raw_name[]"
-                                                            value="{{ $chemical->items->item_name }}"
+                                                            value="{{ $chemical->item->item_name }}"
                                                             class="form-control raw_name" placeholder=" " required>
                                                         <label class="floating-label">Chemical Name</label>
                                                     </div>
@@ -272,7 +272,7 @@
                                                 <div class="pack-row row align-items-start g-2">
                                                     <div class="form-group col-md-3 mb-1">
                                                         <input type="text" name="pack_name[]"
-                                                            value="{{ $pack->items->item_name }}"
+                                                            value="{{ $pack->item->item_name }}"
                                                             class="form-control pack_name" placeholder=" " required>
                                                         <label class="floating-label">Name</label>
                                                     </div>
@@ -682,402 +682,296 @@
     <script>
         $(document).ready(function() {
 
+            // ===============================
+            // 🔥 AUTOCOMPLETE INIT
+            // ===============================
             function initAutocomplete(row) {
 
-                // 🔹 Raw Name autocomplete
                 row.find('.ra_name').autocomplete({
-                    source: "{{ route('item.search') }}",
+                    source: "{{ route('search.item') }}",
                     minLength: 1,
                     select: function(event, ui) {
-                        row.find('.ra_name').val(ui.item.value);
-                        row.find('.raw_u_price').val(ui.item.unit_price).trigger('input');
+                        $('.ra_name').val(ui.item.value);
+                        $('.ra_item_id').val(ui.item.id);
+                        $('.raw_u_price').val(ui.item.unit_price).trigger('input');
+
                         return false;
                     }
                 });
 
-                // 🔹 Chemical Name autocomplete
                 row.find('.raw_name').autocomplete({
-                    source: "{{ route('item.search') }}",
+                    source: "{{ route('search.item') }}",
                     minLength: 1,
                     select: function(event, ui) {
-                        row.find('.raw_name').val(ui.item.value);
-                        row.find('.u_price').val(ui.item.unit_price).trigger('input');
+                        let currentRow = $(this).closest('.raw-material-row');
+                        currentRow.find('.raw_name').val(ui.item.value);
+                        currentRow.find('.raw_item_id').val(ui.item.id);
+                        currentRow.find('.u_price').val(ui.item.unit_price).trigger('input');
+
                         return false;
                     }
                 });
 
-                // 🔹 PACK Name autocomplete
                 row.find('.pack_name').autocomplete({
-                    source: "{{ route('item.search') }}",
+                    source: "{{ route('search.item') }}",
                     minLength: 1,
                     select: function(event, ui) {
-                        row.find('.pack_name').val(ui.item.value);
-                        row.find('.pack_price').val(ui.item.unit_price).trigger('input');
+                        let currentRow = $(this).closest('.pack-row');
+                        currentRow.find('.pack_name').val(ui.item.value);
+                        currentRow.find('.pack_item_id').val(ui.item.id);
+                        currentRow.find('.pack_price').val(ui.item.unit_price).trigger('input');
+
                         return false;
                     }
                 });
             }
+            // Raw Material Total Price
 
-            // প্রথম row
-            $('.ra_row').each(function() {
-                initAutocomplete($(this));
+            $(document).on('input', '#raw_qty, #raw_u_price', function() {
+
+                let qty = parseFloat($('#raw_qty').val()) || 0;
+                let price = parseFloat($('#raw_u_price').val()) || 0;
+
+                $('#raw_t_price').val((qty * price).toFixed(2)).trigger('input');
             });
 
-            $('.raw-material-row').each(function() {
-                initAutocomplete($(this));
+            // Yield %
+
+            $(document).on('input', '#raw_qty, #ex_qty', function() {
+
+                let rawQty = parseFloat($('#raw_qty').val()) || 0;
+                let exQty = parseFloat($('#ex_qty').val()) || 0;
+
+                let percent = rawQty > 0 ?
+                    (exQty / rawQty) * 100 :
+                    0;
+
+                $('#yield_percent').val(percent.toFixed(2));
             });
 
-            $('.pack-row').each(function() {
-                initAutocomplete($(this));
-            });
+            initAutocomplete($(document));
 
+            // ===============================
+            // 🔥 RAW MATERIAL
+            // ===============================
 
-            // নতুন raw row add হলে
-            $('#addRawMaterial').on('click', function() {
-                setTimeout(function() {
-                    initAutocomplete($('#rawMaterialsContainer .raw-material-row:last'));
-                }, 50);
-            });
+            function calcRawRow(row) {
+                let percent = parseFloat(row.find('.used_percent').val()) || 0;
+                let ex = parseFloat($('#ex_qty').val()) || 0;
+                let price = parseFloat(row.find('.u_price').val()) || 0;
 
-            // নতুন pack row add হলে
-            $('#addPack').on('click', function() {
-                setTimeout(function() {
-                    initAutocomplete($('#packContainer .pack-row:last'));
-                }, 50);
-            });
-
-        });
-    </script>
-    <!-- Raw Material Main Calculation -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            const rawQty = document.getElementById('raw_qty');
-            const rawUnitPrice = document.getElementById('raw_u_price');
-            const rawTotal = document.getElementById('raw_t_price');
-            const exQty = document.getElementById('ex_qty');
-            const yieldPercent = document.getElementById('yield_percent');
-
-            const container = document.getElementById('rawMaterialsContainer');
-            const addBtn = document.getElementById('addRawMaterial');
-            const rawGrand = document.getElementById('raw_grand_price');
-
-            function calcRawTotal() {
-                rawTotal.value = ((parseFloat(rawQty.value) || 0) * (parseFloat(rawUnitPrice.value) || 0)).toFixed(
-                    2);
-                calcYield();
-                refreshRows();
+                let qty = (ex * percent) / 100;
+                row.find('.used_qty').val(qty.toFixed(3));
+                row.find('.t_price').val((qty * price).toFixed(2));
             }
 
-            function calcYield() {
-                let r = parseFloat(rawQty.value) || 0;
-                let e = parseFloat(exQty.value) || 0;
-                yieldPercent.value = r ? ((e / r) * 100).toFixed(2) : '';
-                refreshRows();
-            }
-
-            rawQty.addEventListener('input', calcRawTotal);
-            rawUnitPrice.addEventListener('input', calcRawTotal);
-            exQty.addEventListener('input', calcYield);
-
-            // price set from dropdown
-            document.addEventListener('change', function(e) {
-                if (e.target.classList.contains('raw_name')) {
-                    const row = e.target.closest('.raw-material-row');
-                    const price = e.target.selectedOptions[0].getAttribute('data-price') || '';
-                    const priceInput = row.querySelector('.u_price');
-                    priceInput.value = price;
-                    priceInput.dispatchEvent(new Event('input'));
-                }
-            });
-
-            function attachRow(row) {
-                const usedPercent = row.querySelector('.used_percent');
-                const usedQty = row.querySelector('.used_qty');
-                const uPrice = row.querySelector('.u_price');
-                const tPrice = row.querySelector('.t_price');
-
-                function recalc() {
-                    let percent = parseFloat(usedPercent.value) || 0;
-                    let ex = parseFloat(exQty.value) || 0;
-                    let price = parseFloat(uPrice.value) || 0;
-                    let qty = (ex * percent) / 100;
-                    usedQty.value = qty.toFixed(3);
-                    tPrice.value = (qty * price).toFixed(2);
-                    calcGrand();
-                }
-
-                usedPercent.addEventListener('input', recalc);
-                uPrice.addEventListener('input', recalc);
-                exQty.addEventListener('input', recalc);
-            }
-
-            function calcGrand() {
+            function calcRawGrand() {
                 let total = 0;
-                container.querySelectorAll('.t_price').forEach(i => {
-                    total += parseFloat(i.value) || 0;
+                $('.t_price').each(function() {
+                    total += parseFloat($(this).val()) || 0;
                 });
-                rawGrand.value = total.toFixed(2);
-                $('#raw_grand_price').trigger('input');
+                $('#raw_grand_price').val(total.toFixed(2)).trigger('input');
             }
 
-            function refreshRows() {
-                container.querySelectorAll('.raw-material-row').forEach(r => {
-                    r.querySelector('.used_percent').dispatchEvent(new Event('input'));
+            // delegation
+            $(document).on('input', '.used_percent,.u_price,#ex_qty', function() {
+                let row = $(this).closest('.raw-material-row');
+                calcRawRow(row);
+                calcRawGrand();
+                calculateGrandTotal();
+            });
+
+            // add row
+            $(document).off('click', '#addRawMaterial').on('click', '#addRawMaterial', function() {
+
+                let row = $('.raw-material-row:first').clone();
+                row.find('input').val('');
+                $('#rawMaterialsContainer')
+                    .find('.raw-material-row:last')
+                    .after(row);
+
+                initAutocomplete(row);
+            });
+
+            // remove
+            $(document).on('click', '.removeRawMaterial', function() {
+                if ($('.raw-material-row').length > 1) {
+                    $(this).closest('.raw-material-row').remove();
+                    calcRawGrand();
+                    calculateGrandTotal();
+                }
+            });
+
+
+            // ===============================
+            // 🔥 PACKAGING
+            // ===============================
+
+            function calcPackRow(row) {
+                let qty = parseFloat(row.find('.pack_qty').val()) || 0;
+                let price = parseFloat(row.find('.pack_price').val()) || 0;
+                row.find('.total_price').val((qty * price).toFixed(2));
+            }
+
+            function calcPackGrand() {
+                let total = 0;
+                $('.total_price').each(function() {
+                    total += parseFloat($(this).val()) || 0;
                 });
+                $('#pack_grand_price').val(total.toFixed(2)).trigger('input');
             }
 
-            addBtn.addEventListener('click', function() {
-                const firstRow = container.querySelector('.raw-material-row');
-                const newRow = firstRow.cloneNode(true);
-                newRow.querySelectorAll('label').forEach(l => l.remove());
-                newRow.querySelectorAll('input').forEach(i => i.value = '');
-                firstRow.parentElement.appendChild(newRow);
-                attachRow(newRow);
+            $(document).on('input', '.pack_qty,.pack_price', function() {
+                let row = $(this).closest('.pack-row');
+                calcPackRow(row);
+                calcPackGrand();
+                calculateGrandTotal();
             });
 
-            container.addEventListener('click', function(e) {
-                if (e.target.classList.contains('removeRawMaterial')) {
-                    const rows = container.querySelectorAll('.raw-material-row');
-                    if (rows.length > 1) {
-                        e.target.closest('.raw-material-row').remove();
-                        calcGrand();
-                    }
+            $(document).off('click', '#addPack').on('click', '#addPack', function() {
+
+                let row = $('.pack-row:first').clone();
+                row.find('input').val('');
+                $('#packContainer')
+                    .find('.pack-row:last')
+                    .after(row);
+                initAutocomplete(row);
+            });
+
+            $(document).on('click', '.removePack', function() {
+                if ($('.pack-row').length > 1) {
+                    $(this).closest('.pack-row').remove();
+                    calcPackGrand();
+                    calculateGrandTotal();
                 }
             });
 
-            container.querySelectorAll('.raw-material-row').forEach(row => {
-                attachRow(row);
-            });
 
-        });
-    </script>
+            // ===============================
+            // 🔥 LABOR
+            // ===============================
 
-    <!-- Labor -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.getElementById('laborContainer');
-            const addBtn = document.getElementById('addLabor');
-            const grand = document.getElementById('labor_grand_price');
-
-            function attach(row) {
-                const day = row.querySelector('.duty_day');
-                const pay = row.querySelector('.d_pay');
-                const total = row.querySelector('.total_pay');
-
-                function recalc() {
-                    total.value = ((parseFloat(day.value) || 0) * (parseFloat(pay.value) || 0)).toFixed(2);
-                    calcGrand();
-                }
-                day.addEventListener('input', recalc);
-                pay.addEventListener('input', recalc);
+            function calcLaborRow(row) {
+                let d = parseFloat(row.find('.duty_day').val()) || 0;
+                let p = parseFloat(row.find('.d_pay').val()) || 0;
+                row.find('.total_pay').val((d * p).toFixed(2));
             }
 
-            function calcGrand() {
-                let sum = 0;
-                container.querySelectorAll('.total_pay').forEach(i => sum += parseFloat(i.value) || 0);
-                grand.value = sum.toFixed(2);
-                $('#labor_grand_price').trigger('input');
+            function calcLaborGrand() {
+                let total = 0;
+                $('.total_pay').each(function() {
+                    total += parseFloat($(this).val()) || 0;
+                });
+                $('#labor_grand_price').val(total.toFixed(2)).trigger('input');
             }
 
-            addBtn.addEventListener('click', function() {
-                const first = container.querySelector('.labor-row');
-                const row = first.cloneNode(true);
-                row.querySelectorAll('label').forEach(l => l.remove());
-                row.querySelectorAll('input').forEach(i => i.value = '');
-                first.parentElement.appendChild(row);
-                attach(row);
+            $(document).on('input', '.duty_day,.d_pay', function() {
+                let row = $(this).closest('.labor-row');
+                calcLaborRow(row);
+                calcLaborGrand();
+                calculateGrandTotal();
             });
 
-            container.addEventListener('click', function(e) {
-                if (e.target.classList.contains('removeLabor')) {
-                    const rows = container.querySelectorAll('.labor-row');
-                    if (rows.length > 1) {
-                        e.target.closest('.labor-row').remove();
-                        calcGrand();
-                    }
+            $(document).off('click', '#addLabor').on('click', '#addLabor', function() {
+
+                let row = $('.labor-row:first').clone();
+                row.find('input').val('');
+                $('#laborContainer')
+                    .find('.labor-row:last')
+                    .after(row);
+            });
+
+            $(document).on('click', '.removeLabor', function() {
+                if ($('.labor-row').length > 1) {
+                    $(this).closest('.labor-row').remove();
+                    calcLaborGrand();
+                    calculateGrandTotal();
                 }
             });
 
-            container.querySelectorAll('.labor-row').forEach(row => {
-                attach(row);
-            });
 
-        });
-    </script>
+            // ===============================
+            // 🔥 UNIVERSAL COST (utility, overhead, etc)
+            // ===============================
 
-    <!-- Pack price + calculation -->
-    <script>
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('pack_name')) {
-                const row = e.target.closest('.pack-row');
-                const price = e.target.selectedOptions[0].getAttribute('data-price') || '';
-                const priceInput = row.querySelector('.pack_price');
-                priceInput.value = price;
-                priceInput.dispatchEvent(new Event('input'));
-            }
-        });
-    </script>
+            function setupCost(section, amountClass, grandId) {
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.getElementById('packContainer');
-            const addBtn = document.getElementById('addPack');
-            const grand = document.getElementById('pack_grand_price');
+                const cap = section.charAt(0).toUpperCase() + section.slice(1);
 
-            function attach(row) {
-                const qty = row.querySelector('.pack_qty');
-                const price = row.querySelector('.pack_price');
-                const total = row.querySelector('.total_price');
+                // =========================
+                // Calculate Total Cost
+                // =========================
+                $(document)
+                    .off('input', '.' + amountClass)
+                    .on('input', '.' + amountClass, function() {
 
-                function recalc() {
-                    total.value = ((parseFloat(qty.value) || 0) * (parseFloat(price.value) || 0)).toFixed(2);
-                    calcGrand();
-                }
-                qty.addEventListener('input', recalc);
-                price.addEventListener('input', recalc);
-            }
+                        let total = 0;
 
-            function calcGrand() {
-                let sum = 0;
-                container.querySelectorAll('.total_price').forEach(i => sum += parseFloat(i.value) || 0);
-                grand.value = sum.toFixed(2);
-                $('#pack_grand_price').trigger('input');
-            }
+                        $('.' + amountClass).each(function() {
+                            total += parseFloat($(this).val()) || 0;
+                        });
 
-            addBtn.addEventListener('click', function() {
-                const first = container.querySelector('.pack-row');
-                const row = first.cloneNode(true);
-                row.querySelectorAll('label').forEach(l => l.remove());
-                row.querySelectorAll('input').forEach(i => i.value = '');
-                first.parentElement.appendChild(row);
-                attach(row);
-            });
-
-            container.addEventListener('click', function(e) {
-                if (e.target.classList.contains('removePack')) {
-                    const rows = container.querySelectorAll('.pack-row');
-                    if (rows.length > 1) {
-                        e.target.closest('.pack-row').remove();
-                        calcGrand();
-                    }
-                }
-            });
-
-            container.querySelectorAll('.pack-row').forEach(row => {
-                attach(row);
-            });
-
-        });
-    </script>
-
-    <!-- Universal cost sections -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            function setupCostSection(config) {
-                const container = document.getElementById(config.containerId);
-                const addBtn = document.getElementById(config.addBtnId);
-                const grand = document.getElementById(config.grandId);
-
-                function calcGrand() {
-                    let sum = 0;
-                    container.querySelectorAll('.' + config.amountClass).forEach(i => {
-                        sum += parseFloat(i.value) || 0;
+                        $('#' + grandId).val(total.toFixed(2));
+                        calculateGrandTotal();
                     });
-                    grand.value = sum.toFixed(2);
-                    $('#' + config.grandId).trigger('input');
-                }
 
-                function attachRow(row) {
-                    const amt = row.querySelector('.' + config.amountClass);
-                    amt.addEventListener('input', calcGrand);
-                }
+                // =========================
+                // Add New Row
+                // =========================
+                $(document)
+                    .off('click', '#add' + cap)
+                    .on('click', '#add' + cap, function() {
 
-                addBtn.addEventListener('click', function() {
-                    const first = container.querySelector('.' + config.rowClass);
-                    const row = first.cloneNode(true);
-                    row.querySelectorAll('label').forEach(l => l.remove());
-                    row.querySelectorAll('input').forEach(i => i.value = '');
-                    first.parentElement.appendChild(row);
-                    attachRow(row);
-                });
+                        let row = $('.' + section + '-row:first').clone();
 
-                container.addEventListener('click', function(e) {
-                    if (e.target.classList.contains(config.removeClass)) {
-                        const rows = container.querySelectorAll('.' + config.rowClass);
-                        if (rows.length > 1) {
-                            e.target.closest('.' + config.rowClass).remove();
-                            calcGrand();
+                        row.find('input').val('');
+                        row.find('textarea').val('');
+
+                        $('#' + section + 'Container')
+                            .find('.' + section + '-row:last')
+                            .after(row);
+                    });
+
+                // =========================
+                // Remove Row
+                // =========================
+                $(document)
+                    .off('click', '.remove' + cap)
+                    .on('click', '.remove' + cap, function() {
+
+                        if ($('.' + section + '-row').length > 1) {
+
+                            $(this)
+                                .closest('.' + section + '-row')
+                                .remove();
+
+                            let total = 0;
+
+                            $('.' + amountClass).each(function() {
+                                total += parseFloat($(this).val()) || 0;
+                            });
+
+                            $('#' + grandId).val(total.toFixed(2));
+                            calculateGrandTotal();
                         }
-                    }
-                });
-
-                container.querySelectorAll('.' + config.rowClass).forEach(row => {
-                    attachRow(row);
-                });
-
+                    });
             }
 
-            // Utility
-            setupCostSection({
-                containerId: 'utilityContainer',
-                addBtnId: 'addUtility',
-                rowClass: 'utility-row',
-                amountClass: 'cost_amt',
-                removeClass: 'removeUtility',
-                grandId: 'utility_grand_price'
-            });
 
-            // Depreciation / Machine
-            setupCostSection({
-                containerId: 'machineContainer',
-                addBtnId: 'addMachine',
-                rowClass: 'machine-row',
-                amountClass: 'machine_cost_amt',
-                removeClass: 'removeMachine',
-                grandId: 'depreciation_grand_price'
-            });
+            // =========================
+            // Initialize All Sections
+            // =========================
+            setupCost('utility', 'cost_amt', 'utility_grand_price');
+            setupCost('machine', 'machine_cost_amt', 'depreciation_grand_price');
+            setupCost('overhead', 'fo_cost_amt', 'overhead_grand_price');
+            setupCost('transport', 'transport_amt', 'transport_grand_price');
+            setupCost('qc', 'qc_amt', 'qc_grand_price');
+            // ===============================
+            // 🔥 GRAND TOTAL
+            // ===============================
 
-            // Overhead
-            setupCostSection({
-                containerId: 'overheadContainer',
-                addBtnId: 'addOverhead',
-                rowClass: 'overhead-row',
-                amountClass: 'fo_cost_amt',
-                removeClass: 'removeOverhead',
-                grandId: 'overhead_grand_price'
-            });
+            function calculateGrandTotal() {
 
-            // Transport
-            setupCostSection({
-                containerId: 'transportContainer',
-                addBtnId: 'addTransport',
-                rowClass: 'transport-row',
-                amountClass: 'transport_amt',
-                removeClass: 'removeTransport',
-                grandId: 'transport_grand_price'
-            });
-
-            // QC
-            setupCostSection({
-                containerId: 'qcContainer',
-                addBtnId: 'addQc',
-                rowClass: 'qc-row',
-                amountClass: 'qc_amt',
-                removeClass: 'removeQc',
-                grandId: 'qc_grand_price'
-            });
-
-        });
-    </script>
-
-
-    <!-- Final Grand Total -->
-    <script>
-        $(document).ready(function() {
-
-            function grandTotal() {
                 let total =
                     (+$('#raw_t_price').val() || 0) +
                     (+$('#raw_grand_price').val() || 0) +
@@ -1089,24 +983,19 @@
                     (+$('#transport_grand_price').val() || 0) +
                     (+$('#qc_grand_price').val() || 0);
 
-                $('#grand_total').val(total.toFixed(2));
+                $('#grand_total').val(total.toFixed(2)).trigger('input');
             }
 
-            $(document).on('input',
-                '#raw_t_price,#raw_grand_price,#labor_grand_price,#pack_grand_price,#utility_grand_price,#depreciation_grand_price,#overhead_grand_price,#transport_grand_price,#qc_grand_price',
-                grandTotal);
-        });
-    </script>
 
-    <!-- Unit Cost -->
-    <script>
-        $(document).ready(function() {
-            function unitCost() {
+            // ===============================
+            // 🔥 UNIT COST
+            // ===============================
+            $(document).on('input', '#final_qty,#grand_total', function() {
                 let g = parseFloat($('#grand_total').val()) || 0;
                 let q = parseFloat($('#final_qty').val()) || 0;
                 $('#unit_cost').val(q ? (g / q).toFixed(2) : '');
-            }
-            $('#final_qty,#grand_total').on('input', unitCost);
+            });
+
         });
     </script>
 @endpush

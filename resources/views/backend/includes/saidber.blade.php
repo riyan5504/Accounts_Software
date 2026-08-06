@@ -62,15 +62,27 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('purchase.vendoradd') }}" class="nav-link">
+                                <a href="{{ route('purchase.return.entry') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Purchase Return Entry</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('purchase.vendor.add') }}" class="nav-link">
                                     <i class="nav-icon bi bi-plus-circle"></i>
                                     <p>Vendor Entry</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('purchase.vendorlist') }}" class="nav-link">
+                                <a href="{{ route('purchase.vendor.list') }}" class="nav-link">
                                     <i class="nav-icon bi bi-card-list"></i>
                                     <p>Vendor List</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('vendor-payment.create') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-card-list"></i>
+                                    <p>Vendor Payment</p>
                                 </a>
                             </li>
                         </ul>
@@ -88,23 +100,23 @@
                     </a>
                     <ul class="nav nav-treeview ms-3">                        
                         <li class="nav-item">
-                            <a href="{{ route('item.category-add') }}" class="nav-link">
+                            <a href="{{ route('item.category.add') }}" class="nav-link">
                                 <i class="nav-icon bi bi-tags"></i>
                                 <p>Category Entry</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('item.item-add') }}" class="nav-link">
+                            <a href="{{ route('item.add') }}" class="nav-link">
                                 <i class="nav-icon bi bi-plus-circle"></i>
                                 <p>Item Entry</p>
                             </a>
                         </li>
-                        {{-- <li class="nav-item">
-                            <a href="{{ route('item.item-list') }}" class="nav-link">
+                        <li class="nav-item">
+                            <a href="{{ route('report.stock') }}" class="nav-link">
                                 <i class="nav-icon bi bi-card-list"></i>
-                                <p>Item List</p>
+                                <p>Item Stock Report</p>
                             </a>
-                        </li> --}}
+                        </li>
                     </ul>
                 </li>
                 @endif
@@ -114,7 +126,7 @@
                         <a href="{{ route('production.index') }}" class="nav-link">
                             <i class="nav-icon bi bi-building-fill-gear text-info"></i>
                             <p>
-                                Menufacturing
+                                Production
                                 <i class="nav-arrow bi bi-chevron-left"></i>
                             </p>
                         </a>
@@ -182,7 +194,7 @@
 
                 @if ($module == 'report' || $module == 'all')
                     <li class="nav-item {{ $module == 'report' ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link">
+                        <a href="{{url('/report')}}" class="nav-link">
                             <i class="nav-icon bi bi-box-seam-fill"></i>
                             <p>
                                 Reports
@@ -191,21 +203,27 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="{{ url('/stock/report') }}" class="nav-link">
+                                <a href="{{ url('/report/stock') }}" class="nav-link">
                                     <i class="nav-icon bi bi-circle"></i>
                                     <p>Item Stock Report</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="{{route('report.item.ledger')}}" class="nav-link">
                                     <i class="nav-icon bi bi-circle"></i>
-                                    <p>info Box</p>
+                                    <p>Item Ledger</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="./widgets/cards.html" class="nav-link">
+                                <a href="{{route('report.vendor-due')}}" class="nav-link">
                                     <i class="nav-icon bi bi-circle"></i>
-                                    <p>Cards</p>
+                                    <p>Vendor Due Balance</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{route('report.vendor-ledger')}}" class="nav-link">
+                                    <i class="nav-icon bi bi-circle"></i>
+                                    <p>Vendor Ledger</p>
                                 </a>
                             </li>
                         </ul>

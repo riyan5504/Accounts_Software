@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('size')->nullable();
             $table->decimal('unit_price');
             $table->double('opening_stock')->nullable();
+            $table->string('stock_unit')->nullable();
             $table->softDeletes()->nullable();
             $table->timestamps();
         });

@@ -5,14 +5,18 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Item;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ItemController extends Controller
 {
-    public function __construct()
+    private $inventoryService; // ✅ এখানে property declare
+
+    public function __construct(InventoryService $inventoryService)
     {
         $this->middleware('auth');
+        $this->inventoryService = $inventoryService;
     }
 
     public function categoryAdd()
@@ -113,20 +117,26 @@ class ItemController extends Controller
             'size'          => 'nullable|string|max:50',
             'unit_price'    => 'required|numeric|min:0',
             'opening_stock' => 'nullable|numeric|min:0',
+            'stock_unit'    => 'nullable|string|max:50',
         ]);
 
-        Item::create([
+        $item = Item::create([
             'company_id'    => auth()->user()->company_id, // 🔥 CompanyScope support
             'item_code'     => $request->item_code,
             'item_name'     => $request->item_name,
             'cat_id'        => $request->cat_id,
             'size'          => $request->size,
+            'stock_unit'    => $request->stock_unit,
             'unit_price'    => $request->unit_price,
             'opening_stock' => $request->opening_stock ?? 0,
         ]);
 
+        // 🔥 inventory entry
+        $this->inventoryService->openingStockEntry($item);
+
         return back()->with('success', 'Item saved successfully!');
     }
+
     public function itemEdit($id)
     {
         $lastSerial = $this->getLastSerial();
@@ -146,6 +156,7 @@ class ItemController extends Controller
             'size'          => 'nullable|string|max:50',
             'unit_price'    => 'required|numeric|min:0',
             'opening_stock' => 'nullable|numeric|min:0',
+            'stock_unit'    => 'nullable|string|max:50',
         ]);
 
         $item = Item::findOrFail($id);
@@ -156,10 +167,14 @@ class ItemController extends Controller
             'cat_id'        => $request->cat_id,
             'size'          => $request->size,
             'unit_price'    => $request->unit_price,
-            'opening_stock' => $request->opening_stock ?? 0,
+            'opening_stock' => $request->opening_stock ?? 0,            
+            'stock_unit'    => $request->stock_unit,
         ]);
 
-        return redirect()->route('item.item-add')->with('success', 'Item updated successfully!');
+        // 🔥 re-generate opening stock
+        $this->inventoryService->openingStockEntry($item);
+
+        return redirect()->route('item.add')->with('success', 'Item updated successfully!');
     }
 
     public function itemDelete($id)
@@ -167,36 +182,36 @@ class ItemController extends Controller
         $item = Item::findOrFail($id);
 
         // 🔥 Relation check
-        if (
-            $item->purchaseItems()->exists() ||
-            $item->inventoryLedgers()->exists() ||
-            $item->productions()->exists()
-        ) {
-            return back()->with('error', 'Cannot delete! Item already used.');
-        }
+        // if (
+        //     $item->purchaseItems()->exists() ||
+        //     $item->inventoryLedgers()->exists() ||
+        //     $item->productions()->exists()
+        // ) {
+        //     return back()->with('error', 'Cannot delete! Item already used.');
+        // }
 
         $item->delete();
 
         return back()->with('success', 'Item deleted successfully!');
     }
 
-    public function catTrashList()
+    public function categoryTrashList()
     {
         $categories = Category::onlyTrashed()->latest()->get();
 
         return view('item.category-trash', compact('categories'));
     }
 
-    public function restoreCat($id)
+    public function restoreCategory($id)
     {
         $category = Category::onlyTrashed()->findOrFail($id);
 
         $category->restore();
 
-        return redirect()->route('item.category-add')->with('success', 'Category restored successfully!');
+        return redirect()->route('item.category.add')->with('success', 'Category restored successfully!');
     }
 
-    public function forceCatDelete($id)
+    public function forceCategoryDelete($id)
     {
         $category = Category::onlyTrashed()->findOrFail($id);
 
@@ -205,23 +220,23 @@ class ItemController extends Controller
         return back()->with('success', 'Category permanently deleted!');
     }
 
-    public function trashList()
+    public function itemTrashList()
     {
         $items = Item::onlyTrashed()->with('category')->latest()->get();
 
         return view('item.trash', compact('items'));
     }
 
-    public function restore($id)
+    public function restoreItem($id)
     {
         $item = Item::onlyTrashed()->findOrFail($id);
 
         $item->restore();
 
-        return redirect()->route('item.item-add')->with('success', 'Item restored successfully!');
+        return redirect()->route('item.add')->with('success', 'Item restored successfully!');
     }
 
-    public function forceDelete($id)
+    public function forceIitemDelete($id)
     {
         $item = Item::onlyTrashed()->findOrFail($id);
 

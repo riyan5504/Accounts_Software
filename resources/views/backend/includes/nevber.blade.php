@@ -11,9 +11,8 @@
         </ul>
 
         <div class="container-fluid d-flex align-items-center">
-
             <!-- LEFT MENU -->
-            <ul class="navbar-nav d-flex flex-row gap-2 flex-wrap">
+            <ul class="navbar-nav d-flex flex-row gap-2">
 
                 <li class="nav-item text-center">
                     <a href="{{ route('dashboard') }}"
@@ -35,7 +34,7 @@
                     <a href="{{ route('production.index') }}"
                         class="nav-link nav-item-custom {{ request()->routeIs('production.*') ? 'active' : '' }}">
                         <i class="fas fa-industry"></i>
-                        <span>Manufacturing</span>
+                        <span>Production</span>
                     </a>
                 </li>
 
@@ -76,7 +75,7 @@
                 </li>
 
                 <li class="nav-item text-center">
-                    <a href="{{ route('report.stock.report') }}"
+                    <a href="{{ route('report.index') }}"
                         class="nav-link nav-item-custom text-danger {{ request()->routeIs('report.*') ? 'active' : '' }}">
                         <i class="fas fa-file-alt"></i>
                         <span>Reports</span>

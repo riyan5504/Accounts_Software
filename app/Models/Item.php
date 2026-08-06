@@ -18,7 +18,8 @@ class Item extends Model
         'cat_id',
         'size',
         'unit_price',
-        'opening_stock'
+        'opening_stock',
+        'stock_unit'
     ];
 
     public function category()
@@ -45,5 +46,9 @@ class Item extends Model
     public function packagingMaterials()
     {
         return $this->hasMany(PackagingMaterial::class, 'item_id', 'id');
+    }
+    public function purchaseReturnItems()
+    {
+        return $this->hasMany(PurchaseReturnItem::class, 'item_id', 'id');
     }
 }

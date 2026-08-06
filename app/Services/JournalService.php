@@ -4,250 +4,212 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\JournalEntry;
-use Carbon\Carbon;
+use App\Models\JournalItems;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class JournalService
 {
-    /**
-     * Remove old entries for a module
-     */
-    public function removeOldEntries($moduleType, $moduleId)
+    /*
+    |--------------------------------------------------------------------------
+    | System Account Constants
+    |--------------------------------------------------------------------------
+    */
+
+    const ACCOUNT_SUPPLIER_PAYABLE      = 'Supplier Payable';
+    const ACCOUNT_CUSTOMER_RECEIVABLE   = 'Customer Receivable';
+
+    const ACCOUNT_WORK_IN_PROGRESS      = 'Work In Progress';
+    const ACCOUNT_FINISHED_GOODS        = 'Finished Goods';
+
+    const ACCOUNT_RAW_MATERIAL          = 'Raw Material';
+
+    const ACCOUNT_RAW_MATERIAL_EXPENSE  = 'Raw Material Expense';
+    const ACCOUNT_PACKAGING_EXPENSE     = 'Packaging Expense';
+    const ACCOUNT_LABOR_EXPENSE         = 'Labor Expense';
+    const ACCOUNT_DEPRECIATION_EXPENSE  = 'Depreciation Expense';
+    const ACCOUNT_UTILITY_EXPENSE       = 'Utility Expense';
+    const ACCOUNT_FACTORY_OVERHEAD      = 'Factory Overhead';
+    const ACCOUNT_TRANSPORT_EXPENSE     = 'Transport Expense';
+    const ACCOUNT_QC_EXPENSE            = 'QC Expense';
+
+    const ACCOUNT_CASH                  = 'Cash';
+    const ACCOUNT_BANK                  = 'Bank';
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Main Journal Posting
+    |--------------------------------------------------------------------------
+    */
+
+    public function createJournal(array $data)
     {
+        DB::transaction(function () use ($data) {
+
+            $this->validateJournal($data);
+
+            $this->removeOldJournal(
+                $data['module_type'],
+                $data['module_id']
+            );
+
+            $journal = JournalEntry::create([
+
+                'company_id'   => $data['company_id'],
+
+                'module_type'  => $data['module_type'],
+
+                'module_id'    => $data['module_id'],
+
+                'reference_no' => $data['reference_no'] ?? null,
+
+                'date'         => $data['date'],
+
+                'particulars'  => $data['particulars'] ?? null,
+
+                'created_by'   => Auth::id(),
+
+            ]);
+
+
+            foreach ($data['items'] as $item) {
+
+                JournalItems::create([
+
+                    'company_id'       => $data['company_id'],
+
+                    'journal_entry_id' => $journal->id,
+
+                    'account_id' => $this->accountId(
+                        $item['account'],
+                        $data['company_id']
+                    ),
+
+                    'debit'  => $item['debit'] ?? 0,
+
+                    'credit' => $item['credit'] ?? 0,
+
+                    'vendor_id'   => $item['vendor_id'] ?? null,
+
+                    'customer_id' => $item['customer_id'] ?? null,
+
+                ]);
+            }
+        });
+    }
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate Journal
+    |--------------------------------------------------------------------------
+    */
+
+    private function validateJournal(array $data)
+    {
+        if (!isset($data['items']) || count($data['items']) == 0) {
+
+            throw new Exception("Journal Items Missing.");
+        }
+
+        $totalDebit = 0;
+
+        $totalCredit = 0;
+
+
+        foreach ($data['items'] as $item) {
+
+            if (!isset($item['account'])) {
+
+                throw new Exception("Account Missing.");
+            }
+
+            $debit = (float)($item['debit'] ?? 0);
+
+            $credit = (float)($item['credit'] ?? 0);
+
+            if ($debit < 0 || $credit < 0) {
+
+                throw new Exception("Negative Amount Not Allowed.");
+            }
+
+            if ($debit == 0 && $credit == 0) {
+
+                throw new Exception("Debit and Credit both cannot be Zero.");
+            }
+
+            $totalDebit += $debit;
+
+            $totalCredit += $credit;
+        }
+
+
+        if (round($totalDebit, 2) != round($totalCredit, 2)) {
+
+            throw new Exception(
+
+                "Journal Not Balanced. Debit = {$totalDebit}, Credit = {$totalCredit}"
+
+            );
+        }
+    }
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete Old Journal
+    |--------------------------------------------------------------------------
+    */
+
+    private function removeOldJournal(
+        string $moduleType,
+        int $moduleId
+    ) {
+
         JournalEntry::where('module_type', $moduleType)
             ->where('module_id', $moduleId)
             ->delete();
     }
 
 
-    /**
-     * Purchase Journal Entry
-     */
-    public function createPurchaseJournal($purchase)
-    {
-        // পুরনো জার্নাল থাকলে মুছে ফেলি
-        $this->removeOldEntries('purchase', $purchase->id);
-
-        $date = $purchase->date ?? Carbon::today();
-
-        $debitAccount   = $purchase->debit_account_id;   // Expense / Asset / Inventory
-        $cashAccount    = $purchase->payment_account_id;   // Cash / Bank
-        $vendorAccount = $this->vendorPayableAccountId($purchase->vendor); // Vendor Payable
-
-        $total = $purchase->grand_total;
-        $paid  = $purchase->paid_amt;
-        $due   = $purchase->due_amt;
-
-        $user  = auth()->id();
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CASE-1 : FULLY PAID
-        |--------------------------------------------------------------------------
-        |
-        | Dr  Expense/Asset/Inventory
-        | Cr  Cash/Bank
-        |
-        */
-        if ($purchase->payment_status === 'paid') {
+    /*
+    |--------------------------------------------------------------------------
+    | Account Helper
+    |--------------------------------------------------------------------------
+    */
 
-            // Debit Entry
-            JournalEntry::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'account_id' => $debitAccount,
-                'debit' => $total,
-                'credit' => 0,
-                'vendor_id' => $purchase->vendor_id,
-                'reference_no' => $purchase->reference_no,
-                'date' => $date,
-                'transaction_type' => $purchase->account_cat,
-                'particulars' => 'Purchase fully paid',
-                'created_by' => $user
-            ]);
+    private function accountId(
+        $account,
+        $companyId
+    ) {
 
-            // Credit Entry
-            JournalEntry::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'account_id' => $cashAccount,
-                'debit' => 0,
-                'credit' => $total,
-                'vendor_id' => $purchase->vendor_id,
-                'reference_no' => $purchase->reference_no,
-                'date' => $date,
-                'transaction_type' => $purchase->account_cat,
-                'particulars' => 'Purchase paid by cash/bank',
-                'created_by' => $user
-            ]);
+        if (is_numeric($account)) {
+
+            return $account;
         }
 
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CASE-2 : UNPAID (FULL CREDIT)
-        |--------------------------------------------------------------------------
-        |
-        | Dr  Expense/Asset/Inventory
-        | Cr  Vendor Payable
-        |
-        */
-        if ($purchase->payment_status === 'unpaid') {
-
-            JournalEntry::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'account_id' => $debitAccount,
-                'debit' => $total,
-                'credit' => 0,
-                'vendor_id' => $purchase->vendor_id,
-                'reference_no' => $purchase->reference_no,
-                'date' => $date,
-                'transaction_type' => $purchase->account_cat,
-                'particulars' => 'Purchase on Vendor Credit',
-                'created_by' => $user
-            ]);
-
-            JournalEntry::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'account_id' => $vendorAccount,
-                'debit' => 0,
-                'credit' => $total,
-                'vendor_id' => $purchase->vendor_id,
-                'reference_no' => $purchase->reference_no,
-                'date' => $date,
-                'transaction_type' => $purchase->account_cat,
-                'particulars' => 'Vendor Payable recognized',
-                'created_by' => $user
-            ]);
-        }
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CASE-3 : PARTIAL PAID
-        |--------------------------------------------------------------------------
-        |
-        | Dr  Expense/Asset/Inventory   (Full Amount)
-        | Cr  Cash/Bank                 (Paid)
-        | Cr  Vendor Payable            (Due)
-        |
-        */
-        if ($purchase->payment_status === 'partial') {
-
-            // Debit Full Amount
-            JournalEntry::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'account_id' => $debitAccount,
-                'debit' => $total,
-                'credit' => 0,
-                'vendor_id' => $purchase->vendor_id,
-                'reference_no' => $purchase->reference_no,
-                'date' => $date,
-                'transaction_type' => $purchase->account_cat,
-                'particulars' => 'Vendor payable',
-                'created_by' => $user
-            ]);
-
-            // Credit Paid Amount
-            JournalEntry::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'account_id' => $cashAccount,
-                'debit' => 0,
-                'credit' => $paid,
-                'vendor_id' => $purchase->vendor_id,
-                'reference_no' => $purchase->reference_no,
-                'date' => $date,
-                'transaction_type' => $purchase->account_cat,
-                'particulars' => 'Purchase Amount partial Paid',
-                'created_by' => $user
-            ]);
-
-            // Credit Due Amount
-            JournalEntry::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'account_id' => $vendorAccount,
-                'debit' => 0,
-                'credit' => $due,
-                'vendor_id' => $purchase->vendor_id,
-                'reference_no' => $purchase->reference_no,
-                'date' => $date,
-                'transaction_type' => $purchase->account_cat,
-                'particulars' => 'Vendor payable remaining',
-                'created_by' => $user
-            ]);
-        }
-    }
-
-
-
-    /**
-     * Vendor Payable Account ID
-     */
-    private function vendorPayableAccountId($vendor)
-    {
-        return $vendor->account_id
-            ?? Account::where('account_name', 'Accounts Payable')
-            ->where('ac_type', 'Liability')
+        $id = Account::where('company_id', $companyId)
+            ->where('account_name', $account)
             ->value('id');
-    }
 
-    public function createProductionJournal($production, $sectionTotal)
-    {
-        $this->removeOldEntries('production', $production->id);
 
-        $date = $production->date;
-        $user = Auth::id();
+        if (!$id) {
 
-        $wipAccount = Account::where('account_name', 'Work In Process')->value('id');
+            throw new Exception(
 
-        $sections = [
-            'Raw Material Expense'   => $sectionTotal->raw_grand_price,
-            'Packaging Expense'      => $sectionTotal->pack_grand_price,
-            'Labor Expense'          => $sectionTotal->labor_grand_price,
-            'Depreciation Expense'   => $sectionTotal->depreciation_grand_price,
-            'Utility Expense'        => $sectionTotal->utility_grand_price,
-            'Factory Overhead'       => $sectionTotal->overhead_grand_price,
-            'Transport Expense'      => $sectionTotal->transport_grand_price,
-            'QC Expense'             => $sectionTotal->qc_grand_price,
-        ];
+                "Account '{$account}' not found."
 
-        foreach ($sections as $accountName => $amount) {
-            if (!$amount || $amount <= 0) continue;
-
-            $expenseAccount = Account::where('account_name', $accountName)->value('id');
-
-            // DR Expense
-            JournalEntry::create([
-                'module_type' => 'production',
-                'module_id'   => $production->id,
-                'account_id'  => $expenseAccount,
-                'debit'       => $amount,
-                'credit'      => 0,
-                'date'        => $date,
-                'particulars' => "Production {$accountName}",
-                'created_by'  => $user,
-            ]);
-
-            // CR WIP
-            JournalEntry::create([
-                'module_type' => 'production',
-                'module_id'   => $production->id,
-                'account_id'  => $wipAccount,
-                'debit'       => 0,
-                'credit'      => $amount,
-                'date'        => $date,
-                'particulars' => "WIP credited for {$accountName}",
-                'created_by'  => $user,
-            ]);
+            );
         }
+
+        return $id;
     }
 }

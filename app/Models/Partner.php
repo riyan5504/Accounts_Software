@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Partner extends Model
 {
-    use HasFactory, CompanyScope;
+    use HasFactory, CompanyScope, SoftDeletes;
     protected $fillable = [
         'company_id',
         'p_name',
@@ -24,5 +25,20 @@ class Partner extends Model
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id', 'id');
+    }
+    public function investments()
+    {
+        return $this->hasMany(Investment::class);
+    }
+    public function journals()
+    {
+        return $this->hasManyThrough(
+            JournalEntry::class,
+            Investment::class,
+            'partner_id', // Investment table foreign key
+            'module_id',  // Journal table foreign key
+            'id',
+            'id'
+        )->where('module_type', 'investment');
     }
 }

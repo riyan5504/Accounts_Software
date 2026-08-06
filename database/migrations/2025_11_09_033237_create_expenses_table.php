@@ -32,6 +32,7 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->string('pay_to')->nullable();
             $table->unsignedBigInteger('branch_id')->nullable();
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

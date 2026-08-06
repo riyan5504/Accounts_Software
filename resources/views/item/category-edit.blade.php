@@ -5,7 +5,7 @@
     <div class="app-content m-1">
         <div class="card card-primary card-outline">
             <!--begin::Form-->
-            <form action="{{ route('item.category-update', $category->id) }}" method="POST">
+            <form action="{{ route('item.category.update', $category->id) }}" method="POST">
                 @csrf
                 <!--begin::Body-->
                 <div class="card-body">
@@ -53,10 +53,10 @@
                                 <td style="text-align: center">{{ $loop->index + 1 }}</td>
                                 <td>{{ $category->cat_name }}</td>
                                 <td style="text-align: center">
-                                    <a href="{{ route('item.category-edit', $category->id) }}" class="btn ms-0 me-0">
+                                    <a href="{{ route('item.category.edit', $category->id) }}" class="btn ms-0 me-0">
                                         <i class="bi bi-pencil text-primary"></i>
                                     </a>
-                                    <a href="{{ route('item.category-delete', $category->id) }}" class="btn me-0 ms-0">
+                                    <a href="{{ route('item.category.delete', $category->id) }}" class="btn me-0 ms-0">
                                         <i class="bi bi-trash text-danger"></i>
                                     </a>
                                 </td>

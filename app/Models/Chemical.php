@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Chemical extends Model
 {
-    use HasFactory;
+    use HasFactory, CompanyScope, SoftDeletes;
 
     protected $guarded = [];
 
-    public function items()
+    public function item()
     {
         return $this->belongsTo(Item::class, 'item_id', 'id');
     }

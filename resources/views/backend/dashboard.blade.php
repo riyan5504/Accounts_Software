@@ -7,7 +7,7 @@
             <div class="row align-items-center">
 
                 <!-- Left Time -->
-                <div class="col-md-4 text-start">
+                <div class="col-md-3 text-start">
                     <h6 class="mb-0 fw-bold text-primary">
                         <i class="far fa-clock me-1"></i>
                         <span id="liveTime"></span>
@@ -16,14 +16,14 @@
                 </div>
 
                 <!-- Center Title -->
-                <div class="col-md-4 text-center">
-                    <h3 class="mb-0 fw-bold text-dark">
-                        Veshoz Village Account
-                    </h3>
+                <div class="col-md-6 text-center">
+                    <h4 class="mb-0 fw-bold text-dark">
+                        {{ $companyName }}
+                    </h4>
                 </div>
 
                 <!-- Right Date -->
-                <div class="col-md-4 text-end">
+                <div class="col-md-3 text-end">
                     <h6 class="mb-0 fw-bold text-success">
                         <i class="far fa-calendar-alt me-1"></i>
                         <span id="liveDate"></span>

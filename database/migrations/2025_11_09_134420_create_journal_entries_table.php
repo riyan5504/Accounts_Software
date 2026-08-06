@@ -14,19 +14,15 @@ return new class extends Migration
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id')->nullable()->index();
-            $table->string('module_type'); // expense, purchase, sale, income
+
+            $table->string('module_type'); // purchase, sale
             $table->unsignedBigInteger('module_id');
-            $table->unsignedBigInteger('account_id');
-            $table->string('transaction_type')->nullable();
-            $table->unsignedBigInteger('vendor_id')->nullable();
-            $table->unsignedBigInteger('customer_id')->nullable();
+
             $table->string('reference_no')->nullable();
-            $table->decimal('debit', 15, 2)->default(0);
-            $table->decimal('credit', 15, 2)->default(0);
             $table->date('date');
+
             $table->string('particulars')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
-            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

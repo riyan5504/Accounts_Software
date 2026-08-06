@@ -6,40 +6,38 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('company_id')->nullable()->index();
-            $table->unsignedBigInteger('vendor_id');
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('vendor_id')->constrained('vendors')->restrictOnDelete();
             $table->date('date');
-            $table->string('invoice_no')->unique();
-            $table->string('reference_no')->nullable();
-            $table->string('purchase_type')->nullable();
-            $table->string('account_cat')->nullable();
-            $table->unsignedBigInteger('debit_account_id')->nullable();
-            $table->unsignedBigInteger('payment_account_id')->nullable();
-            $table->enum('payment_method', ['cash', 'bank', 'cheque', 'due', 'mobile_bank'])->nullable();
+            $table->string('invoice_no', 50);
+            $table->string('reference', 100)->nullable();
+            $table->text('narration')->nullable();
+            $table->foreignId('debit_account_id')->nullable()->constrained('accounts')->nullOnDelete();
+            $table->foreignId('credit_account_id')->nullable()->constrained('accounts')->nullOnDelete();
             $table->enum('payment_status', ['paid', 'unpaid', 'partial'])->default('unpaid');
-            $table->decimal('sub_total', 10, 2);
-            $table->decimal('vat_amt', 10, 2)->nullable();
-            $table->decimal('dis_percent', 10, 2)->nullable();
-            $table->decimal('dis_amt', 10, 2)->nullable();
-            $table->decimal('grand_total', 10, 2);
-            $table->decimal('paid_amt', 10, 2)->default(0)->nullable();
-            $table->decimal('due_amt', 10, 2)->default(0)->nullable();
-            $table->string('pay_to')->nullable();
-            $table->unsignedBigInteger('created_by')->nullable();
+            $table->decimal('sub_total', 15, 2);
+            $table->decimal('vat_amt', 15, 2)->default(0);
+            $table->decimal('dis_percent', 8, 3)->default(0);
+            $table->decimal('dis_amt', 15, 2)->default(0);
+            $table->decimal('grand_total', 15, 2);
+            $table->decimal('due_amt', 15, 2)->default(0);
+            $table->string('pay_to', 100)->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
+
+            // Indexes
+            $table->index(['company_id', 'date']);
+            $table->index(['company_id', 'vendor_id']);
+            $table->index(['company_id', 'payment_status']);
+            $table->unique(['company_id', 'invoice_no'], 'unique_invoice_per_company');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('purchases');

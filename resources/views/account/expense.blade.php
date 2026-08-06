@@ -86,7 +86,7 @@
                 <div class="voucher-header">
                     Accounting Voucher Creation - Expense
                 </div>
-                <form method="POST" action="{{ url('/expense/store') }}">
+                <form method="POST" action="{{ url('/account/expense/store') }}">
                     @csrf
                     <div class="row g-2 align-accounts-end mt-2">
                         <div class="form-group col-sm-6 col-md-2 mb-2">

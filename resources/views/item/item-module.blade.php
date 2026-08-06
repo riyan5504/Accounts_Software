@@ -33,7 +33,9 @@
                     <!--begin::Small Box Widget 1-->
                     <div class="small-box text-bg-primary">
                         <div class="inner">
-                            <a href="{{ url('/item/category/add') }}" style="text-decoration: none"><p>Category Entry</p></a>
+                            <a href="{{ url('/item/category/add') }}" style="text-decoration: none">
+                                <p>Category Entry</p>
+                            </a>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -41,7 +43,7 @@
                                 d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z">
                             </path>
                         </svg>
-                        <a href="{{ url('/item/add') }}"
+                        <a href="{{ url('/item/category/add') }}"
                             class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                             Entry Here <i class="bi bi-link-45deg"></i>
                         </a>
@@ -52,7 +54,9 @@
                     <!--begin::Small Box Widget 1-->
                     <div class="small-box text-bg-primary">
                         <div class="inner">
-                            <a href="{{ url('/item/add') }}" style="text-decoration: none"><p>Item Entry</p></a>
+                            <a href="{{ url('/item/add') }}" style="text-decoration: none">
+                                <p>Item Entry</p>
+                            </a>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -68,23 +72,25 @@
                     <!--end::Small Box Widget 1-->
                 </div>
                 <!--end::Col-->
-               
+
                 <div class="col-lg-3 col-6">
-                    <!--begin::Small Box Widget 2-->
-                    <div class="small-box text-bg-warning">
+                    <!--begin::Small Box Widget 1-->
+                    <div class="small-box text-bg-primary">
                         <div class="inner">
-                            <a href="{{ url('/item/list') }}" style="text-decoration: none"><p>Item List</p></a>
+                            <a href="{{ route('report.stock') }}" style="text-decoration: none">
+                                <p>Item Stock Report</p>
+                            </a>
                         </div>
                         <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                             <path d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
                         </svg>
-                        <a href="{{ url('/item/list') }}"
+                        <a href="{{ route('report.stock') }}"
                             class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                            Show List <i class="bi bi-link-45deg"></i>
+                            Show Report <i class="bi bi-link-45deg"></i>
                         </a>
                     </div>
-                    <!--end::Small Box Widget 2-->
+                    <!--end::Small Box Widget 1-->
                 </div>
                 {{-- <div class="col-lg-3 col-6">
                     <!--begin::Small Box Widget 2-->

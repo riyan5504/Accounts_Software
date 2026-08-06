@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
+use App\Models\Investment;
 use App\Models\Partner;
 use App\Models\User;
 use App\Services\JournalService;
@@ -34,14 +35,6 @@ class AccountController extends Controller
         return view('account.account-entry', compact('accounts'));
     }
 
-    // public function accountEntry()
-    // {
-    //     $accounts = Account::orderBy('ac_type', 'asc')
-    //         ->orderBy('account_name', 'asc')
-    //         ->get();
-    //     return view('account.account-entry', compact('accounts'));
-    // }
-
     public function accountStore(Request $request)
     {
         $request->validate([
@@ -60,28 +53,6 @@ class AccountController extends Controller
 
         return redirect()->back()->with('success', 'Account created successfully');
     }
-
-    // public function accountStore(Request $request)
-    // {
-    //     $request->validate([
-    //         'account_name' => 'required|unique:accounts,account_name',
-    //     ]);
-
-    //     $account = new Account();
-
-    //     $account->company_id = auth()->user()->company_id;
-    //     $account->account_name = $request->account_name;
-    //     $account->ac_cat = $request->ac_cat;
-    //     $account->ac_type = $request->ac_type;
-    //     $account->op_balance = $request->op_balance;
-
-    //     $account->save();
-
-    //     $accounts = Account::orderBy('ac_type', 'asc')
-    //         ->orderBy('account_name', 'asc')
-    //         ->get();
-    //     return view('account.account-entry', compact('accounts'));
-    // }
 
 
     public function accountEdit($id)
@@ -111,19 +82,6 @@ class AccountController extends Controller
 
         return redirect('/account/entry')->with('success', 'Account updated');
     }
-    // public function accountUpdate(Request $request, $id)
-    // {
-    //     $account = Account::find($id);
-
-    //     $account->account_name = $request->account_name;
-    //     $account->ac_cat = $request->ac_cat;
-    //     $account->ac_type = $request->ac_type;
-    //     $account->op_balance = $request->op_balance;
-
-    //     $account->save();
-    //     return redirect('/account/entry');
-    // }
-
 
     public function accountDelete($id)
     {
@@ -137,25 +95,25 @@ class AccountController extends Controller
     {
         $accounts = Account::onlyTrashed()->latest()->get();
 
-        return view('item.trash', compact('items'));
+        return view('account.account-trash', compact('accounts'));
     }
 
-    public function restore($id)
+    public function restoreAccount($id)
     {
-        $item = Item::onlyTrashed()->findOrFail($id);
+        $account = Account::onlyTrashed()->findOrFail($id);
 
-        $item->restore();
+        $account->restore();
 
-        return redirect()->route('item.item-add')->with('success', 'Item restored successfully!');
+        return redirect()->route('account.account-add')->with('success', 'Account restored successfully!');
     }
 
-    public function forceDelete($id)
+    public function forceAccountDelete($id)
     {
-        $item = Item::onlyTrashed()->findOrFail($id);
+        $account = Account::onlyTrashed()->findOrFail($id);
 
-        $item->forceDelete(); // 🔥 permanently delete
+        $account->forceDelete(); // 🔥 permanently delete
 
-        return back()->with('success', 'Item permanently deleted!');
+        return back()->with('success', 'Account permanently deleted!');
     }
 
     public function expenseEntry()
@@ -208,18 +166,6 @@ class AccountController extends Controller
                     'amount' => $amounts[$index],
                 ]);
             }
-
-            // 3️⃣ Create Journal Entries (Double Entry)
-            // JournalService::createEntry(
-            //     'expense',
-            //     $expense->id,
-            //     [
-            //         ['account_id' => $expense->expense_account_id, 'debit' => $expense->total_amount],
-            //         ['account_id' => $expense->payment_account_id, 'credit' => $expense->total_amount],
-            //     ],
-            //     $expense->date,
-            //     'Expense payment to ' . $expense->pay_to
-            // );
         });
 
         return redirect()->back()->with('success', 'Expense & Journal entries created successfully!');
@@ -265,7 +211,7 @@ class AccountController extends Controller
             // 2. Capital Account create
             $account = Account::create([
                 'account_name' => $partner->p_name . ' Capital',
-                'ac_type' => 'Equity',
+                'ac_type' => 'equity',
                 'ac_cat' => 'Capital Equity',
                 'company_id' => auth()->user()->company_id,
             ]);
@@ -286,5 +232,45 @@ class AccountController extends Controller
         $partners = Partner::get();
         $accounts = Account::get();
         return view('account.investment-create', compact('partners', 'accounts'));
+    }
+
+    public function investmentStore(Request $request, JournalService $journalService)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'partner_id' => 'required',
+            'amount' => 'required|numeric|min:1',
+            'invest_type' => 'required|in:capital,loan',
+            'debit_account_id' => 'required',
+            'credit_account_id' => 'required',
+        ]);
+
+        // 🔹 File Upload (Laravel way)
+        $attachment = null;
+        if ($request->hasFile('attachment')) {
+            $attachment = $request->file('attachment')->store('investments', 'public');
+        }
+
+        // 🔹 Investment Save
+        $investment = Investment::create([
+            'company_id' => auth()->user()->company_id ?? null,
+            'partner_id' => $request->partner_id,
+            'amount'     => $request->amount,
+            'attachment' => $attachment,
+            'invest_type' => $request->invest_type,
+            'reference'  => $request->reference,
+            'note'       => $request->note,
+            'date'       => $request->date,
+            'created_by' => auth()->id(),
+        ]);
+        
+        // 🔹 Journal Entry
+        $journalService->createInvestmentJournal(
+            $investment,
+            $request->debit_account_id,
+            $request->credit_account_id
+        );
+
+        return back()->with('success', 'Investment saved successfully');
     }
 }

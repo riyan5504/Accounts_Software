@@ -35,6 +35,7 @@ class SearchController extends Controller
                 'id' => $vendor->id,
                 'label' => $vendor->v_name, // Autocomplete list এ দেখা যাবে
                 'value' => $vendor->v_name, // Input field এ বসবে
+                'vendor_id' => $vendor->id,
                 'phone' => $vendor->phone,
                 'email' => $vendor->email ?? '',
                 'address' => $vendor->address,
@@ -57,21 +58,22 @@ class SearchController extends Controller
             ->where('item_name', 'LIKE', "%{$term}%")
             ->where('company_id', auth()->user()->company_id)
             ->limit(10)
-            ->get(['id', 'item_name', 'item_code', 'cat_id', 'size', 'unit_price']);
+            ->get(['id', 'item_name', 'item_code', 'cat_id', 'size', 'stock_unit', 'unit_price']);
 
         $data = $items->map(function ($item) {
             return [
                 'id' => $item->id,
                 'label' => $item->item_name,
                 'value' => $item->item_name,
+                'item_id' => $item->id,
                 'item_code' => $item->item_code,
                 'cat_id' => $item->cat_id,
                 'cat_name' => optional($item->category)->cat_name, // নিরাপদ access
                 'size' => $item->size ?? '',
+                'stock_unit' => $$item->stock_unit ?? '',
                 'unit_price' => $item->unit_price ?? 0,
             ];
         });
-
         return response()->json($data);
     }
 
@@ -127,17 +129,22 @@ class SearchController extends Controller
     }
 
 
-    public function getByStatus(string $type)
+    public function getByStatus(string $status)
     {
-        $type = strtolower($type); // PHPStorm runtime warning কম হবে
+        $status = strtolower($status); // PHPStorm runtime warning কম হবে
 
-        switch ($type) {
+        switch ($status) {
             case 'paid':
-                $actype = 'Asset';
+                $actype = 'asset';
+                break;
+            case 'due':
+                $actype = 'liability';
                 break;
             case 'unpaid':
+                $actype = 'liability';
+                break;
             case 'partial':
-                $actype = 'Liability';
+                $actype = 'asset';
                 break;
             default:
                 return response()->json(['error' => 'Invalid type'], 400);

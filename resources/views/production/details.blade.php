@@ -20,8 +20,8 @@
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ url('/production/product/add') }}"
-                                class="{{ request()->is('production/entry') ? 'text-primary fw-bold' : 'text-dark' }}">
+                            <a href="{{ url('/production/add') }}"
+                                class="{{ request()->is('production/add') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Entry
                             </a>
                         </li>
@@ -41,6 +41,14 @@
         <!--end::Container-->
     </div>
     <!--end::App Content Header-->
+    <div class="text-end no-print mb-1 me-3">
+        <a href="{{ route('production.pdf', $production->id) }}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-file-pdf"></i>
+        </a>
+        <a href="{{ url()->previous() }}" class="btn btn-sm btn-outline-secondary" title="Go Back">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+    </div>
 
     <!--begin::App Content-->
     <div class="app-content">
@@ -128,7 +136,7 @@
 
                                         <tr class="align-middle">
                                             <td class="text-center">{{ 1 }}</td>
-                                            <td>{{ $production->items->item_name }}</td>
+                                            <td>{{ $production->item->item_name }}</td>
                                             <td class="text-center">{{ $production->raw_qty }} {{ $production->raw_unit }}
                                             </td>
                                             <td class="text-center">{{ $production->raw_u_price }}</td>
@@ -166,7 +174,7 @@
                                         @foreach ($production->chemicals as $chemical)
                                             <tr class="align-middle">
                                                 <td class="text-center">{{ $loop->index + 1 }}</td>
-                                                <td>{{ $chemical->items->item_name }}</td>
+                                                <td>{{ $chemical->item->item_name }}</td>
                                                 <td class="text-center">{{ $chemical->used_qty }}
                                                     {{ $chemical->ch_unit }}
                                                 </td>
@@ -204,7 +212,7 @@
                                         @foreach ($production->packagingMaterial as $pack)
                                             <tr class="align-middle">
                                                 <td class="text-center">{{ $loop->index + 1 }}</td>
-                                                <td>{{ $pack->items->item_name }}</td>
+                                                <td>{{ $pack->item->item_name }}</td>
                                                 <td class="text-center">{{ $pack->pack_qty }} nos</td>
                                                 <td class="text-center">{{ $pack->pack_price }}</td>
                                                 <td class="text-end">{{ $pack->total_price }}</td>
@@ -502,8 +510,6 @@
             <!--end::Col-->
         </div>
         <!--end::Row-->
-    </div>
-    <!--end::Container-->
     </div>
     <!--end::App Content-->
 @endsection

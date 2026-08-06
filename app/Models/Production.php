@@ -5,11 +5,11 @@ namespace App\Models;
 use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Production extends Model
 {
-    use HasFactory;
-    use CompanyScope;
+    use HasFactory, CompanyScope, SoftDeletes;
 
     protected $guarded = [];
 
@@ -17,13 +17,13 @@ class Production extends Model
         'date' => 'date', // বা 'datetime' যদি time থাকে
     ];
 
-    public function items()
+    public function item()
     {
         return $this->belongsTo(Item::class, 'item_id', 'id');
     }
-    public function journalEntry()
+    public function journalEntries()
     {
-        return $this->hasMany(JournalEntry::class, 'production_id', 'id');
+        return $this->morphMany(JournalEntry::class, 'module', 'module_type', 'module_id');
     }
     public function laborCost()
     {
@@ -35,7 +35,7 @@ class Production extends Model
     }
     public function chemicals()
     {
-        return $this->hasMany(Chemicals::class, 'production_id', 'id');
+        return $this->hasMany(Chemical::class, 'production_id', 'id');
     }
     public function overHeadCost()
     {

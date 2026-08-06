@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('phone');
             $table->string('email')->nullable();
             $table->string('address');
+            $table->decimal('opening_balance', 10,2)->nullable();
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

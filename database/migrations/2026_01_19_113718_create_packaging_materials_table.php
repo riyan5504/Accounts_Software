@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('packaging_materials', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->unsignedBigInteger('production_id');
             $table->unsignedBigInteger('item_id');
             $table->string('pack_size', 10)->nullable();
             $table->double('pack_qty', 10, 2);
             $table->decimal('pack_price', 10, 2);
             $table->decimal('total_price', 10, 2);
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

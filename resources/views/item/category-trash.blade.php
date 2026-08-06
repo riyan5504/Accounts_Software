@@ -23,14 +23,14 @@
                                     <td style="text-align: center">{{ $loop->index + 1 }}</td>
                                     <td>{{ $category->cat_name }}</td>
                                     <td style="text-align: center">
-                                        <form action="{{ route('item.category-restore', $category->id) }}" method="POST"
+                                        <form action="{{ route('item.category.restore', $category->id) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             <button type="submit" class="btn btn-success btn-sm">
                                                 <i class="fas fa-undo"></i>
                                             </button>
                                         </form>
-                                        <form action="{{ route('item.category-forceDelete', $category->id) }}" method="POST"
+                                        <form action="{{ route('item.category.forceDelete', $category->id) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             @method('DELETE')

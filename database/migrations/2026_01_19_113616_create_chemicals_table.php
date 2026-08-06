@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('chemicals', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->unsignedBigInteger('production_id');
             $table->unsignedBigInteger('item_id');
             $table->double('used_percent', 10, 2);
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->string('ch_unit', 10)->nullable();
             $table->decimal('u_price', 10, 2);
             $table->decimal('t_price', 10, 2);
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

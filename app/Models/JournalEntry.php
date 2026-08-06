@@ -2,43 +2,71 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class JournalEntry extends Model
 {
-    use HasFactory;
-    protected $guarded = [];
+    use HasFactory, CompanyScope;
 
-    protected $casts = [
-        'date' => 'date', // বা 'datetime' যদি time থাকে
+    protected $fillable = [
+        'company_id',
+        'module_type',
+        'module_id',
+        'reference_no',
+        'date',
+        'particulars',
+        'created_by',
     ];
 
-    public function module()
+    protected $casts = [
+        'date' => 'date',
+    ];
+
+    // Relationships
+    public function module(): MorphTo
     {
-        return $this->morphTo(__FUNCTION__, 'module_type', 'module_id');
+        return $this->morphTo('module', 'module_type', 'module_id');
     }
 
-    public function account()
+    public function journalItems(): HasMany
     {
-        return $this->belongsTo(Account::class, 'account_id', 'id');
+        return $this->hasMany(JournalItems::class);
     }
 
-    public function expense()
+    public function creator(): BelongsTo
     {
-        return $this->belongsTo(Expense::class, 'expense_id', 'id');
+        return $this->belongsTo(User::class, 'created_by');
     }
-    public function purchase()
+
+    // Accessors
+    public function getTotalDebitAttribute(): float
     {
-        return $this->belongsTo(Purchase::class, 'purchase_id', 'id');
+        return $this->journalItems->sum('debit');
     }
-    public function vendor()
+
+    public function getTotalCreditAttribute(): float
     {
-        return $this->belongsTo(Vendor::class, 'vendor_id', 'id');
+        return $this->journalItems->sum('credit');
     }
-    public function production()
+
+    public function isBalanced(): bool
     {
-        return $this->belongsTo(Production::class, 'production_id', 'id');
+        return $this->total_debit === $this->total_credit;
     }
-    
+
+    // Scopes
+    public function scopeByModule($query, $type, $id)
+    {
+        return $query->where('module_type', $type)->where('module_id', $id);
+    }
+
+    public function scopeByDateRange($query, $from, $to)
+    {
+        return $query->whereBetween('date', [$from, $to]);
+    }
 }

@@ -14,17 +14,15 @@ return new class extends Migration
         Schema::create('productions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id')->nullable()->index();
+            $table->unsignedBigInteger('item_id');
             $table->string('name');
             $table->string('batch_no');
             $table->string('batch_size');
             $table->date('date');
-            $table->string('ra_name');
             $table->double('raw_qty', 10, 2);
             $table->string('raw_unit', 10)->nullable();
             $table->decimal('raw_u_price', 10, 2);
             $table->decimal('raw_t_price', 10, 2);
-            $table->double('pulp', 10, 2)->nullable();
-            $table->string('pulp_unit', 10)->nullable();
             $table->double('yield', 10, 2)->nullable();
             $table->string('yield_unit', 10)->nullable();
             $table->double('ex_qty', 10, 2)->nullable();
@@ -34,6 +32,7 @@ return new class extends Migration
             $table->string('final_unit', 10)->nullable();
             $table->decimal('unit_cost', 10, 2);
             $table->decimal('grand_total', 10, 2);
+            $table->softDeletes()->nullable();
             $table->timestamps();
         });
     }

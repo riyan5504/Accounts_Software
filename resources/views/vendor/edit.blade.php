@@ -6,7 +6,7 @@
         <!--begin::Container-->
         <div class="container-fluid">
             <!--begin::Row-->
-            <div class="row">
+            <div class="row bg-info opasity-50 rounded">
                 <div class="col-sm-6">
                     <h3 class="mb-0 mt-0">Vendor Edit</h3>
                 </div>
@@ -41,9 +41,15 @@
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ route('purchase.vendorlist') }}"
+                            <a href="{{ route('purchase.vendor.list') }}"
                                 class="{{ request()->routeIs('purchase.vendorlist') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Vendor List
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('vendor-payment.create') }}"
+                                class="{{ request()->routeIs('vendor-payment.create') ? 'text-primary fw-bold' : 'text-dark' }}">
+                                Vendor Payment
                             </a>
                         </li>
                     </ol>
@@ -67,7 +73,7 @@
                 </div>
                 <!--end::Header-->
                 <!--begin::Form-->
-                <form action="{{ route('purchase.vendorupdate', $vendor->id) }}" method="POST">
+                <form action="{{ route('purchase.vendor.update', $vendor->id) }}" method="POST">
                     @csrf
                     <!--begin::Body-->
                     <div class="card-body">
@@ -95,6 +101,11 @@
                                 <div class="form-group col-md-8">
                                     <textarea name="address" class="form-control address" rows="1" required>{{$vendor->address}}</textarea>
                                     <label for="address" class="floating-label">Address</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-4 mb-1">
+                                    <input type="number" name="opening_balance" value="{{$vendor->opening_balance}}" class="form-control opening_balance"
+                                        placeholder=" " />
+                                    <label for="opening_balance" class="floating-label">Opening Balance</label>
                                 </div>
                             </div>
                         </div>

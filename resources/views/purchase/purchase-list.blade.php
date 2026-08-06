@@ -51,11 +51,11 @@
         <!--begin::Container-->
         <div class="container-fluid">
             <!--begin::Row-->
-            <div class="row bg-info opasity-50">
-                <div class="col-sm-6">
+            <div class="row bg-info opasity-50 rounded">
+                <div class="col-sm-4">
                     <h3 class="mb-0">Purchase List</h3>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-8">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item">
                             <a href="{{ url('/purchase') }}"
@@ -67,28 +67,40 @@
                         <li class="breadcrumb-item">
                             <a href="{{ url('/purchase/entry') }}"
                                 class="{{ request()->is('purchase/entry') ? 'text-primary fw-bold' : 'text-dark' }}">
-                                Entry
+                                Purchase Entry
                             </a>
                         </li>
 
                         <li class="breadcrumb-item">
                             <a href="{{ url('/purchase/list') }}"
                                 class="{{ request()->is('purchase/list') ? 'text-primary fw-bold' : 'text-dark' }}">
-                                List
+                                Purchase List
                             </a>
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ url('/item/list') }}"
-                                class="{{ request()->is('item/list') ? 'text-primary fw-bold' : 'text-dark' }}">
-                                Item List
+                            <a href="{{ url('/item/add') }}"
+                                class="{{ request()->is('item/add') ? 'text-primary fw-bold' : 'text-dark' }}">
+                                Item Entry
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ url('/purchase/return/list') }}"
+                                class="{{ request()->is('/purchase/return/list') ? 'text-primary fw-bold' : 'text-dark' }}">
+                                Return List
                             </a>
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ route('purchase.vendorlist') }}"
-                                class="{{ request()->routeIs('purchase.vendorlist') ? 'text-primary fw-bold' : 'text-dark' }}">
+                            <a href="{{ route('purchase.vendor.list') }}"
+                                class="{{ request()->routeIs('purchase.vendor.list') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Vendor List
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('vendor-payment.create') }}"
+                                class="{{ request()->routeIs('vendor-payment.create') ? 'text-primary fw-bold' : 'text-dark' }}">
+                                Vendor Payment
                             </a>
                         </li>
                     </ol>
@@ -166,14 +178,13 @@
                             </div>
                         </form>
                     </div>
-
                     <!--end::Filter-->
                     <div class="col-sm-3 text-end no-print mt-1">
-                        <button onclick="window.print()" class="btn btn-primary btn-sm">
-                            🖨️ Print
-                        </button>
-                        <a href="{{ route('purchase.list.pdf', request()->all()) }}" class="btn btn-primary btn-sm">
-                            📄 PDF
+                        <a href="{{ route('purchase.list.pdf', request()->all()) }}" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-file-pdf"></i>
+                        </a>
+                        <a href="{{ url()->previous() }}" class="btn btn-sm btn-outline-secondary" title="Go Back">
+                            <i class="bi bi-arrow-left"></i>
                         </a>
                     </div>
                 </div>
@@ -192,10 +203,10 @@
                 <div class="col-md-12">
                     <div id="printArea">
                         <div class="card card-primary card-outline">
-                            <div class="ms-2 pt-3">
+                            <div class="ms-2 pt-1">
                                 <h5>Purchase List</h5>
                             </div>
-                            <div class="card mt-3 ms-1 me-1 mb-3">
+                            <div class="card m-1">
                                 <div class="card-body p-0">
                                     <table class="table table-sm table-bordered">
                                         <thead>
@@ -210,7 +221,7 @@
                                             </tr>
                                         </thead>
                                         <tbody id="purchaseTable">
-                                            @foreach ($purchases as $purchase)
+                                            @forelse ($purchases as $purchase)
                                                 <tr class="align-middle">
                                                     <td>{{ $loop->index + 1 }}</td>
                                                     <td>{{ $purchase->vendor->v_name }}</td>
@@ -237,21 +248,13 @@
                                                             onclick="return confirm('আপনি কি নিশ্চিত? Purchase এবং সব Journal Entry ডিলিট হবে!');">
                                                             <i class="bi bi-trash text-danger"></i>
                                                         </a>
-                                                        {{-- <a href="#" class="btn me-0 ms-0"
-                                                        onclick="event.preventDefault(); confirmDelete({{ $purchase->id }});">
-                                                        <i class="bi bi-trash text-danger"></i>
-                                                    </a>
-
-                                                    <form id="deleteForm{{ $purchase->id }}"
-                                                        action="{{ route('purchase.delete', $purchase->id) }}"
-                                                        method="POST" style="display:none;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                    </form> --}}
-
                                                     </td>
                                                 </tr>
-                                            @endforeach
+                                            @empty
+                                                <tr>
+                                                    <td colspan="8" class="text-center">No Data Found</td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>

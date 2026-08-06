@@ -4,134 +4,190 @@
 <head>
     <meta charset="UTF-8">
     <title>Purchase List</title>
+
     <style>
         body {
             font-family: DejaVu Sans;
-            font-size: 12px;
-            position: relative;
-            min-height: 100vh;
+            font-size: 11px;
+            color: #333;
         }
 
         .text-center {
             text-align: center;
         }
 
-        .text-end {
+        .text-right {
             text-align: right;
         }
 
-        .text-start {
+        .text-left {
             text-align: left;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        /* Company Section */
+        .company-section {
+            text-align: center;
+            margin-bottom: 8px;
         }
 
-        th,
-        td {
-            padding: 3px;
+        .company-section img {
+            width: 50px;
+            margin-bottom: 3px;
         }
 
-        /* Header */
-        .header td {
-            border: none;
-        }
-
-        .company-name {
-            font-size: 17px;
+        .company-title {
+            font-size: 16px;
             font-weight: bold;
-            
         }
 
-        .small {
-            font-size: 10px;
+        .company-info {
+            font-size: 9px;
+            margin-top: 1px;
+        }
+
+        /* Title */
+        .report-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px 0;
+            border-bottom: 1px solid #000;
+            display: inline-block;
+            padding-bottom: 2px;
+        }
+
+        .report-info {
+            margin-top: 5px;
+            font-size: 11px;
         }
 
         /* Table */
-        .border th,
-        .border td {
-            border: 1px solid #2e2e2e;
-        }
-
-        .footer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
+        table {
             width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
         }
 
-        /* Signature */
+        th {
+            background: #f2f2f2;
+            border: 1px solid #999;
+            padding: 6px;
+            font-size: 10px;
+        }
+
+        td {
+            border: 1px solid #ccc;
+            padding: 6px;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        /* Amount Column */
+        .amount {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+        }
+
         .signature td {
             border: none;
             padding-top: 40px;
-            text-align: left;
+            font-size: 11px;
         }
     </style>
 </head>
 
 <body>
-    <table class="header">
-        <tr>
-            <td class="text-center">
-                <div class="company-name">
-                    <img src="{{ public_path('backend/dist/assets/img/logo02.png') }}" width="60">
-                    <span>Veshoz Village Private Limited</span>
-                </div>
-                <div class="small">A Trusuted Source of Aloe Vera & Herb Product</div>
-                <div class="small">Mob: 01721336504</div>
-                <div class="small">Flat-3/A, House-53, Road-14</div>
-                <div class="small">Sector-13, Uttara, Dhaka-1230.</div>
-            </td>
-        </tr>
-    </table>
-    <h3 style="text-align:center;">Purchase List</h3>
 
-    <table width="100%" border="1" cellspacing="0" cellpadding="5">
+    <!-- Company Info -->
+    <div class="company-section">
+        <img src="{{ public_path('backend/dist/assets/img/logo02.png') }}">
+        <div class="company-title">{{ $companyName ?? 'Company Name' }}</div>
+        <div class="company-info">A Trusted Source of Aloe Vera & Herb Product</div>
+        <div class="company-info">Mob: 01721336504</div>
+        <div class="company-info">Flat-3/A, House-53, Road-14</div>
+        <div class="company-info">Sector-13, Uttara, Dhaka-1230</div>
+    </div>
+
+    <!-- Title -->
+    <div class="text-center">
+        <div class="report-title">Purchase List</div>
+    </div>
+
+    <div class="report-info">
+        <strong>Report Period:</strong>
+
+        {{ $fromDate ? date('d-m-Y', strtotime($fromDate)) : 'Beginning' }}
+        To
+        {{ $toDate ? date('d-m-Y', strtotime($toDate)) : date('d-m-Y') }}
+    </div>
+
+    <!-- Table -->
+    <table>
         <thead>
             <tr>
-                <th>SL</th>
-                <th>Vendor</th>
-                <th>Date</th>
-                <th>Invoice</th>
+                <th style="width:5%">SL</th>
+                <th style="width:20%">Vendor</th>
+                <th style="width:12%">Date</th>
+                <th style="width:15%">Invoice</th>
                 <th>Item</th>
-                <th>Total</th>
+                <th style="width:12%">Total TK</th>
             </tr>
         </thead>
+
         <tbody>
+            @php $total = 0; @endphp
+
             @foreach ($purchases as $purchase)
+                @php $total += $purchase->grand_total; @endphp
+
                 <tr>
-                    <td>{{ $loop->index + 1 }}</td>
+                    <td>{{ $loop->iteration }}</td>
                     <td>{{ $purchase->vendor->v_name }}</td>
-                    <td>{{ $purchase->date->format('d-m-y') }}</td>
+                    <td>{{ $purchase->date->format('d-m-Y') }}</td>
                     <td>{{ $purchase->invoice_no }}</td>
+
                     <td>
                         @foreach ($purchase->purchaseItems as $item)
                             {{ $item->item->item_name }}{{ !$loop->last ? ', ' : '' }}
                         @endforeach
                     </td>
-                    <td>{{ $purchase->grand_total }}</td>
+
+                    <td class="amount">{{ number_format($purchase->grand_total, 2) }}</td>
                 </tr>
             @endforeach
+
+            <!-- Grand Total -->
+            <tr style="background:#e9ecef; font-weight:bold;">
+                <td colspan="5" class="text-right">Grand Total</td>
+                <td class="amount">{{ number_format($total, 2) }}</td>
+            </tr>
+
         </tbody>
     </table>
 
+    <!-- Footer -->
     <div class="footer">
-        <!-- SIGNATURE -->
-        <table class="signature">
+        <table width="100%" class="signature">
             <tr>
-                <td>
+                <td class="text-left">
                     -------------------<br>
-                    Received By
+                    Checked By
                 </td>
-                <td style="text-align: right">
+                <td class="text-right">
                     -------------------<br>
                     Authorized By
                 </td>
             </tr>
         </table>
     </div>
+
 </body>
 
 </html>

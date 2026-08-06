@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Chemicals;
+use App\Models\Chemical;
 use App\Models\Depreciation;
 use App\Models\InventoryLedger;
 use App\Models\Item;
@@ -18,22 +18,25 @@ use App\Models\TransportCost;
 use App\Models\UtilityCost;
 use App\Services\InventoryService;
 use App\Services\JournalService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ProductionController extends Controller
 {
     protected InventoryService $inventoryService;
+    protected JournalService $journalService;
 
-    public function __construct(InventoryService $inventoryService)
+    public function __construct(InventoryService $inventoryService, JournalService $journalService)
     {
         $this->middleware('auth');
         $this->inventoryService = $inventoryService;
+        $this->journalService = $journalService;
     }
 
     public function production()
     {
-        return view('menufactur.modiul');
+        return view('production.modiul');
     }
 
     public function productAdd()
@@ -59,7 +62,7 @@ class ProductionController extends Controller
         $nextBatch = $date . $newSerial;
 
 
-        return view('menufactur.add', compact('nextBatch', 'newSerial', 'items'));
+        return view('production.add', compact('nextBatch', 'newSerial', 'items'));
     }
 
     public function productStore(Request $request)
@@ -68,20 +71,16 @@ class ProductionController extends Controller
 
         DB::transaction(function () use ($request, &$production) {
 
-            $itemId = Item::where('item_name', $request->ra_name)->value('id');
-
             $production = Production::create([
                 'name'           => $request->name,
                 'batch_no'       => $request->batch_no,
                 'batch_size'     => $request->batch_size,
                 'date'           => $request->date,
-                'item_id'        => $itemId,
+                'item_id'        => $request->ra_item_id,
                 'raw_qty'        => $request->raw_qty,
                 'raw_unit'       => $request->raw_unit,
                 'raw_u_price'    => $request->raw_u_price,
                 'raw_t_price'    => $request->raw_t_price,
-                'pulp'           => $request->pulp,
-                'pulp_unit'      => $request->pulp_unit,
                 'yield'          => $request->yield,
                 'yield_unit'     => $request->yield_unit,
                 'yield_percent'  => $request->yield_percent,
@@ -97,7 +96,7 @@ class ProductionController extends Controller
 
             // Inventory stock out
             $this->inventoryService->consumeForProduction(
-                $itemId,
+                $request->ra_item_id,
                 (float)$request->raw_qty,
                 (float)$request->raw_u_price,
                 $productionId,
@@ -109,11 +108,9 @@ class ProductionController extends Controller
                 foreach ($request->raw_name as $key => $row) {
                     if (empty($row)) continue;
 
-                    $itemId = Item::where('item_name', $row)->value('id');
-
-                    Chemicals::create([
+                    Chemical::create([
                         'production_id' => $productionId,
-                        'item_id'       => $itemId,
+                        'item_id' => $request->raw_item_id[$key],
                         'used_percent'  => $request->used_percent[$key],
                         'used_qty'      => $request->used_qty[$key],
                         'ch_unit'       => $request->ch_unit[$key],
@@ -123,7 +120,7 @@ class ProductionController extends Controller
 
                     // Inventory stock out
                     $this->inventoryService->consumeForProduction(
-                        $itemId,
+                        $request->raw_item_id[$key],
                         (float)$request->used_qty[$key],
                         (float)$request->u_price[$key],
                         $productionId,
@@ -137,11 +134,9 @@ class ProductionController extends Controller
                 foreach ($request->pack_name as $key => $row) {
                     if (empty($row)) continue;
 
-                    $itemId = Item::where('item_name', $row)->value('id');
-
                     PackagingMaterial::create([
                         'production_id' => $productionId,
-                        'item_id'       => $itemId,
+                        'item_id' => $request->pack_item_id[$key],
                         'pack_size'     => $request->pack_size[$key],
                         'pack_qty'      => $request->pack_qty[$key],
                         'pack_price'    => $request->pack_price[$key],
@@ -150,7 +145,7 @@ class ProductionController extends Controller
 
                     // Inventory stock out
                     $this->inventoryService->consumeForProduction(
-                        $itemId,
+                        $request->pack_item_id[$key],
                         (float)$request->pack_qty[$key],
                         (float)$request->pack_price[$key],
                         $productionId,
@@ -271,7 +266,29 @@ class ProductionController extends Controller
                 $request->date
             );
 
-            app(JournalService::class)->createProductionJournal($production, $sectionTotal);
+            // পুরনো Journal Delete (Update এর ক্ষেত্রে)
+            $this->journalService->removeOldEntries(
+                'production',
+                $production->id
+            );
+
+            // নতুন Journal Create
+            $journal = JournalEntry::create([
+                'company_id'   => auth()->user()->company_id,
+                'module_type'  => 'production',
+                'module_id'    => $production->id,
+                'reference_no' => $production->batch_no,
+                'date'         => $production->date,
+                'particulars'  => 'Production Entry',
+                'created_by'   => auth()->id(),
+            ]);
+
+            // Journal Items Create
+            $this->journalService->createProductionJournal(
+                $journal->id,
+                $production,
+                $sectionTotal
+            );
         }); // end transaction        
 
         return redirect()->back()->with('success', 'Production Saved Successfully');
@@ -318,14 +335,14 @@ class ProductionController extends Controller
             'total_cost'  => $query->sum('grand_total'),
         ];
 
-        return view('menufactur.list', compact('productions', 'summary'));
+        return view('production.list', compact('productions', 'summary'));
     }
 
 
     public function productionDetails($id)
     {
         $production = Production::with(
-            'items',
+            'item',
             'chemicals',
             'depreciation',
             'laborCost',
@@ -360,13 +377,13 @@ class ProductionController extends Controller
         if ($batchSizeNumeric > 0) {
             $costPerUnit = $production->grand_total / $batchSizeNumeric;
         }
-        return view('menufactur.details', compact('production', 'costPerUnit', 'highestCostHead'));
+        return view('production.details', compact('production', 'costPerUnit', 'highestCostHead'));
     }
 
     public function productionEdit($id)
     {
         $production = Production::with(
-            'items',
+            'item',
             'chemicals',
             'depreciation',
             'laborCost',
@@ -377,23 +394,23 @@ class ProductionController extends Controller
             'transportCost',
             'utilityCost'
         )->find($id);
-        return view('menufactur.edit', compact('production'));
+        return view('production.edit', compact('production'));
     }
 
     public function productionUpdate(Request $request, $id)
     {
         DB::transaction(function () use ($request, $id) {
 
-        $production = Production::findOrFail($id);
+            $production = Production::findOrFail($id);
 
-        // 1️⃣ Remove old inventory & journal
-        InventoryLedger::where('module_type', 'production')
-            ->where('module_id', $production->id)
-            ->delete();
+            // 1️⃣ Remove old inventory & journal
+            InventoryLedger::where('module_type', 'production')
+                ->where('module_id', $production->id)
+                ->delete();
 
-        JournalEntry::where('module_type', 'production')
-            ->where('module_id', $production->id)
-            ->delete();
+            JournalEntry::where('module_type', 'production')
+                ->where('module_id', $production->id)
+                ->delete();
 
             // 3️⃣ Delete old related data
             $production->chemicals()->delete();
@@ -448,7 +465,7 @@ class ProductionController extends Controller
 
                     $itemId = Item::where('item_name', $row)->value('id');
 
-                    Chemicals::create([
+                    Chemical::create([
                         'production_id' => $productionId,
                         'item_id'       => $itemId,
                         'used_percent'  => $request->used_percent[$key],
@@ -601,9 +618,174 @@ class ProductionController extends Controller
                 $request->date
             );
 
-            app(JournalService::class)->createProductionJournal($production, $sectionTotal);
+            // পুরনো Journal Delete (Update এর ক্ষেত্রে)
+            $this->journalService->removeOldEntries(
+                'production',
+                $production->id
+            );
+
+            // নতুন Journal Create
+            $journal = JournalEntry::create([
+                'company_id'   => auth()->user()->company_id,
+                'module_type'  => 'production',
+                'module_id'    => $production->id,
+                'reference_no' => $production->batch_no,
+                'date'         => $production->date,
+                'particulars'  => 'Production Entry',
+                'created_by'   => auth()->id(),
+            ]);
+
+            // Journal Items Create
+            $this->journalService->createProductionJournal(
+                $journal->id,
+                $production,
+                $sectionTotal
+            );
         });
 
-        return back()->with('success', 'Production updated successfully');
+        return redirect('/production/list')->with('success', 'Production updated successfully');
+    }
+
+    public function productionDelete($id)
+    {
+        DB::transaction(function () use ($id) {
+
+            $production = Production::findOrFail($id);
+
+            // 1. Inventory Ledger Delete
+            InventoryLedger::where('module_type', 'production')
+                ->where('module_id', $production->id)
+                ->delete();
+
+            // 2. Journal Delete (Journal Items cascade হলে আলাদা delete লাগবে না)
+            JournalEntry::where('module_type', 'production')
+                ->where('module_id', $production->id)
+                ->delete();
+
+            // 3. Child Tables Delete
+            Chemical::where('production_id', $production->id)->delete();
+
+            PackagingMaterial::where('production_id', $production->id)->delete();
+
+            LaborCost::where('production_id', $production->id)->delete();
+
+            Depreciation::where('production_id', $production->id)->delete();
+
+            UtilityCost::where('production_id', $production->id)->delete();
+
+            OverheadCost::where('production_id', $production->id)->delete();
+
+            TransportCost::where('production_id', $production->id)->delete();
+
+            QcCost::where('production_id', $production->id)->delete();
+
+            SectionTotalCost::where('production_id', $production->id)->delete();
+
+            // 4. Production Delete
+            $production->delete();
+        });
+
+        return back()
+            ->with('success', 'Production deleted successfully.');
+    }
+    public function downloadListPdf(Request $request)
+    {
+        $query = Production::query();
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('date', '<=', $request->to_date);
+        }
+
+        if ($request->filled('product')) {
+
+            $query->where(function ($q) use ($request) {
+
+                $q->where('name', 'like', '%' . $request->product . '%')
+                    ->orWhere('batch_no', 'like', '%' . $request->product . '%');
+            });
+        }
+
+        $fromDate = $request->from_date;
+        $toDate   = $request->to_date;
+
+        $companyName = auth()->user()->company->name ?? 'Company Name';
+
+        $productions = $query
+            ->latest()
+            ->get();
+
+        $summary = [
+            'total_batch' => $productions->count(),
+            'total_qty'   => $productions->sum('final_qty'),
+            'total_cost'  => $productions->sum('grand_total'),
+        ];
+
+        $pdf = Pdf::loadView('production.list_pdf', compact(
+            'productions',
+            'summary',
+            'fromDate',
+            'toDate',
+            'companyName'
+        ));
+
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->download('Production-List.pdf');
+    }
+
+    public function downloadPdf($id)
+    {
+        $production = Production::with(
+            'item',
+            'chemicals',
+            'depreciation',
+            'laborCost',
+            'overHeadCost',
+            'qcCost',
+            'packagingMaterial',
+            'sectionTotalCost',
+            'transportCost',
+            'utilityCost'
+        )->findOrFail($id);
+
+        $sections = [
+            'Raw Material'  => (float) $production->raw_t_price,
+            'Chemical'      => (float) ($production->sectionTotalCost->raw_grand_price ?? 0),
+            'Packaging'     => (float) ($production->sectionTotalCost->pack_grand_price ?? 0),
+            'Labor'         => (float) ($production->sectionTotalCost->labor_grand_price ?? 0),
+            'Utility'       => (float) ($production->sectionTotalCost->utility_grand_price ?? 0),
+            'Depreciation'  => (float) ($production->sectionTotalCost->depreciation_grand_price ?? 0),
+            'Overhead'      => (float) ($production->sectionTotalCost->overhead_grand_price ?? 0),
+            'Transport'     => (float) ($production->sectionTotalCost->transport_grand_price ?? 0),
+            'QC'            => (float) ($production->sectionTotalCost->qc_grand_price ?? 0),
+        ];
+
+        $highestCostHead = collect($sections)
+            ->sortDesc()
+            ->keys()
+            ->first();
+
+        $batchSizeNumeric = (float) preg_replace('/[^0-9.]/', '', $production->batch_size);
+
+        $costPerUnit = 0;
+
+        if ($batchSizeNumeric > 0) {
+            $costPerUnit = $production->grand_total / $batchSizeNumeric;
+        }
+
+        $pdf = Pdf::loadView('production.details-pdf', [
+            'production'      => $production,
+            'costPerUnit'     => $costPerUnit,
+            'highestCostHead' => $highestCostHead,
+            'companyName'     => auth()->user()->company->name ?? 'Your Company Name',
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->download('Production-' . $production->batch_no . '.pdf');
     }
 }

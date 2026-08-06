@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('inventory_ledgers', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id')->nullable()->index();
-            $table->unsignedBigInteger('item_id');
+            $table->foreignId('item_id')->constrained()->cascadeOnDelete();
             $table->string('module_type'); // purchase, sale, adjustment
             $table->unsignedBigInteger('module_id');
             $table->decimal('qty_in', 15, 3)->default(0);

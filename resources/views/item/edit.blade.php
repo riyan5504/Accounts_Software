@@ -6,7 +6,7 @@
         <!--begin::Container-->
         <div class="container-fluid">
             <!--begin::Row-->
-            <div class="row">
+            <div class="row bg-info opasity-50 rounded">
                 <div class="col-sm-6">
                     <h3 class="mb-0 mt-0">Edit Item</h3>
                 </div>
@@ -55,7 +55,7 @@
             <!--begin::Quick Example-->
             <div class="card card-primary card-outline">
                 <!--begin::Form-->
-                <form action="{{ route('item.item-update', $item->id) }}" method="POST">
+                <form action="{{ route('item.update', $item->id) }}" method="POST">
                     @csrf
                     <!--begin::Body-->
                     <div class="card-body">
@@ -85,7 +85,7 @@
                                         <i class="bi bi-plus"></i>
                                     </button>
                                 </div>
-                                <div class="form-group col-sm-4 col-md-2 mb-1">
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
                                     <input type="text" name="size" value="{{$item->size}}" class="form-control size" placeholder=" " />
                                     <label for="size" class="floating-label">Pack Size</label>
                                 </div>
@@ -98,6 +98,28 @@
                                     <input type="number" name="opening_stock" value="{{$item->opening_stock}}" class="form-control opening_stock"
                                         placeholder=" "/>
                                     <label for="opening_stock" class="floating-label">Opening Stock Qty</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
+                                    <select name="stock_unit" class="form-control stock_unit" placeholder=" "
+                                        required>
+                                        <option selected disabled>Select Unit</option>                                        
+                                        <option value="gm" @if ($item->stock_unit == 'gm')
+                                            selected
+                                        @endif>gm</option>                                        
+                                        <option value="ml"@if ($item->stock_unit == 'ml')
+                                            selected
+                                        @endif>ml</option>
+                                        <option value="kg" @if ($item->stock_unit == 'kg')
+                                            selected
+                                        @endif>Kg</option>
+                                        <option value="ltr" @if ($item->stock_unit == 'ltr')
+                                            selected
+                                        @endif>Ltr</option>
+                                        <option value="pcs" @if ($item->stock_unit == 'pcs')
+                                            selected
+                                        @endif>Pcs</option>
+                                    </select>
+                                    <label for="stock_unit" class="floating-label">Unit</label>
                                 </div>
                             </div>
                         </div>
@@ -142,7 +164,7 @@
                                 <td>{{ optional($item->category)->cat_name }}</td>
                                 <td>{{ $item->size }}</td>
                                 <td>{{ $item->unit_price }}</td>
-                                <td>{{ $item->opening_stock }}</td>
+                                <td>{{ $item->opening_stock }} {{$item->stock_unit}}</td>
                                 <td style="text-align: center">
                                     <a href="{{ url('/item/edit/' . $item->id) }}" class="btn ms-0 me-0">
                                         <i class="bi bi-pencil text-primary"></i>
@@ -168,7 +190,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
 
-                <form action="{{ route('item.category-store') }}" method="POST">
+                <form action="{{ route('item.category.store') }}" method="POST">
                     @csrf
 
                     <div class="modal-header">
@@ -259,7 +281,7 @@
 
                 // Autocomplete
                 itemNameInput.autocomplete({
-                    source: "{{ route('item.search') }}",
+                    source: "{{ route('search.item') }}",
                     minLength: 1,
                     select: function(event, ui) {
                         if (ui.item && ui.item.id) {
@@ -324,7 +346,7 @@
     </script>
     <script>
         $('#cat_name').autocomplete({
-            source: "{{ route('category.search') }}",
+            source: "{{ route('search.category') }}",
             minLength: 1,
             select: function(event, ui) {
                 $('#cat_name').val(ui.item.value);

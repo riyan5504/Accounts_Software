@@ -20,8 +20,8 @@
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ url('/production/product/add') }}"
-                                class="{{ request()->is('production/entry') ? 'text-primary fw-bold' : 'text-dark' }}">
+                            <a href="{{ url('/production/add') }}"
+                                class="{{ request()->is('production/add') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Entry
                             </a>
                         </li>
@@ -68,13 +68,13 @@
                     </div>
                 </form>
                 <div class="row mb-2">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="alert alert-primary py-1 mb-0">
                             Total Batch: <strong>{{ $summary['total_batch'] }}</strong>
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="alert alert-success py-1 mb-0">
                             Total Qty: <strong>{{ number_format($summary['total_qty'], 2) }}</strong>
                         </div>
@@ -84,6 +84,15 @@
                         <div class="alert alert-warning py-1 mb-0">
                             Total Cost: <strong>৳ {{ number_format($summary['total_cost'], 2) }}</strong>
                         </div>
+                    </div>
+                    <div class="col-md-2 text-end no-print mt-1">
+                        <a href="{{ route('production.list.pdf', request()->all()) }}"
+                            class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-file-pdf"></i>
+                        </a>
+                        <a href="{{ url()->previous() }}" class="btn btn-sm btn-outline-secondary" title="Go Back">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
                     </div>
                 </div>
             </div>

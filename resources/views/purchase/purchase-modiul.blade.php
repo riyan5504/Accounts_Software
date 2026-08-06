@@ -33,7 +33,7 @@
                     <!--begin::Small Box Widget 1-->
                     <div class="small-box text-bg-primary">
                         <div class="inner">
-                            <a href="{{ url('/purchase/entry') }}">
+                            <a href="{{ url('/purchase/entry') }}" class=" link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                                 <p>Purchase Entry</p>
                             </a>
                         </div>
@@ -55,7 +55,7 @@
                     <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-success">
                         <div class="inner">
-                            <a href="{{ url('/purchase/list') }}">
+                            <a href="{{ url('/purchase/list') }}" class="link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                                 <p>Purchase List</p>
                             </a>
                         </div>
@@ -71,12 +71,33 @@
                     </div>
                     <!--end::Small Box Widget 2-->
                 </div>
+                <div class="col-lg-3 col-6">
+                    <!--begin::Small Box Widget 1-->
+                    <div class="small-box text-bg-primary">
+                        <div class="inner">
+                            <a href="{{ url('/purchase/return/entry') }}" class=" link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                                <p style="font-size: 22px">Purchase Return Entry</p>
+                            </a>
+                        </div>
+                        <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path
+                                d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z">
+                            </path>
+                        </svg>
+                        <a href="{{ url('/purchase/return/entry') }}"
+                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                            Entry Here <i class="bi bi-link-45deg"></i>
+                        </a>
+                    </div>
+                    <!--end::Small Box Widget 1-->
+                </div>
 
                 <div class="col-lg-3 col-6">
                     <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-info">
                         <div class="inner">
-                            <a href="{{ route('purchase.vendoradd') }}">
+                            <a href="{{ route('purchase.vendor.add') }}" class=" link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                                 <p>Vendor Entry</p>
                             </a>
                         </div>
@@ -85,7 +106,27 @@
                             <path
                                 d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                         </svg>
-                        <a href="{{ route('purchase.vendorlist') }}"
+                        <a href="{{ route('purchase.vendor.add') }}"
+                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                           Entry Here <i class="bi bi-link-45deg"></i>
+                        </a>
+                    </div>
+                    <!--end::Small Box Widget 2-->
+                </div>
+                <div class="col-lg-3 col-6">
+                    <!--begin::Small Box Widget 2-->
+                    <div class="small-box text-bg-info">
+                        <div class="inner">
+                            <a href="{{ route('purchase.vendor.list') }}" class=" link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                                <p>Vendor List</p>
+                            </a>
+                        </div>
+                        <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path
+                                d="M4 6h2v2H4V6zm0 5h2v2H4v-2zm0 5h2v2H4v-2zM8 6h12v2H8V6zm0 5h8v2H8v-2zm0 5h6v2H8v-2zM19.293 11.293a1 1 0 0 1 1.414 1.414l-3.829 3.829a1 1 0 0 1-1.414 0l-1.829-1.829a1 1 0 1 1 1.414-1.414l1.122 1.121 3.022-3.121z" />
+                        </svg>
+                        <a href="{{ route('purchase.vendor.list') }}"
                             class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                             Show List <i class="bi bi-link-45deg"></i>
                         </a>
@@ -96,8 +137,8 @@
                     <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-info">
                         <div class="inner">
-                            <a href="{{ route('purchase.vendorlist') }}">
-                                <p>Vendor List</p>
+                            <a href="{{ route('vendor-payment.create') }}" class=" link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                                <p>Vendor Payment</p>
                             </a>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
@@ -105,9 +146,9 @@
                             <path
                                 d="M4 6h2v2H4V6zm0 5h2v2H4v-2zm0 5h2v2H4v-2zM8 6h12v2H8V6zm0 5h8v2H8v-2zm0 5h6v2H8v-2zM19.293 11.293a1 1 0 0 1 1.414 1.414l-3.829 3.829a1 1 0 0 1-1.414 0l-1.829-1.829a1 1 0 1 1 1.414-1.414l1.122 1.121 3.022-3.121z" />
                         </svg>
-                        <a href="{{ route('purchase.vendorlist') }}"
+                        <a href="{{ route('vendor-payment.create') }}"
                             class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                            Show List <i class="bi bi-link-45deg"></i>
+                            Entry Here <i class="bi bi-link-45deg"></i>
                         </a>
                     </div>
                     <!--end::Small Box Widget 2-->

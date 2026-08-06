@@ -31,8 +31,7 @@
         <!--begin::Container-->
         <div class="container-fluid">
             <!--begin::Row-->
-            <div class="row g-0">
-
+            <div class="row bg-info opasity-50 rounded p-1">
                 <div class="col-sm-8">
                     <ol class="breadcrumb float-sm">
                         <li class="breadcrumb-item">
@@ -45,39 +44,52 @@
                         <li class="breadcrumb-item">
                             <a href="{{ url('/purchase/entry') }}"
                                 class="{{ request()->is('purchase/entry') ? 'text-primary fw-bold' : 'text-dark' }}">
-                                Entry
+                                Purchase Entry
                             </a>
                         </li>
 
                         <li class="breadcrumb-item">
                             <a href="{{ url('/purchase/list') }}"
                                 class="{{ request()->is('purchase/list') ? 'text-primary fw-bold' : 'text-dark' }}">
-                                List
+                                Purchase List
                             </a>
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ url('/item/list') }}"
-                                class="{{ request()->is('item/list') ? 'text-primary fw-bold' : 'text-dark' }}">
-                                Item List
+                            <a href="{{ url('/item/add') }}"
+                                class="{{ request()->is('item/add') ? 'text-primary fw-bold' : 'text-dark' }}">
+                                Item Entry
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ url('/purchase/return/list') }}"
+                                class="{{ request()->is('/purchase/return/list') ? 'text-primary fw-bold' : 'text-dark' }}">
+                                Return List
                             </a>
                         </li>
 
                         <li class="breadcrumb-item">
-                            <a href="{{ route('purchase.vendorlist') }}"
-                                class="{{ request()->routeIs('purchase.vendorlist') ? 'text-primary fw-bold' : 'text-dark' }}">
+                            <a href="{{ route('purchase.vendor.list') }}"
+                                class="{{ request()->routeIs('purchase.vendor.list') ? 'text-primary fw-bold' : 'text-dark' }}">
                                 Vendor List
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('vendor-payment.create') }}"
+                                class="{{ request()->routeIs('vendor-payment.create') ? 'text-primary fw-bold' : 'text-dark' }}">
+                                Vendor Payment
                             </a>
                         </li>
                     </ol>
                 </div>
                 <!-- Print Button -->
+
                 <div class="col-sm-4 text-end no-print mt-1">
-                    <button onclick="window.print()" class="btn btn-primary btn-sm">
-                        🖨️ Print Invoice
-                    </button>
-                    <a href="{{ route('purchase.invoice.pdf', $purchase->id) }}" class="btn btn-primary btn-sm">
-                        📄 Download PDF
+                    <a href="{{ route('purchase.pdf', $purchase->id) }}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-file-pdf"></i>
+                    </a>
+                    <a href="{{ url()->previous() }}" class="btn btn-sm btn-outline-warning" title="Go Back">
+                        <i class="bi bi-arrow-left"></i>
                     </a>
                 </div>
             </div>
@@ -149,10 +161,10 @@
                                             <th style="width: 350px">Item Name</th>
                                             <th>Pack Size</th>
                                             <th>Quantity</th>
-                                            <th>Unit Price</th>
-                                            <th>Amount</th>
-                                            <th>Vat</th>
-                                            <th class="text-end">Total Amount</th>
+                                            <th>Unit Price (TK)</th>
+                                            <th>Amount (TK)</th>
+                                            <th>Vat (TK)</th>
+                                            <th class="text-end">Total Amount (TK)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -160,9 +172,9 @@
                                             <tr class="align-middle">
                                                 <td class="text-center">{{ $loop->index + 1 }}</td>
                                                 <td class="text-start">{{ $singleItm->item->item_name }}</td>
-                                                <td class="text-center">{{ $singleItm->item->size }}
-                                                    {{ $singleItm->item->unit }}</td>
-                                                <td class="text-center">{{ $singleItm->qty }}</td>
+                                                <td class="text-center">{{ $singleItm->item->size }}</td>
+                                                <td class="text-center">{{ $singleItm->qty }}
+                                                    {{ $singleItm->item->stock_unit }}</td>
                                                 <td class="text-end">{{ number_format($singleItm->unit_price, 2) }}</td>
                                                 <td class="text-end">{{ number_format($singleItm->price, 2) }}</td>
                                                 <td class="text-end">{{ number_format($singleItm->vat_amount, 2) }}</td>
@@ -187,11 +199,17 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>1</td>
-                                                    <td>Cash</td>
-                                                    <td class="text-end">{{ number_format($purchase->paid_amt, 2) }}</td>
-                                                </tr>
+                                                @foreach ($transactions as $transaction)
+                                                    @if ($transaction->payment_method == 'due')
+                                                        @continue
+                                                    @endif
+                                                    <tr>
+                                                        <td>{{ $loop->index + 1 }}</td>
+                                                        <td>{{ ucfirst($transaction->payment_method) }}</td>
+                                                        <td class="text-end">{{ number_format($transaction->paid_amt, 2) }}
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
                                             </tbody>
                                         </table>
                                     </div>
@@ -238,14 +256,14 @@
                                             <tr>
                                                 <td>Paid:</td>
                                                 <td class="text-end">
-                                                    {{ number_format($purchase->paid_amt, 2) }}
+                                                    {{ number_format($totalPaid, 2) }}
                                                 </td>
                                             </tr>
 
                                             <tr>
                                                 <th>Due:</th>
                                                 <th class="text-end">
-                                                    {{ number_format($purchase->due_amt, 2) }}
+                                                    {{ number_format($due, 2) }}
                                                 </th>
                                             </tr>
                                         </table>

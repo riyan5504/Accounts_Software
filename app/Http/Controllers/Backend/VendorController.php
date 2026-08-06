@@ -15,19 +15,25 @@ class VendorController extends Controller
 
     public function vendorAdd()
     {
-        return view('vendor.vendor-add');
+        $vendors = Vendor::latest()->get();
+        return view('vendor.vendor-add', compact('vendors'));
     }
 
     public function vendorStore(Request $request)
     {
         $vendor = Vendor::updateOrCreate(
-            ['v_name' => $request->v_name, 'phone' => $request->phone],
             [
+                'company_id' => auth()->user()->company_id,
+                'phone' => $request->phone
+            ],
+            [
+                'v_name' => $request->v_name,
                 'email' => $request->email,
                 'address' => $request->address,
+                'opening_balance' => $request->opening_balance ?? 0,
             ]
         );
-        return redirect('/vendor/list');
+        return back()->with('success', 'Vendor Details saved successfully!');
     }
 
     public function vendorList()
@@ -37,8 +43,9 @@ class VendorController extends Controller
     }
     public function vendorEdit($id)
     {
+        $vendors = Vendor::latest()->get();
         $vendor = Vendor::find($id);
-        return view('vendor.edit', compact('vendor'));
+        return view('vendor.edit', compact('vendor', 'vendors'));
     }
     public function vendorUpdate(Request $request, $id)
     {
@@ -47,13 +54,14 @@ class VendorController extends Controller
         $vendor->phone = $request->phone;
         $vendor->email = $request->email;
         $vendor->address = $request->address;
+        $vendor->opening_balance = $request->opening_balance ?? 0;
         $vendor->save();
-        return redirect('/vendor/list');
+        return redirect('/purchase/vendor/add')->with('success', 'Vendor Details Updated successfully!');
     }
     public function vendorDelete($id)
     {
         $vendor = Vendor::find($id);
         $vendor->delete();
-        return redirect()->back();
+        return back()->with('success', 'Vendor Delete successfully!');
     }
 }
