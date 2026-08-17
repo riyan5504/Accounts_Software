@@ -74,7 +74,7 @@
                         <div id="vendorContainer" class="border-0 shadow-sm ms-0">
                             <div
                                 class="bg-success text-white d-flex justify-content-between align-vendors-center mb-3 px-1 py-1 rounded">
-                                <h6 class="mb-0 ms-1">Vendor Details</h6>
+                                <h6 class="mb-0 ms-1 p-1">Vendor Details</h6>
                             </div>
                             <!-- ✅ Proper Row Structure -->
                             <div class="row g-2 align-vendor-end mb-1">
@@ -277,31 +277,29 @@
 
 @push('script')
     <script>
-        $('.payment_status').on('change', function() {
-
+        let selectedDebitAccount = null;
+        $(".payment_status").on("change", function() {
             let status = $(this).val();
-            let accountSelect = $('.debit_account_id');
-
-            accountSelect
-                .prop('disabled', true)
-                .html('<option selected disabled>Loading...</option>');
-
+            let accountSelect = $(".debit_account_id");
+            accountSelect.prop("disabled", true);
+            accountSelect.html('<option value="">Loading...</option>');
             $.ajax({
-                url: "{{ route('search.accounts.by-status', ':status') }}"
-                    .replace(':status', status),
-                type: 'GET',
+                url: "{{ route('search.accounts.by-status', ':status') }}".replace(':status', status),
+                type: "GET",
                 success: function(data) {
-
-                    accountSelect
-                        .prop('disabled', false)
-                        .empty()
-                        .append('<option selected disabled>Select Debit Account</option>');
-
-                    data.forEach(acc => {
+                    accountSelect.prop("disabled", false);
+                    accountSelect.empty();
+                    accountSelect.append('<option value="">Select Debit Account</option>');
+                    $.each(data, function(i, acc) {
                         accountSelect.append(
                             `<option value="${acc.id}">${acc.account_name}</option>`
                         );
                     });
+
+                    // Invoice থেকে আসা Debit Account Select
+                    if (selectedDebitAccount) {
+                        accountSelect.val(selectedDebitAccount);
+                    }
                 }
             });
         });
@@ -398,11 +396,14 @@
                 $(".phone").val(res.vendor.phone);
                 $(".email").val(res.vendor.email);
                 $(".address").val(res.vendor.address);
-                $(".reference").val(res.purchase.reference);
-                $(".payment_status").val(res.purchase.payment_status).trigger("change");
+                selectedDebitAccount = res.purchase.debit_account_id;
+                $(".payment_status").val(res.purchase.payment_status == "paid" ? "paid" : "due").trigger("change");
                 $(".credit_account_id").val(res.purchase.credit_account_id);
+                $(".reference").val(res.purchase.reference);
                 $(".narration").val(res.purchase.narration);
-                $("#itemContainer").html("");
+                $(".dis_percent").val(res.purchase.dis_percent);
+                calculateReturn();
+                $("#itemContainer .item-row").remove();
                 $.each(res.items, function(i, item) {
                     $("#itemContainer").append(`
                     <div class="item-row row g-2 align-items-end mb-2">

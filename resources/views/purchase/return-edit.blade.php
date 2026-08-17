@@ -78,16 +78,25 @@
                             </div>
                             <!-- ✅ Proper Row Structure -->
                             <div class="row g-2 align-vendor-end mb-1">
-                                <div class="form-group col-md-5 mb-1 position-relative">
-                                    <input type="text" name="v_name" class="form-control v_name"
+                                <div class="form-group col-md-4 mb-1 position-relative">
+                                    <input type="text" name="vendor_name" class="form-control vendor_name"
                                         value="{{ $return->vendor->v_name }}" placeholder=" " required />
-                                    <label for="v_name" class="floating-label">Vendor Name</label>
+                                    <label for="vendor_name" class="floating-label">Vendor Name</label>
                                     <input type="hidden" name="vendor_id" class="form-control vendor_id"
                                         value="{{ $return->vendor->id }}" placeholder=" " />
-                                    <button class="add-btn" type="button" data-bs-toggle="modal"
-                                        data-bs-target="#addVendorModal">
-                                        <i class="bi bi-plus"></i>
-                                    </button>
+                                </div>
+
+                                <div class="form-group col-md-2 mb-1">
+                                    <select name="purchase_id" id="purchase_id" class="form-control purchase_id" required>
+                                        <option value="">Select Invoice</option>
+                                        @foreach ($invoices as $invoice)
+                                            <option value="{{ $invoice->id }}"
+                                                {{ $return->purchase_id == $invoice->id ? 'selected' : '' }}>
+                                                {{ $invoice->invoice_no }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <label for="purchase_id" class="floating-label">Purchase Invoice</label>
                                 </div>
 
                                 <div class="form-group col-md-3 mb-1">
@@ -95,7 +104,7 @@
                                         value="{{ $return->vendor->phone }}" placeholder=" " required />
                                     <label for="phone" class="floating-label">Phone</label>
                                 </div>
-                                <div class="form-group col-md-4 mb-1">
+                                <div class="form-group col-md-3 mb-1">
                                     <input type="email" name="email" class="form-control email"
                                         value="{{ $return->vendor->email }}" placeholder=" " />
                                     <label for="email" class="floating-label">Email</label>
@@ -290,33 +299,227 @@
 @endsection
 @push('script')
     <script>
-        $('.payment_status').on('change', function() {
-
+        let selectedDebitAccount = null;
+        $(".payment_status").on("change", function() {
             let status = $(this).val();
-            let accountSelect = $('.debit_account_id');
-
-            accountSelect
-                .prop('disabled', true)
-                .html('<option selected disabled>Loading...</option>');
-
+            let accountSelect = $(".debit_account_id");
+            accountSelect.prop("disabled", true);
+            accountSelect.html('<option value="">Loading...</option>');
             $.ajax({
-                url: "{{ route('search.accounts.by-status', ':status') }}"
-                    .replace(':status', status),
-                type: 'GET',
+                url: "{{ route('search.accounts.by-status', ':status') }}".replace(':status', status),
+                type: "GET",
                 success: function(data) {
-
-                    accountSelect
-                        .prop('disabled', false)
-                        .empty()
-                        .append('<option selected disabled>Select Debit Account</option>');
-
-                    data.forEach(acc => {
+                    accountSelect.prop("disabled", false);
+                    accountSelect.empty();
+                    accountSelect.append('<option value="">Select Debit Account</option>');
+                    $.each(data, function(i, acc) {
                         accountSelect.append(
                             `<option value="${acc.id}">${acc.account_name}</option>`
                         );
                     });
+
+                    // Invoice থেকে আসা Debit Account Select
+                    if (selectedDebitAccount) {
+                        accountSelect.val(selectedDebitAccount);
+                    }
                 }
             });
+        });
+
+        //==============================
+        // Clear All Return Form
+        //==============================
+        function clearReturnForm() {
+
+            // Vendor Information
+            $(".phone").val('');
+            $(".email").val('');
+            $(".address").val('');
+
+            // Purchase Invoice
+            $("#purchase_id").html('<option value="">Select Invoice</option>');
+
+            // Remove all rows except first
+            $("#itemContainer .item-row").not(":first").remove();
+
+            // Clear first row
+            let row = $("#itemContainer .item-row:first");
+
+            row.find("input[type=text]").val('');
+            row.find("input[type=number]").val('');
+            row.find("input[type=hidden]").val('');
+
+            // Summary
+            $(".dis_percent").val(0);
+            $(".dis_amt").val(0);
+            $(".vat_amt").val(0);
+            $(".sub_total").val(0);
+            $(".grand_total").val(0);
+
+            // Others
+            $(".reference").val('');
+            $(".payment_status").prop("selectedIndex", 0);
+            $(".debit_account_id").prop("selectedIndex", 0);
+            $(".credit_account_id").prop("selectedIndex", 0);
+            $(".narration").val('');
+        }
+
+
+        //==============================
+        // Vendor Autocomplete
+        //==============================
+        let vendors = @json($vendors).map(v => ({
+            label: v.v_name,
+            value: v.v_name,
+            id: v.id
+        }));
+
+        $("#vendor_name").autocomplete({
+            source: vendors,
+            select: function(event, ui) {
+                clearReturnForm();
+                $(".vendor_id").val(ui.item.id);
+                $.ajax({
+                    url: "/purchase/return/vendor/" + ui.item.id,
+                    type: "GET",
+                    success: function(res) {
+                        $(".phone").val(res.vendor.phone);
+                        $(".email").val(res.vendor.email);
+                        $(".address").val(res.vendor.address);
+                        let html = '<option value="">Select Invoice</option>';
+                        $.each(res.invoices, function(i, row) {
+                            html += `
+                        <option value="${row.id}">
+                            ${row.invoice_no}
+                        </option>
+                    `;
+                        });
+                        $("#purchase_id").html(html);
+                    }
+                });
+            }
+        });
+
+        // যদি Vendor Name পরিবর্তন করে টাইপ করে
+        $("#vendor_name").on("input", function() {
+            if ($(this).val() == "") {
+                $(".vendor_id").val("");
+                clearReturnForm();
+            }
+        });
+
+        //==============================
+        // Purchase Invoice Change
+        //==============================
+        $("#purchase_id").change(function() {
+            let id = $(this).val();
+            if (id == "") return;
+            $.get("/purchase/return/invoice/" + id, function(res) {
+                $(".phone").val(res.vendor.phone);
+                $(".email").val(res.vendor.email);
+                $(".address").val(res.vendor.address);
+                selectedDebitAccount = res.purchase.debit_account_id;
+                $(".payment_status").val(res.purchase.payment_status == "paid" ? "paid" : "due").trigger("change");
+                $(".credit_account_id").val(res.purchase.credit_account_id);
+                $(".reference").val(res.purchase.reference);
+                $(".narration").val(res.purchase.narration);
+                $(".dis_percent").val(res.purchase.dis_percent);
+                calculateReturn();
+                $("#itemContainer .item-row").remove();
+                $.each(res.items, function(i, item) {
+                    $("#itemContainer").append(`
+                    <div class="item-row row g-2 align-items-end mb-2">
+                        <div class="form-group col-md-2 mb-1">
+                            <input type="text" name="item_name[]" class="form-control item_name" value="${item.item_name}" placeholder=" " required />
+                            <label for="item_name" class="floating-label">Item Name</label>
+                            <input type="hidden" name="item_id[]" class="item_id" value="${item.item_id}">
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="text" name="item_code[]" class="form-control item_code" value="${item.item_code}" placeholder=" " readonly />
+                            <label for="item_code" class="floating-label">Item Code</label>
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="text" name="cat_name[]" class="form-control cat_name" value="${item.category}" placeholder=" " required readonly />
+                            <label for="cat_name" class="floating-label">Category</label>
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="text" name="size[]" class="form-control size" value="${item.size}" placeholder=" " readonly />
+                            <label for="size" class="floating-label">Pack Size</label>
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="number" name="qty[]" class="form-control qty" max="${item.qty}" value="${item.qty}" placeholder=" " required />
+                            <label for="qty" class="floating-label">Quantity</label>
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="number" name="unit_price[]" class="form-control unit_price" value="${item.unit_price}" placeholder=" " required readonly />
+                            <label for="unit_price" class="floating-label">Unit Price</label>
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="number" name="price[]" class="form-control price" value="${item.price}" placeholder=" " required readonly />
+                            <label for="price" class="floating-label">Price</label>
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="number" name="vat_percent[]" class="form-control vat_percent" value="${item.vat_percent}" placeholder=" " />
+                            <label for="vat_percent" class="floating-label">Vat(%)</label>
+                        </div>
+                        <div class="form-group col-md-1 mb-1">
+                            <input type="number" name="vat_amount[]" class="form-control vat_amount" value="${item.vat_amount}" placeholder=" " readonly />
+                            <label for="vat_amount" class="floating-label">Vat Amount</label>
+                        </div>
+                        <div class="form-group col-md-2 d-flex align-items-end mb-1">
+                            <div class="w-100">
+                                <input type="number" name="total_price[]" class="form-control total_price" value="${item.total_price}" placeholder=" " readonly>
+                                <label for="total_price" class="floating-label">Total Amount</label>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm ms-2 removeItem">
+                                ×
+                            </button>
+                        </div>
+                    `);
+                });
+                calculateReturn();
+            });
+        });
+
+        //==============================
+        // Calculate Function
+        //==============================
+        function calculateReturn() {
+            let subTotal = 0;
+            let vatTotal = 0;
+            $(".item-row").each(function() {
+                let qty = parseFloat($(this).find(".qty").val()) || 0;
+                let unit = parseFloat($(this).find(".unit_price").val()) || 0;
+                let vat = parseFloat($(this).find(".vat_percent").val()) || 0;
+                let price = qty * unit;
+                let vatAmount = price * vat / 100;
+                let total = price + vatAmount;
+                $(this).find(".price").val(price.toFixed(2));
+                $(this).find(".vat_amount").val(vatAmount.toFixed(2));
+                $(this).find(".total_price").val(total.toFixed(2));
+                subTotal += price;
+                vatTotal += vatAmount;
+            });
+            let disPercent = parseFloat($(".dis_percent").val()) || 0;
+            let disAmount = subTotal * disPercent / 100;
+            let grandTotal = (subTotal + vatTotal) - disAmount;
+            $(".sub_total").val(subTotal.toFixed(2));
+            $(".vat_amt").val(vatTotal.toFixed(2));
+            $(".dis_amt").val(disAmount.toFixed(2));
+            $(".grand_total").val(grandTotal.toFixed(2));
+        }
+        // Qty Change
+        $(document).on("input", ".qty", function() {
+            calculateReturn();
+        });
+
+        // VAT Change
+        $(document).on("input", ".vat_percent", function() {
+            calculateReturn();
+        });
+        // Discount Change
+        $(document).on("input", ".dis_percent", function() {
+            calculateReturn();
         });
     </script>
 @endpush

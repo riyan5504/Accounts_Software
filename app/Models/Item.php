@@ -18,6 +18,10 @@ class Item extends Model
         'cat_id',
         'size',
         'unit_price',
+        'last_purchase_price',
+        'avg_purchase_price',
+        'production_cost',
+        'sales_price',
         'opening_stock',
         'stock_unit'
     ];

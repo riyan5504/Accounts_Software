@@ -2,6 +2,7 @@
     $module = match (true) {
         request()->routeIs('dashboard') => 'all',
         request()->routeIs('purchase*') => 'purchase',
+        request()->routeIs('sales*') => 'sales',
         request()->routeIs('item*') => 'item',
         request()->routeIs('vendor*') => 'purchase',
 
@@ -39,6 +40,39 @@
             <!--begin::Sidebar Menu-->
             <ul class="nav nav-sidebar sidebar-menu flex-column" data-lte-toggle="treeview" role="menu"
                 data-accordion="true">
+                
+                @if ($module == 'item' || $module == 'all')
+                <li class="nav-item {{ $module == 'item' ? 'menu-open' : '' }}">
+                    <a href="{{ route('item.index') }}" class="nav-link">
+                        <i class="nav-icon bi bi-box text-muted"></i>
+                        <p>
+                            Item
+                            <i class="nav-arrow bi bi-chevron-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview ms-3">                        
+                        <li class="nav-item">
+                            <a href="{{ route('item.category.add') }}" class="nav-link">
+                                <i class="nav-icon bi bi-tags"></i>
+                                <p>Category Entry</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('item.add') }}" class="nav-link">
+                                <i class="nav-icon bi bi-plus-circle"></i>
+                                <p>Item Entry</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('report.stock') }}" class="nav-link">
+                                <i class="nav-icon bi bi-card-list"></i>
+                                <p>Item Stock Report</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @endif
+
                 @if ($module == 'purchase' || $module == 'all')
                     <li class="nav-item {{ $module == 'purchase' ? 'menu-open' : '' }}">
                         <a href="{{ route('purchase.index') }}" class="nav-link">
@@ -89,38 +123,6 @@
                     </li>
                 @endif
 
-                @if ($module == 'item' || $module == 'all')
-                <li class="nav-item {{ $module == 'item' ? 'menu-open' : '' }}">
-                    <a href="{{ route('item.index') }}" class="nav-link">
-                        <i class="nav-icon bi bi-box text-muted"></i>
-                        <p>
-                            Item
-                            <i class="nav-arrow bi bi-chevron-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview ms-3">                        
-                        <li class="nav-item">
-                            <a href="{{ route('item.category.add') }}" class="nav-link">
-                                <i class="nav-icon bi bi-tags"></i>
-                                <p>Category Entry</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('item.add') }}" class="nav-link">
-                                <i class="nav-icon bi bi-plus-circle"></i>
-                                <p>Item Entry</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('report.stock') }}" class="nav-link">
-                                <i class="nav-icon bi bi-card-list"></i>
-                                <p>Item Stock Report</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                @endif
-
                 @if ($module == 'production' || $module == 'all')
                     <li class="nav-item {{ $module == 'production' ? 'menu-open' : '' }}">
                         <a href="{{ route('production.index') }}" class="nav-link">
@@ -141,6 +143,56 @@
                                 <a href="{{ route('production.list') }}" class="nav-link">
                                     <i class="nav-icon bi bi-card-list"></i>
                                     <p>Production List</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
+
+                @if ($module == 'sales' || $module == 'all')
+                    <li class="nav-item {{ $module == 'sales' ? 'menu-open' : '' }}">
+                        <a href="{{ route('sales.index') }}" class="nav-link">
+                            <i class="fas fa-shopping-cart text-success"></i>
+                            <p>
+                                Sales Module
+                                <i class="nav-arrow bi bi-chevron-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview ms-3">
+                            <li class="nav-item">
+                                <a href="{{ route('sales.entry') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Sales Entry</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('sales.list') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-card-list"></i>
+                                    <p>Sales List</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('sales.return.entry') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Sales Return Entry</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('sales.customer.add') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Customer Entry</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('sales.customer.list') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-card-list"></i>
+                                    <p>Customer List</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{route('sales.customer.received.create')}}" class="nav-link">
+                                    <i class="nav-icon bi bi-card-list"></i>
+                                    <p>Customer Received</p>
                                 </a>
                             </li>
                         </ul>

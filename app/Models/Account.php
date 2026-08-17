@@ -17,7 +17,7 @@ class Account extends Model
         'ac_cat',
         'op_balance'
     ];
-    
+
     // Expense এর expense_account_id এর সাথে relation
     public function expenseEntries()
     {
@@ -26,6 +26,11 @@ class Account extends Model
     public function purchase()
     {
         return $this->hasMany(Purchase::class, 'account_id', 'id');
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(Sales::class, 'payment_account_id', 'id');
     }
 
     // Expense এর payment_account_id এর সাথে relation
@@ -41,5 +46,5 @@ class Account extends Model
     public function partners()
     {
         return $this->hasMany(Partner::class, 'account_id', 'id');
-    }   
+    }
 }

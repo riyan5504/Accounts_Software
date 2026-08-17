@@ -174,3 +174,102 @@
         <!--end::Container-->
     </div>
 @endsection
+@push('script')
+    <script>
+        if (!$.fn.DataTable.isDataTable('#accountTable')) {
+
+            var table = $('#accountTable').DataTable({
+                pageLength: 10,
+                dom: 'rtip'
+            });
+
+            $('#customSearch').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+
+            $('#pageLength').on('change', function() {
+                table.page.len($(this).val()).draw();
+            });
+
+            $('#showAll').on('change', function() {
+
+                if (this.checked) {
+                    table.page.len(-1).draw();
+                } else {
+                    table.page.len($('#pageLength').val()).draw();
+                }
+
+            });
+
+            $('#sortColumn').on('change', function() {
+
+                if ($(this).val() == "") {
+                    table.order([]).draw();
+                } else {
+                    table.order([$(this).val(), 'asc']).draw();
+                }
+
+            });
+            // নিচের pagination লুকিয়ে দিন
+            $('.dataTables_paginate').hide();
+
+            function drawPagination() {
+
+                let info = table.page.info();
+
+                let current = info.page;
+                let total = info.pages;
+
+                let html = '';
+
+                // First
+                if (current > 0) {
+                    html += '<button class="first">&lt;&lt;</button>';
+                }
+
+                // Previous
+                if (current > 0) {
+                    html += '<button class="prev">&lt;</button>';
+                }
+
+                // Current Page
+                html += '<button class="active">' + (current + 1) + '</button>';
+
+                // Next
+                if (current < total - 1) {
+                    html += '<button class="next">&gt;</button>';
+                }
+
+                // Last
+                if (current < total - 1) {
+                    html += '<button class="last">&gt;&gt;</button>';
+                }
+
+                $('#customPagination').html(html);
+
+                $('.first').click(function() {
+                    table.page('first').draw('page');
+                });
+
+                $('.prev').click(function() {
+                    table.page('previous').draw('page');
+                });
+
+                $('.next').click(function() {
+                    table.page('next').draw('page');
+                });
+
+                $('.last').click(function() {
+                    table.page('last').draw('page');
+                });
+
+            }
+
+            drawPagination();
+
+            table.on('draw', function() {
+                drawPagination();
+            });
+        }
+    </script>
+@endpush

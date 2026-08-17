@@ -3,7 +3,7 @@
 <head>
     <style>
         body {
-            font-size: 12px;
+            font-size: 13px;
             font-family: Arial, sans-serif;
             color: #333;
         }
@@ -28,12 +28,12 @@
         }
 
         .company-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
         }
 
         .company-info {
-            font-size: 12px;
+            font-size: 11px;
             margin-top: 2px;
         }
 

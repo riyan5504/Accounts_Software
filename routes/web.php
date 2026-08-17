@@ -4,6 +4,8 @@ use App\Http\Controllers\Backend\{
     AccountController,
     AdminController,
     AdminLoginController,
+    CustomerController,
+    CustomerReceivedController,
     ItemController,
     ProductionController,
     PurchaseController,
@@ -46,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
     // Search Routes
     Route::prefix('search')->name('search.')->group(function () {
         Route::get('/vendor', [SearchController::class, 'vendorSearch'])->name('vendor');
+        Route::get('/customer', [SearchController::class, 'customerSearch'])->name('customer');
         Route::get('/item', [SearchController::class, 'itemSearch'])->name('item');
         Route::get('/category', [SearchController::class, 'categorySearch'])->name('category');
         Route::get('/account', [SearchController::class, 'searchAccount'])->name('account');
@@ -158,8 +161,8 @@ Route::middleware(['auth'])->group(function () {
     // Production Module
     Route::prefix('production')->name('production.')->group(function () {
         Route::get('/', [ProductionController::class, 'production'])->name('index');
-        Route::get('/add', [ProductionController::class, 'productAdd'])->name('add');
-        Route::post('/store', [ProductionController::class, 'productStore'])->name('store');
+        Route::get('/add', [ProductionController::class, 'productionAdd'])->name('add');
+        Route::post('/store', [ProductionController::class, 'productionStore'])->name('store');
         Route::get('/list', [ProductionController::class, 'productionList'])->name('list');
         Route::get('/edit/{id}', [ProductionController::class, 'productionEdit'])->name('edit');
         Route::post('/update/{id}', [ProductionController::class, 'productionUpdate'])->name('update');
@@ -194,14 +197,25 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/list/pdf', [SalesReturnController::class, 'downloadListPdf'])->name('list.pdf');
         });
 
-        // Vendors
+        // Customer.........
         Route::prefix('customer')->name('customer.')->group(function () {
-            Route::get('/add', [VendorController::class, 'customerAdd'])->name('add');
-            Route::post('/store', [VendorController::class, 'customerStore'])->name('store');
-            Route::get('/list', [VendorController::class, 'customerList'])->name('list');
-            Route::get('/edit/{id}', [VendorController::class, 'customerEdit'])->name('edit');
-            Route::post('/update/{id}', [VendorController::class, 'customerUpdate'])->name('update');
-            Route::get('/delete/{id}', [VendorController::class, 'customerDelete'])->name('delete');
+            Route::get('/add', [CustomerController::class, 'customerAdd'])->name('add');
+            Route::post('/store', [CustomerController::class, 'customerStore'])->name('store');
+            Route::get('/list', [CustomerController::class, 'customerList'])->name('list');
+            Route::get('/edit/{id}', [CustomerController::class, 'customerEdit'])->name('edit');
+            Route::post('/update/{id}', [CustomerController::class, 'customerUpdate'])->name('update');
+            Route::get('/delete/{id}', [CustomerController::class, 'customerDelete'])->name('delete');
+
+            Route::prefix('received')->name('received.')->group(function () {
+                Route::get('/create', [CustomerReceivedController::class, 'paymentCreate'])->name('create');
+                Route::post('/store', [CustomerReceivedController::class, 'paymentStore'])->name('store');
+                Route::get('/details/{id}', [CustomerReceivedController::class, 'paymentDetails'])->name('details');
+                Route::get('/edit/{id}', [CustomerReceivedController::class, 'paymentEdit'])->name('edit');
+                Route::post('/update/{id}', [CustomerReceivedController::class, 'paymentUpdate'])->name('update');
+                Route::get('/delete/{id}', [CustomerReceivedController::class, 'paymentDelete'])->name('delete');
+                Route::get('/get-purchase/{vendor}', [CustomerReceivedController::class, 'getVendorPurchase'])->name('get.purchase');
+                Route::get('/get-purchase-info/{purchase}', [CustomerReceivedController::class, 'getPurchaseInfo'])->name('get.purchase.info');
+            });
         });
     });
 

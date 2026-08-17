@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Chemical;
 use App\Models\Depreciation;
 use App\Models\InventoryLedger;
@@ -39,7 +40,7 @@ class ProductionController extends Controller
         return view('production.modiul');
     }
 
-    public function productAdd()
+    public function productionAdd()
     {
         $items = Item::all();
 
@@ -65,233 +66,318 @@ class ProductionController extends Controller
         return view('production.add', compact('nextBatch', 'newSerial', 'items'));
     }
 
-    public function productStore(Request $request)
+    public function productionStore(Request $request, JournalService $journalService)
     {
         $production = null;
 
-        DB::transaction(function () use ($request, &$production) {
+        try {
+            DB::transaction(function () use ($request, &$production) {
 
-            $production = Production::create([
-                'name'           => $request->name,
-                'batch_no'       => $request->batch_no,
-                'batch_size'     => $request->batch_size,
-                'date'           => $request->date,
-                'item_id'        => $request->ra_item_id,
-                'raw_qty'        => $request->raw_qty,
-                'raw_unit'       => $request->raw_unit,
-                'raw_u_price'    => $request->raw_u_price,
-                'raw_t_price'    => $request->raw_t_price,
-                'yield'          => $request->yield,
-                'yield_unit'     => $request->yield_unit,
-                'yield_percent'  => $request->yield_percent,
-                'ex_qty'         => $request->ex_qty,
-                'ex_unit'        => $request->ex_unit,
-                'final_qty'      => $request->final_qty,
-                'final_unit'     => $request->final_unit,
-                'unit_cost'      => $request->unit_cost,
-                'grand_total'    => $request->grand_total,
-            ]);
+                $production = Production::create([
+                    'name'           => $request->name,
+                    'batch_no'       => $request->batch_no,
+                    'batch_size'     => $request->batch_size,
+                    'date'           => $request->date,
+                    'item_id'        => $request->ra_item_id,
+                    'raw_qty'        => $request->raw_qty,
+                    'raw_unit'       => $request->raw_unit,
+                    'raw_u_price'    => $request->raw_u_price,
+                    'raw_t_price'    => $request->raw_t_price,
+                    'yield'          => $request->yield,
+                    'yield_unit'     => $request->yield_unit,
+                    'yield_percent'  => $request->yield_percent,
+                    'ex_qty'         => $request->ex_qty,
+                    'ex_unit'        => $request->ex_unit,
+                    'final_qty'      => $request->final_qty,
+                    'final_unit'     => $request->final_unit,
+                    'unit_cost'      => $request->unit_cost,
+                    'grand_total'    => $request->grand_total,
+                ]);
 
-            $productionId = $production->id;
+                $productionId = $production->id;
 
-            // Inventory stock out
-            $this->inventoryService->consumeForProduction(
-                $request->ra_item_id,
-                (float)$request->raw_qty,
-                (float)$request->raw_u_price,
-                $productionId,
-                $request->date
-            );
+                // Inventory stock out
+                $this->inventoryService->consumeForProduction(
+                    $request->ra_item_id,
+                    (float)$request->raw_qty,
+                    (float)$request->raw_u_price,
+                    $productionId,
+                    $request->date
+                );
 
-            // === Chemicals ===
-            if ($request->raw_name) {
-                foreach ($request->raw_name as $key => $row) {
-                    if (empty($row)) continue;
+                // === Chemicals ===
+                if ($request->raw_name) {
+                    foreach ($request->raw_name as $key => $row) {
+                        if (empty($row)) continue;
 
-                    Chemical::create([
-                        'production_id' => $productionId,
-                        'item_id' => $request->raw_item_id[$key],
-                        'used_percent'  => $request->used_percent[$key],
-                        'used_qty'      => $request->used_qty[$key],
-                        'ch_unit'       => $request->ch_unit[$key],
-                        'u_price'       => $request->u_price[$key],
-                        't_price'       => $request->t_price[$key],
-                    ]);
+                        Chemical::create([
+                            'production_id' => $productionId,
+                            'item_id' => $request->raw_item_id[$key],
+                            'used_percent'  => $request->used_percent[$key],
+                            'used_qty'      => $request->used_qty[$key],
+                            'ch_unit'       => $request->ch_unit[$key],
+                            'u_price'       => $request->u_price[$key],
+                            't_price'       => $request->t_price[$key],
+                        ]);
 
-                    // Inventory stock out
-                    $this->inventoryService->consumeForProduction(
-                        $request->raw_item_id[$key],
-                        (float)$request->used_qty[$key],
-                        (float)$request->u_price[$key],
-                        $productionId,
-                        $request->date
-                    );
+                        // Inventory stock out
+                        $this->inventoryService->consumeForProduction(
+                            $request->raw_item_id[$key],
+                            (float)$request->used_qty[$key],
+                            (float)$request->u_price[$key],
+                            $productionId,
+                            $request->date
+                        );
+                    }
                 }
-            }
 
-            // === Packaging ===
-            if ($request->pack_name) {
-                foreach ($request->pack_name as $key => $row) {
-                    if (empty($row)) continue;
+                // === Packaging ===
+                if ($request->pack_name) {
+                    foreach ($request->pack_name as $key => $row) {
+                        if (empty($row)) continue;
 
-                    PackagingMaterial::create([
-                        'production_id' => $productionId,
-                        'item_id' => $request->pack_item_id[$key],
-                        'pack_size'     => $request->pack_size[$key],
-                        'pack_qty'      => $request->pack_qty[$key],
-                        'pack_price'    => $request->pack_price[$key],
-                        'total_price'   => $request->total_price[$key],
-                    ]);
+                        PackagingMaterial::create([
+                            'production_id' => $productionId,
+                            'item_id' => $request->pack_item_id[$key],
+                            'pack_size'     => $request->pack_size[$key],
+                            'pack_qty'      => $request->pack_qty[$key],
+                            'pack_price'    => $request->pack_price[$key],
+                            'total_price'   => $request->total_price[$key],
+                        ]);
 
-                    // Inventory stock out
-                    $this->inventoryService->consumeForProduction(
-                        $request->pack_item_id[$key],
-                        (float)$request->pack_qty[$key],
-                        (float)$request->pack_price[$key],
-                        $productionId,
-                        $request->date
-                    );
+                        // Inventory stock out
+                        $this->inventoryService->consumeForProduction(
+                            $request->pack_item_id[$key],
+                            (float)$request->pack_qty[$key],
+                            (float)$request->pack_price[$key],
+                            $productionId,
+                            $request->date
+                        );
+                    }
                 }
-            }
 
-            // === Labor ===
-            if ($request->labor_name) {
-                foreach ($request->labor_name as $key => $row) {
-                    if (empty($row)) continue;
+                // === Labor ===
+                if ($request->labor_name) {
+                    foreach ($request->labor_name as $key => $row) {
+                        if (empty($row)) continue;
 
-                    LaborCost::create([
-                        'production_id' => $productionId,
-                        'labor_name'    => $request->labor_name[$key],
-                        'duty_day'      => $request->duty_day[$key],
-                        'd_pay'         => $request->d_pay[$key],
-                        'total_pay'     => $request->total_pay[$key] ?? 0,
-                    ]);
+                        LaborCost::create([
+                            'production_id' => $productionId,
+                            'labor_name'    => $request->labor_name[$key],
+                            'duty_day'      => $request->duty_day[$key],
+                            'd_pay'         => $request->d_pay[$key],
+                            'total_pay'     => $request->total_pay[$key] ?? 0,
+                        ]);
+                    }
                 }
-            }
 
-            // === Depreciation ===
-            if ($request->machine_name) {
-                foreach ($request->machine_name as $key => $row) {
-                    if (empty($row)) continue;
+                // === Depreciation ===
+                if ($request->machine_name) {
+                    foreach ($request->machine_name as $key => $row) {
+                        if (empty($row)) continue;
 
-                    Depreciation::create([
-                        'production_id' => $productionId,
-                        'machine_name'  => $request->machine_name[$key],
-                        'machine_cost_amt' => $request->machine_cost_amt[$key] ?? 0,
-                    ]);
+                        Depreciation::create([
+                            'production_id' => $productionId,
+                            'machine_name'  => $request->machine_name[$key],
+                            'machine_cost_amt' => $request->machine_cost_amt[$key] ?? 0,
+                        ]);
+                    }
                 }
-            }
 
-            // === Utility ===
-            if ($request->utility_name) {
-                foreach ($request->utility_name as $key => $row) {
-                    if (empty($row)) continue;
+                // === Utility ===
+                if ($request->utility_name) {
+                    foreach ($request->utility_name as $key => $row) {
+                        if (empty($row)) continue;
 
-                    UtilityCost::create([
-                        'production_id' => $productionId,
-                        'utility_name'  => $request->utility_name[$key],
-                        'cost_amt'      => $request->cost_amt[$key] ?? 0,
-                    ]);
+                        UtilityCost::create([
+                            'production_id' => $productionId,
+                            'utility_name'  => $request->utility_name[$key],
+                            'cost_amt'      => $request->cost_amt[$key] ?? 0,
+                        ]);
+                    }
                 }
-            }
 
-            // === Overhead ===
-            if ($request->overhead_type) {
-                foreach ($request->overhead_type as $key => $row) {
-                    if (empty($row)) continue;
+                // === Overhead ===
+                if ($request->overhead_type) {
+                    foreach ($request->overhead_type as $key => $row) {
+                        if (empty($row)) continue;
 
-                    OverheadCost::create([
-                        'production_id' => $productionId,
-                        'overhead_type' => $row,
-                        'fo_cost_amt'   => $request->fo_cost_amt[$key] ?? 0,
-                    ]);
+                        OverheadCost::create([
+                            'production_id' => $productionId,
+                            'overhead_type' => $row,
+                            'fo_cost_amt'   => $request->fo_cost_amt[$key] ?? 0,
+                        ]);
+                    }
                 }
-            }
 
-            // === Transport ===
-            if ($request->transport_type) {
-                foreach ($request->transport_type as $key => $row) {
-                    if (empty($row)) continue;
+                // === Transport ===
+                if ($request->transport_type) {
+                    foreach ($request->transport_type as $key => $row) {
+                        if (empty($row)) continue;
 
-                    TransportCost::create([
-                        'production_id'   => $productionId,
-                        'transport_type'  => $request->transport_type[$key],
-                        'transport_amt'   => $request->transport_amt[$key] ?? 0,
-                    ]);
+                        TransportCost::create([
+                            'production_id'   => $productionId,
+                            'transport_type'  => $request->transport_type[$key],
+                            'transport_amt'   => $request->transport_amt[$key] ?? 0,
+                        ]);
+                    }
                 }
-            }
 
-            // === QC ===
-            if ($request->test_name) {
-                foreach ($request->test_name as $key => $row) {
-                    if (empty($row)) continue;
+                // === QC ===
+                if ($request->test_name) {
+                    foreach ($request->test_name as $key => $row) {
+                        if (empty($row)) continue;
 
-                    QcCost::create([
-                        'production_id' => $productionId,
-                        'test_name'     => $request->test_name[$key],
-                        'qc_amt'        => $request->qc_amt[$key] ?? 0,
-                    ]);
+                        QcCost::create([
+                            'production_id' => $productionId,
+                            'test_name'     => $request->test_name[$key],
+                            'qc_amt'        => $request->qc_amt[$key] ?? 0,
+                        ]);
+                    }
                 }
-            }
 
-            // === Section Totals ===
-            $sectionTotal = SectionTotalCost::create([
-                'production_id'            => $productionId,
-                'raw_grand_price'          => $request->raw_grand_price,
-                'pack_grand_price'         => $request->pack_grand_price,
-                'labor_grand_price'        => $request->labor_grand_price,
-                'depreciation_grand_price' => $request->depreciation_grand_price,
-                'utility_grand_price'      => $request->utility_grand_price,
-                'overhead_grand_price'     => $request->overhead_grand_price,
-                'transport_grand_price'    => $request->transport_grand_price,
-                'qc_grand_price'           => $request->qc_grand_price,
-            ]);
+                // === Section Totals ===
+                $sectionTotal = SectionTotalCost::create([
+                    'production_id'            => $productionId,
+                    'raw_grand_price'          => $request->raw_grand_price,
+                    'pack_grand_price'         => $request->pack_grand_price,
+                    'labor_grand_price'        => $request->labor_grand_price,
+                    'depreciation_grand_price' => $request->depreciation_grand_price,
+                    'utility_grand_price'      => $request->utility_grand_price,
+                    'overhead_grand_price'     => $request->overhead_grand_price,
+                    'transport_grand_price'    => $request->transport_grand_price,
+                    'qc_grand_price'           => $request->qc_grand_price,
+                ]);
 
-            // === Finished goods stock in ===
-            $finishedItemId = Item::where('item_name', $request->name)->value('id');
+                // Finished Goods Item
+                $finishedItem = $this->getOrCreateFinishedItem(
+                    $request->name,
+                    (float) $request->unit_cost
+                );
 
-            if (!$finishedItemId) {
-                $finishedItemId = Item::create([
-                    'item_name' => $request->name,
-                    'cat_id'    => 7,   // Finished Goods category id
-                    'unit_price' => $request->unit_cost
-                ])->id;
-            }
+                $finishedItemId = $finishedItem->id;
 
-            $this->inventoryService->addFinishedGoods(
-                $finishedItemId,
-                (float)$request->final_qty,
-                (float)$request->unit_cost,
-                $productionId,
-                $request->date
-            );
+                $this->inventoryService->addFinishedGoods(
+                    $finishedItemId,
+                    (float)$request->final_qty,
+                    (float)$request->unit_cost,
+                    $productionId,
+                    $request->date
+                );
 
-            // পুরনো Journal Delete (Update এর ক্ষেত্রে)
-            $this->journalService->removeOldEntries(
-                'production',
-                $production->id
-            );
+                /*Production Journal*/
 
-            // নতুন Journal Create
-            $journal = JournalEntry::create([
-                'company_id'   => auth()->user()->company_id,
-                'module_type'  => 'production',
-                'module_id'    => $production->id,
-                'reference_no' => $production->batch_no,
-                'date'         => $production->date,
-                'particulars'  => 'Production Entry',
-                'created_by'   => auth()->id(),
-            ]);
+                $journalItems = [];
 
-            // Journal Items Create
-            $this->journalService->createProductionJournal(
-                $journal->id,
-                $production,
-                $sectionTotal
-            );
-        }); // end transaction        
+                if ((float) $request->raw_t_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_RAW_MATERIAL,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->raw_t_price,
+                    ];
+                }
 
-        return redirect()->back()->with('success', 'Production Saved Successfully');
+                /*Raw Material*/
+                if ((float) $request->raw_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_RAW_MATERIAL_EXPENSE,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->raw_grand_price,
+                    ];
+                }
+
+                /*Packaging*/
+                if ((float) $request->pack_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_PACKAGING_EXPENSE,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->pack_grand_price,
+                    ];
+                }
+
+                /*Labor*/
+                if ((float) $request->labor_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_LABOR_EXPENSE,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->labor_grand_price,
+                    ];
+                }
+
+                /*Depreciation*/
+                if ((float) $request->depreciation_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_DEPRECIATION_EXPENSE,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->depreciation_grand_price,
+                    ];
+                }
+
+                /*Utility*/
+                if ((float) $request->utility_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_UTILITY_EXPENSE,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->utility_grand_price,
+                    ];
+                }
+
+                /*Factory Overhead*/
+                if ((float) $request->overhead_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_FACTORY_OVERHEAD,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->overhead_grand_price,
+                    ];
+                }
+
+                /*Transport*/
+                if ((float) $request->transport_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_TRANSPORT_EXPENSE,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->transport_grand_price,
+                    ];
+                }
+
+                /*QC*/
+                if ((float) $request->qc_grand_price > 0) {
+                    $journalItems[] = [
+                        'account' => JournalService::ACCOUNT_QC_EXPENSE,
+                        'debit'   => 0,
+                        'credit'  => (float) $request->qc_grand_price,
+                    ];
+                }
+
+                /*Finished Goods Debit*/
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_FINISHED_GOODS,
+                    'debit'   => (float) $request->grand_total,
+                    'credit'  => 0,
+                ];
+
+                /*Create Production Journal*/
+
+                $this->journalService->createJournal([
+                    'company_id'   => auth()->user()->company_id,
+                    'module_type'  => 'production',
+                    'module_id'    => $productionId,
+                    'reference_no' => $request->batch_no,
+                    'date'         => $request->date,
+                    'particulars'  => 'Production - ' . $request->name . ' | Batch: ' . $request->batch_no,
+                    'items'        => $journalItems,
+
+                ]);
+            }); // end transaction        
+
+            return redirect()->back()->with('success', 'Production Saved Successfully');
+        } catch (\Throwable $e) {
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function productionList(Request $request)
@@ -405,10 +491,6 @@ class ProductionController extends Controller
 
             // 1️⃣ Remove old inventory & journal
             InventoryLedger::where('module_type', 'production')
-                ->where('module_id', $production->id)
-                ->delete();
-
-            JournalEntry::where('module_type', 'production')
                 ->where('module_id', $production->id)
                 ->delete();
 
@@ -605,10 +687,12 @@ class ProductionController extends Controller
             ]);
 
             // 1️⃣5️⃣ Finished goods stock in
-            $finishedItemId = Item::firstOrCreate(
-                ['item_name' => $request->name],
-                ['cat_id' => 7, 'unit_price' => $request->unit_cost]
-            )->id;
+            $finishedItem = $this->getOrCreateFinishedItem(
+                $request->name,
+                (float) $request->unit_cost
+            );
+
+            $finishedItemId = $finishedItem->id;
 
             $this->inventoryService->addFinishedGoods(
                 $finishedItemId,
@@ -618,29 +702,96 @@ class ProductionController extends Controller
                 $request->date
             );
 
-            // পুরনো Journal Delete (Update এর ক্ষেত্রে)
-            $this->journalService->removeOldEntries(
-                'production',
-                $production->id
-            );
+            $journalItems = [];
 
-            // নতুন Journal Create
-            $journal = JournalEntry::create([
+            if ((float) $request->raw_t_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_RAW_MATERIAL,
+                    'debit'   => 0,
+                    'credit'  => (float) $request->raw_t_price,
+                ];
+            }
+
+            if ((float) $request->raw_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_RAW_MATERIAL_EXPENSE,
+                    'debit'   => 0,
+                    'credit'  => (float) $request->raw_grand_price,
+                ];
+            }
+
+            if ((float) $request->pack_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_PACKAGING_EXPENSE,
+                    'debit'   => 0,
+                    'credit'  => (float) $request->pack_grand_price,
+                ];
+            }
+
+            if ((float) $request->labor_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_LABOR_EXPENSE,
+                    'debit'   => 0,
+                    'credit'  => (float) $request->labor_grand_price,
+                ];
+            }
+
+            if ((float) $request->depreciation_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_DEPRECIATION_EXPENSE,
+                    'debit'   => 0,
+                    'credit'  => (float) $request->depreciation_grand_price,
+                ];
+            }
+
+            if ((float) $request->utility_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_UTILITY_EXPENSE,
+                    'debit'   => 0,
+                    'credit'  => (float) $request->utility_grand_price,
+                ];
+            }
+
+            if ((float) $request->overhead_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_FACTORY_OVERHEAD,
+                    'debit'   => 0,
+                    'credit'   => (float) $request->overhead_grand_price,
+                ];
+            }
+
+            if ((float) $request->transport_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_TRANSPORT_EXPENSE,
+                    'debit'   => 0,
+                    'credit'   => (float) $request->transport_grand_price,
+                ];
+            }
+
+            if ((float) $request->qc_grand_price > 0) {
+                $journalItems[] = [
+                    'account' => JournalService::ACCOUNT_QC_EXPENSE,
+                    'debit'   => 0,
+                    'credit'   => (float) $request->qc_grand_price,
+                ];
+            }
+
+            $journalItems[] = [
+                'account' => JournalService::ACCOUNT_FINISHED_GOODS,
+                'debit'   => (float) $request->grand_total,
+                'credit'  => 0,
+            ];
+
+            $this->journalService->createJournal([
                 'company_id'   => auth()->user()->company_id,
                 'module_type'  => 'production',
-                'module_id'    => $production->id,
-                'reference_no' => $production->batch_no,
-                'date'         => $production->date,
-                'particulars'  => 'Production Entry',
-                'created_by'   => auth()->id(),
+                'module_id'    => $productionId,
+                'reference_no' => $request->batch_no,
+                'date'         => $request->date,
+                'particulars'  => 'Production - ' . $request->name .
+                    ' | Batch: ' . $request->batch_no,
+                'items'        => $journalItems,
             ]);
-
-            // Journal Items Create
-            $this->journalService->createProductionJournal(
-                $journal->id,
-                $production,
-                $sectionTotal
-            );
         });
 
         return redirect('/production/list')->with('success', 'Production updated successfully');
@@ -787,5 +938,26 @@ class ProductionController extends Controller
         $pdf->setPaper('a4', 'portrait');
 
         return $pdf->download('Production-' . $production->batch_no . '.pdf');
+    }
+
+    private function getOrCreateFinishedItem(string $itemName, float $unitCost): Item
+    {
+        $finishedCategory = Category::where('cat_name', 'Finished Good')->firstOrFail();
+
+        $item = Item::firstOrCreate(
+            [
+                'item_name' => $itemName,
+                'cat_id'    => $finishedCategory->id,
+            ],
+            [
+                'production_cost' => $unitCost,
+            ]
+        );
+
+        $item->update([
+            'production_cost' => $unitCost,
+        ]);
+
+        return $item;
     }
 }

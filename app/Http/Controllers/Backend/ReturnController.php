@@ -128,6 +128,8 @@ class ReturnController extends Controller
         return response()->json([
             'vendor'   => $purchase->vendor,
             'purchase' => [
+                'dis_percent' => $purchase->dis_percent,
+                'dis_amt' => $purchase->dis_amt,
                 'reference'         => $purchase->reference,
                 'payment_status'    => $purchase->payment_status,
                 'credit_account_id' => $purchase->credit_account_id,
@@ -148,7 +150,7 @@ class ReturnController extends Controller
         return response()->json($accounts);
     }
 
-    public function returnStore(Request $request)
+    public function returnStore(Request $request, JournalService $journalService)
     {
         // ---------- Base Validation ----------
         $request->validate([
@@ -202,6 +204,7 @@ class ReturnController extends Controller
             $return = PurchaseReturn::create([
                 'company_id' => auth()->user()->company_id,
                 'vendor_id' => $vendor->id,
+                'purchase_id' => $request->purchase_id,
                 'date' => $request->date,
                 'invoice_no' => $request->invoice_no,
                 'sub_total' => $request->sub_total,
@@ -254,6 +257,7 @@ class ReturnController extends Controller
 
                 PurchaseReturnItem::create([
                     'return_id' => $return->id,
+                    'purchase_id' => $request->purchase_id,
                     'item_id' => $item->id,
                     'qty' => $qty,
                     'unit_price' => $price,
@@ -278,22 +282,30 @@ class ReturnController extends Controller
                 ]);
             }
 
-            // 5️⃣ Journal Entry
-            $journal = JournalEntry::create([
-                'company_id' => auth()->user()->company_id,
-                'module_type' => 'purchase_return',
-                'module_id' => $return->id,
+            $this->journalService->createJournal([
+                'company_id'   => auth()->user()->company_id,
+                'module_type'  => 'purchase_return',
+                'module_id'    => $return->id,
                 'reference_no' => $return->invoice_no,
-                'date' => $return->date,
-                'created_by' => auth()->id(),
+                'date'         => $return->date,
+                'particulars'  => $return->narration,
+                'items' => [
+                    // Debit
+                    [
+                        'account'   => $request->debit_account_id,
+                        'debit'     => $grandTotal,
+                        'credit'    => 0,
+                        'vendor_id' => $vendor->id,
+                    ],
+                    // Credit
+                    [
+                        'account'   => $request->credit_account_id,
+                        'debit'     => 0,
+                        'credit'    => $grandTotal,
+                        'vendor_id' => $vendor->id,
+                    ],
+                ]
             ]);
-
-            // 6️⃣ Journal Items
-            // ReturnController.php - returnStore() method (Line 220)
-
-            // 6️⃣ Journal Items
-            // ✅ Fixed method name
-            $this->journalService->createReturnJournal($journal->id, $return, $transaction);
         });
 
         return back()->with('success', 'Purchase Return saved successfully!');
@@ -336,19 +348,50 @@ class ReturnController extends Controller
 
     public function returnEdit($id)
     {
-        // সর্বশেষ item এর code বের করুন
+        // সর্বশেষ item code
         $lastItem = Item::latest('id')->first();
 
-        // যদি কিছু না থাকে, তাহলে 0 থেকে শুরু হবে
         if ($lastItem && preg_match('/\d+$/', $lastItem->item_code, $matches)) {
             $lastSerial = intval($matches[0]);
         } else {
             $lastSerial = 0;
         }
+
+        // Accounts
         $accounts = Account::get();
-        $return = PurchaseReturn::with(['vendor', 'purchaseReturnItems.item', 'transactions'])->find($id);
+
+        $vendors = Vendor::select('vendors.id', 'vendors.v_name')
+            ->join('purchases', 'vendors.id', '=', 'purchases.vendor_id')
+            ->where('vendors.company_id', auth()->user()->company_id)
+            ->where('purchases.company_id', auth()->user()->company_id)
+            ->distinct()
+            ->orderBy('vendors.v_name')
+            ->get();
+
+        // Purchase Return
+        $return = PurchaseReturn::with([
+            'vendor',
+            'purchaseReturnItems.item',
+            'transactions'
+        ])->findOrFail($id);
+
+        // এই vendor-এর purchase invoices
+        $invoices = Purchase::where('vendor_id', $return->vendor_id)
+            ->where('company_id', auth()->user()->company_id)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        // Transactions
         $transactions = $return->transactions;
-        return view('purchase.return-edit', compact('return', 'lastSerial', 'accounts', 'transactions'));
+
+        return view('purchase.return-edit', compact(
+            'return',
+            'vendors',
+            'lastSerial',
+            'accounts',
+            'transactions',
+            'invoices'
+        ));
     }
 
     public function returnUpdate(Request $request, $id)
@@ -370,6 +413,7 @@ class ReturnController extends Controller
             $return->update([
                 'company_id' => auth()->user()->company_id,
                 'vendor_id' => $vendor->id,
+                'purchase_id' => $request->purchase_id,
                 'date' => $request->date,
                 'invoice_no' => $request->invoice_no,
                 'sub_total' => $request->sub_total,
@@ -426,6 +470,7 @@ class ReturnController extends Controller
 
                 PurchaseReturnItem::create([
                     'return_id' => $return->id,
+                    'purchase_id' => $request->purchase_id,
                     'item_id' => $item->id,
                     'qty' => $qty,
                     'unit_price' => $price,
@@ -449,20 +494,30 @@ class ReturnController extends Controller
                 ]);
             }
 
-            // 🔹 5. Recreate Journal
-            $journal = JournalEntry::create([
-                'company_id' => auth()->user()->company_id,
-                'module_type' => 'purchase_return',
-                'module_id' => $return->id,
+            $this->journalService->createJournal([
+                'company_id'   => auth()->user()->company_id,
+                'module_type'  => 'purchase_return',
+                'module_id'    => $return->id,
                 'reference_no' => $return->invoice_no,
-                'date' => $return->date,
-                'created_by' => auth()->id(),
+                'date'         => $return->date,
+                'particulars'  => $return->narration,
+                'items' => [
+                    // Debit
+                    [
+                        'account'   => $request->debit_account_id,
+                        'debit'     => $grandTotal,
+                        'credit'    => 0,
+                        'vendor_id' => $vendor->id,
+                    ],
+                    // Credit
+                    [
+                        'account'   => $request->credit_account_id,
+                        'debit'     => 0,
+                        'credit'    => $grandTotal,
+                        'vendor_id' => $vendor->id,
+                    ],
+                ]
             ]);
-
-            // ReturnController.php - returnUpdate() method (Line 370 approx)
-
-            // ✅ Fixed method name
-            $this->journalService->createReturnJournal($journal->id, $return, $transaction);
         });
 
         return redirect('/purchase/return/list')->with('success', 'Return updated successfully!');

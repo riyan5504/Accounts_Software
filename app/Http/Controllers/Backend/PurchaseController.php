@@ -84,50 +84,146 @@ class PurchaseController extends Controller
         $due = max(0, $grandTotal - $paid);
 
         // Save everything in transaction
-        DB::transaction(function () use ($request, $grandTotal, $paid, $due) {
-            // 1. Find vendor
-            $vendor = Vendor::findOrFail($request->vendor_id);
+        try {
+            DB::transaction(function () use (
+                $request,
+                $grandTotal,
+                $paid,
+                $due
+            ) {
+                // 1. Find vendor
+                $vendor = Vendor::findOrFail(
+                    $request->vendor_id
+                );
 
-            // 2. Create purchase
-            $purchase = Purchase::create([
-                'vendor_id' => $vendor->id,
-                'date' => $request->date,
-                'invoice_no' => $request->invoice_no,
-                'sub_total' => $request->sub_total,
-                'vat_amt' => $request->vat_amt ?? 0,
-                'dis_percent' => $request->dis_percent ?? 0,
-                'dis_amt' => $request->dis_amt ?? 0,
-                'grand_total' => $grandTotal,
-                'due_amt' => $due,
-                'reference' => $request->reference,
-                'narration' => $request->narration,
-                'pay_to' => $request->pay_to,
-                'payment_status' => $request->payment_status,
-                'debit_account_id' => $request->debit_account_id,
-                'credit_account_id' => $request->credit_account_id,
-                'created_by' => auth()->id(),
-            ]);
+                // 2. Create Purchase
+                $purchase = Purchase::create([
+                    'vendor_id' => $vendor->id,
+                    'date' => $request->date,
+                    'invoice_no' => $request->invoice_no,
+                    'sub_total' => $request->sub_total,
+                    'vat_amt' => $request->vat_amt ?? 0,
+                    'dis_percent' => $request->dis_percent ?? 0,
+                    'dis_amt' => $request->dis_amt ?? 0,
+                    'grand_total' => $grandTotal,
+                    'due_amt' => $due,
+                    'reference' => $request->reference,
+                    'narration' => $request->narration,
+                    'pay_to' => $request->pay_to,
+                    'payment_status' => $request->payment_status,
+                    'debit_account_id' => $request->debit_account_id,
+                    'credit_account_id' => $request->credit_account_id,
+                    'created_by' => auth()->id(),
+                ]);
 
-            // 3. Create transaction
-            $transaction = Transaction::create([
-                'module_type' => 'purchase',
-                'module_id' => $purchase->id,
-                'vendor_id' => $vendor->id,
-                'reference_no' => $purchase->invoice_no,
-                'payment_method' => $request->payment_method,
-                'paid_amt' => $paid,
-                'date' => $purchase->date,
-            ]);
+                // 3. Transaction
+                $transaction = Transaction::create([
+                    'module_type' => 'purchase',
+                    'module_id' => $purchase->id,
+                    'vendor_id' => $vendor->id,
+                    'reference_no' => $purchase->invoice_no,
+                    'payment_method' => $request->payment_method,
+                    'paid_amt' => $paid,
+                    'date' => $purchase->date,
+                ]);
 
-            // 4. Save items & inventory
-            $this->savePurchaseItems($purchase, $request);
+                // 4. Save Purchase Items
+                $this->savePurchaseItems($purchase, $request);
 
-            // 5. Create journal entries
-            $journal = $this->createJournalEntry($purchase);
-            $this->journalService->createPurchaseJournal($journal->id, $purchase, $transaction);
-        });
+                // 5. Create Purchase Journal
 
-        return back()->with('success', 'Purchase saved successfully!');
+                $grandTotal = (float) $purchase->grand_total;
+                $paidAmount = (float) ($transaction->paid_amt ?? 0);
+                $dueAmount = max(0, $grandTotal - $paidAmount);
+                $journalItems = [];
+
+                // Debit Purchase / Inventory
+                $journalItems[] = [
+                    'account' => $purchase->debit_account_id,
+                    'debit' => $grandTotal,
+                    'credit' => 0,
+                    'vendor_id' => $purchase->vendor_id,
+                ];
+
+                // PAID
+                if ($purchase->payment_status === 'paid') {
+                    $journalItems[] = [
+                        'account' => $purchase->credit_account_id,
+                        'debit' => 0,
+                        'credit' => $grandTotal,
+                        'vendor_id' => $purchase->vendor_id,
+                    ];
+                }
+
+                // UNPAID
+                elseif ($purchase->payment_status === 'unpaid') {
+                    $payableAccountId =
+                        Account::where('company_id', $purchase->company_id)
+                        ->where('account_name', JournalService::ACCOUNT_SUPPLIER_PAYABLE)
+                        ->value('id');
+
+                    if (!$payableAccountId) {
+                        throw new \Exception('Supplier Payable account not found.');
+                    }
+                    $journalItems[] = [
+                        'account' => $payableAccountId,
+                        'debit' => 0,
+                        'credit' => $grandTotal,
+                        'vendor_id' => $purchase->vendor_id,
+                    ];
+                }
+
+                // PARTIAL
+                elseif ($purchase->payment_status === 'partial') {
+                    // Paid portion
+                    if ($paidAmount > 0) {
+                        $journalItems[] = [
+                            'account' => $purchase->credit_account_id,
+                            'debit' => 0,
+                            'credit' => $paidAmount,
+                            'vendor_id' => $purchase->vendor_id,
+                        ];
+                    }
+                    // Due portion
+                    if ($dueAmount > 0) {
+                        $payableAccountId =
+                            Account::where('company_id', $purchase->company_id)
+                            ->where('account_name', JournalService::ACCOUNT_SUPPLIER_PAYABLE)
+                            ->value('id');
+
+                        if (!$payableAccountId) {
+                            throw new \Exception('Supplier Payable account not found.');
+                        }
+                        $journalItems[] = [
+                            'account' => $payableAccountId,
+                            'debit' => 0,
+                            'credit' => $dueAmount,
+                            'vendor_id' => $purchase->vendor_id,
+                        ];
+                    }
+                } else {
+                    throw new \Exception('Invalid purchase payment status: ' . $purchase->payment_status);
+                }
+                // Save Journal
+                $this->journalService->createJournal([
+                    'company_id' => $purchase->company_id,
+                    'module_type' => 'purchase',
+                    'module_id' => $purchase->id,
+                    'reference_no' => $purchase->invoice_no,
+                    'date' => $purchase->date,
+                    'particulars' => $purchase->narration ?? 'Purchase Entry',
+                    'items' => $journalItems,
+                ]);
+            });
+
+            return back()->with('success', 'Purchase saved successfully!');
+        } catch (\Throwable $e) {
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function purchaseList(Request $request)
@@ -227,8 +323,20 @@ class PurchaseController extends Controller
                 'credit_account_id' => $request->credit_account_id,
             ]);
 
+            // Get old item IDs before deleting old purchase data
+            $oldItemIds = $purchase->purchaseItems()
+                ->pluck('item_id')
+                ->unique()
+                ->values()
+                ->toArray();
+
             // Delete old relations
             $this->deletePurchaseRelations($purchase);
+
+            // Recalculate averages of old items
+            foreach ($oldItemIds as $oldItemId) {
+                $this->recalculateAveragePurchasePrice($oldItemId);
+            }
 
             // Recreate transaction
             $transaction = Transaction::create([
@@ -244,19 +352,112 @@ class PurchaseController extends Controller
             // Recreate items & inventory
             $this->savePurchaseItems($purchase, $request);
 
-            // Recreate journal
-            $journal = $this->createJournalEntry($purchase);
-            $this->journalService->createPurchaseJournal($journal->id, $purchase, $transaction);
+            // 5. Create Purchase Journal
+            $grandTotal = (float) $purchase->grand_total;
+            $paidAmount = (float) ($transaction->paid_amt ?? 0);
+            $dueAmount = max(0, $grandTotal - $paidAmount);
+            $journalItems = [];
+
+            // Debit Purchase / Inventory
+            $journalItems[] = [
+                'account' => $purchase->debit_account_id,
+                'debit' => $grandTotal,
+                'credit' => 0,
+                'vendor_id' => $purchase->vendor_id,
+            ];
+
+            // PAID
+            if ($purchase->payment_status === 'paid') {
+                $journalItems[] = [
+                    'account' => $purchase->credit_account_id,
+                    'debit' => 0,
+                    'credit' => $grandTotal,
+                    'vendor_id' => $purchase->vendor_id,
+                ];
+            }
+
+            // UNPAID
+            elseif ($purchase->payment_status === 'unpaid') {
+                $payableAccountId =
+                    Account::where('company_id', $purchase->company_id)
+                    ->where('account_name', JournalService::ACCOUNT_SUPPLIER_PAYABLE)
+                    ->value('id');
+
+                if (!$payableAccountId) {
+                    throw new \Exception('Supplier Payable account not found.');
+                }
+                $journalItems[] = [
+                    'account' => $payableAccountId,
+                    'debit' => 0,
+                    'credit' => $grandTotal,
+                    'vendor_id' => $purchase->vendor_id,
+                ];
+            }
+
+            // PARTIAL
+            elseif ($purchase->payment_status === 'partial') {
+                // Paid portion
+                if ($paidAmount > 0) {
+                    $journalItems[] = [
+                        'account' => $purchase->credit_account_id,
+                        'debit' => 0,
+                        'credit' => $paidAmount,
+                        'vendor_id' => $purchase->vendor_id,
+                    ];
+                }
+                // Due portion
+                if ($dueAmount > 0) {
+                    $payableAccountId =
+                        Account::where('company_id', $purchase->company_id)
+                        ->where('account_name', JournalService::ACCOUNT_SUPPLIER_PAYABLE)
+                        ->value('id');
+
+                    if (!$payableAccountId) {
+                        throw new \Exception('Supplier Payable account not found.');
+                    }
+                    $journalItems[] = [
+                        'account' => $payableAccountId,
+                        'debit' => 0,
+                        'credit' => $dueAmount,
+                        'vendor_id' => $purchase->vendor_id,
+                    ];
+                }
+            } else {
+                throw new \Exception('Invalid purchase payment status: ' . $purchase->payment_status);
+            }
+            // Save Journal
+            $this->journalService->createJournal([
+                'company_id' => $purchase->company_id,
+                'module_type' => 'purchase',
+                'module_id' => $purchase->id,
+                'reference_no' => $purchase->invoice_no,
+                'date' => $purchase->date,
+                'particulars' => $purchase->narration ?? 'Purchase Entry',
+                'items' => $journalItems,
+            ]);
         });
 
         return redirect('/purchase/list')->with('success', 'Purchase updated successfully!');
     }
-
+    
     public function purchaseDelete($id)
     {
         DB::transaction(function () use ($id) {
             $purchase = Purchase::findOrFail($id);
+            $itemIds = $purchase->purchaseItems()
+                ->pluck('item_id')
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // Delete purchase relations
             $this->deletePurchaseRelations($purchase);
+
+            // Recalculate average cost for affected items
+            foreach ($itemIds as $itemId) {
+                $this->recalculateAveragePurchasePrice($itemId);
+            }
+            
             $purchase->forceDelete();
         });
 
@@ -269,20 +470,76 @@ class PurchaseController extends Controller
             'vendor',
             'purchaseItems.item.category',
             'transactions',
+            'vendorPaymentDetails.vendorPayment',
+            'purchaseReturns.purchaseReturnItems.item',
             'debitAccount',
             'creditAccount',
             'user',
         ])->findOrFail($id);
 
-        $transactions = $purchase->transactions;
-        $totalPaid = $purchase->total_paid;
-        $due = $purchase->remaining_due;
+        $originalPurchase = (float) $purchase->grand_total;
+        $totalReturn = (float) $purchase->purchaseReturns->sum('grand_total');
+        $netPurchase = max(0, $originalPurchase - $totalReturn);
+        $initialPayment = (float) $purchase->transactions
+            ->where('module_type', 'purchase')
+            ->sum('paid_amt');
+        $vendorPayment = (float) $purchase->vendorPaymentDetails
+            ->sum('paid_amount');
+        $totalPaid = $initialPayment + $vendorPayment;
+        $supplierCredit = max(0, $totalPaid - $netPurchase);
+        $due = max(0, $netPurchase - $totalPaid);
 
+        if ($supplierCredit > 0) {
+            $paymentStatus = 'Credit';
+        } elseif ($due <= 0 && $netPurchase > 0) {
+            $paymentStatus = 'Paid';
+        } elseif ($totalPaid > 0) {
+            $paymentStatus = 'Partial';
+        } else {
+            $paymentStatus = 'Unpaid';
+        }
+        $transactions = $purchase->transactions;
+        $returnCount = $purchase->purchaseReturns->count();
+        $vendorPaymentCount = $purchase->vendorPaymentDetails->count();
+        $returnedItems = $purchase->purchaseReturns
+            ->flatMap(function ($purchaseReturn) {
+                return $purchaseReturn->purchaseReturnItems;
+            });
+        $returnedQtyByItem = $returnedItems
+            ->groupBy('item_id')
+            ->map(function ($items) {
+                return $items->sum('qty');
+            });
+        $returnedAmountByItem = $returnedItems
+            ->groupBy('item_id')
+            ->map(function ($items) {
+                return $items->sum('total_price');
+            });
+        $returnHistory = $purchase->purchaseReturns
+            ->sortByDesc('date');
+        $vendorPaymentHistory = $purchase->vendorPaymentDetails
+            ->sortByDesc(function ($detail) {
+                return optional($detail->vendorPayment)->date;
+            });
         return view('purchase.purchase-details', compact(
             'purchase',
             'transactions',
+            'originalPurchase',
+            'totalReturn',
+            'netPurchase',
+            'initialPayment',
+            'vendorPayment',
             'totalPaid',
-            'due'
+            'due',
+            'supplierCredit',
+            'paymentStatus',
+            'returnCount',
+            'vendorPaymentCount',
+            'returnedItems',
+            'returnedQtyByItem',
+            'returnedAmountByItem',
+            'returnHistory',
+            'vendorPaymentHistory'
         ));
     }
 
@@ -324,18 +581,104 @@ class PurchaseController extends Controller
     {
         $purchase = Purchase::with([
             'vendor',
-            'purchaseItems.item',
-            'transactions'
+            'purchaseItems.item.category',
+            'transactions',
+            'vendorPaymentDetails.vendorPayment',
+            'purchaseReturns.purchaseReturnItems.item',
+            'debitAccount',
+            'creditAccount',
+            'user',
         ])->findOrFail($id);
 
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
-        $pdf = Pdf::loadView('purchase.purchase-pdf', [
-            'purchase' => $purchase,
-            'companyName' => $companyName,
-        ])
-            ->setPaper('a4', 'portrait');
+        $originalPurchase = (float) $purchase->grand_total;
+        $totalReturn = (float) $purchase->purchaseReturns
+            ->sum('grand_total');
+        $netPurchase = max(0, $originalPurchase - $totalReturn);
 
-        return $pdf->download('Purchase_Invoice_' . $purchase->invoice_no . '.pdf');
+        $initialPaymentRows = $purchase->transactions
+            ->where('module_type', 'purchase')
+            ->filter(function ($transaction) {
+                return (float) $transaction->paid_amt > 0;
+            })
+            ->values();
+        $initialPayment = (float) $initialPaymentRows->sum('paid_amt');
+        $hasInitialPayment = $initialPayment > 0;
+
+        $vendorPaymentHistory = $purchase->vendorPaymentDetails
+            ->filter(function ($detail) {
+                return (float) $detail->paid_amount > 0;
+            })
+            ->sortByDesc(function ($detail) {
+                return optional($detail->vendorPayment)->date;
+            })
+            ->values();
+        $vendorPayment = (float) $vendorPaymentHistory->sum('paid_amount');
+        $hasVendorPayment = $vendorPaymentHistory->isNotEmpty();
+        $totalPaid = $initialPayment + $vendorPayment;
+        $supplierCredit = max(0, $totalPaid - $netPurchase);
+        $due = max(0, $netPurchase - $totalPaid);
+
+        if ($supplierCredit > 0) {
+            $paymentStatus = 'Credit';
+        } elseif ($due <= 0 && $netPurchase > 0) {
+            $paymentStatus = 'Paid';
+        } elseif ($totalPaid > 0) {
+            $paymentStatus = 'Partial';
+        } else {
+            $paymentStatus = 'Unpaid';
+        }
+
+        $transactions = $purchase->transactions;
+        $returnCount = $purchase->purchaseReturns->count();
+        $vendorPaymentCount = $vendorPaymentHistory->count();
+        $returnedItems = $purchase->purchaseReturns
+            ->flatMap(function ($purchaseReturn) {
+                return $purchaseReturn->purchaseReturnItems;
+            });
+        $returnedQtyByItem = $returnedItems
+            ->groupBy('item_id')
+            ->map(function ($items) {
+                return $items->sum('qty');
+            });
+        $returnedAmountByItem = $returnedItems
+            ->groupBy('item_id')
+            ->map(function ($items) {
+                return $items->sum('total_price');
+            });
+        $returnHistory = $purchase->purchaseReturns
+            ->sortByDesc('date')
+            ->values();
+        $hasReturns = $returnedQtyByItem->sum() > 0;
+        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $pdf = Pdf::loadView('purchase.purchase-pdf', compact(
+            'purchase',
+            'originalPurchase',
+            'totalReturn',
+            'netPurchase',
+            'initialPaymentRows',
+            'initialPayment',
+            'hasInitialPayment',
+            'vendorPaymentHistory',
+            'vendorPayment',
+            'hasVendorPayment',
+            'totalPaid',
+            'due',
+            'supplierCredit',
+            'paymentStatus',
+            'transactions',
+            'returnCount',
+            'vendorPaymentCount',
+            'returnedItems',
+            'returnedQtyByItem',
+            'returnedAmountByItem',
+            'returnHistory',
+            'hasReturns',
+            'companyName'
+        ));
+        $pdf->setPaper('A4', 'portrait');
+        return $pdf->download(
+            'Purchase-Invoice-' . $purchase->invoice_no . '.pdf'
+        );
     }
 
     /**
@@ -400,42 +743,50 @@ class PurchaseController extends Controller
         }
     }
 
-    /**
-     * Save purchase items and inventory
-     */
-    // PurchaseController.php
-
+    // Save purchase items and inventory
     private function savePurchaseItems(Purchase $purchase, Request $request): void
     {
+        $invoiceItemTotal = 0;
         foreach ($request->item_id as $key => $itemId) {
-            if (!$itemId) continue;
+            if (!$itemId) {
+                continue;
+            }
+            $invoiceItemTotal += (float) ($request->total_price[$key] ?? 0);
+        }
 
-            $item = Item::findOrFail($itemId);
-            $qty = (float) $request->qty[$key];
-            $price = (float) $request->unit_price[$key];
-            $totalPrice = $qty * $price;
+        $discountPercent = (float) ($request->dis_percent ?? 0);
+        $invoiceDiscount = ($invoiceItemTotal * $discountPercent) / 100;
 
-            // ========== 1. UPDATE ITEM TABLE ==========
-            $item->update([
-                'item_code' => $request->item_code[$key] ?? $item->item_code,
-                'unit_price' => $price ?: $item->unit_price,
-                'size' => $request->size[$key] ?? $item->size,
-                'stock_unit' => $request->stock_unit[$key] ?? $item->stock_unit,
-            ]);
+        foreach ($request->item_id as $key => $itemId) {
+            if (!$itemId) {
+                continue;
+            }
+            $item = Item::where('company_id', auth()->user()->company_id)
+                ->findOrFail($itemId);
+            $qty = (float) ($request->qty[$key] ?? 0);
+            $price = (float) ($request->unit_price[$key] ?? 0);
+            $itemTotal = (float) ($request->total_price[$key] ?? 0);
+            $itemDiscount = 0;
 
-            // Save purchase item
+            if ($invoiceItemTotal > 0 && $invoiceDiscount > 0) {
+                $itemDiscount = ($itemTotal / $invoiceItemTotal) * $invoiceDiscount;
+            }
+            $effectivePurchaseValue = $itemTotal - $itemDiscount;
+            $effectiveUnitCost = $qty > 0 ? $effectivePurchaseValue / $qty : 0;
+
+            //Save Purchase Item
             PurchaseItem::create([
                 'purchase_id' => $purchase->id,
                 'item_id' => $item->id,
                 'qty' => $qty,
                 'unit_price' => $price,
-                'price' => $totalPrice,
+                'price' => $request->price[$key] ?? 0,
                 'vat_percent' => $request->vat_percent[$key] ?? 0,
                 'vat_amount' => $request->vat_amount[$key] ?? 0,
-                'total_price' => $request->total_price[$key] ?? $totalPrice,
+                'total_price' => $itemTotal,
             ]);
 
-            // Update inventory (stock in)
+            //Inventory Stock In
             InventoryLedger::create([
                 'company_id' => auth()->user()->company_id,
                 'item_id' => $item->id,
@@ -443,27 +794,22 @@ class PurchaseController extends Controller
                 'module_id' => $purchase->id,
                 'qty_in' => $qty,
                 'qty_out' => 0,
-                'unit_cost' => $price,
-                'total_cost' => $qty * $price,
+                'unit_cost' => round($effectiveUnitCost, 4),
+                'total_cost' => round($effectivePurchaseValue, 4),
                 'date' => $purchase->date,
                 'created_by' => auth()->id(),
             ]);
-        }
-    }
 
-    /**
-     * Create journal entry header
-     */
-    private function createJournalEntry(Purchase $purchase): \App\Models\JournalEntry
-    {
-        return JournalEntry::create([
-            'module_type' => 'purchase',
-            'module_id' => $purchase->id,
-            'reference_no' => $purchase->invoice_no,
-            'date' => $purchase->date,
-            'particulars' => $purchase->narration ?? 'Purchase Entry',
-            'created_by' => auth()->id(),
-        ]);
+            //Update Item Last Purchase Price
+            $item->update([
+                'item_code' => $request->item_code[$key] ?? $item->item_code,
+                'unit_price' => $price,
+                'last_purchase_price' => round($effectiveUnitCost, 4),
+                'size' => $request->size[$key] ?? $item->size,
+            ]);
+
+            $this->recalculateAveragePurchasePrice($item->id);
+        }
     }
 
     /**
@@ -488,5 +834,45 @@ class PurchaseController extends Controller
 
         // Delete purchase items
         PurchaseItem::where('purchase_id', $purchase->id)->forceDelete();
+    }
+
+    private function recalculateAveragePurchasePrice(int $itemId): void
+    {
+        $companyId = auth()->user()->company_id;
+        $ledgers = InventoryLedger::where('company_id', $companyId)
+            ->where('item_id', $itemId)
+            ->orderBy('date')
+            ->orderBy('id')
+            ->get();
+
+        $stockQty = 0;
+        $stockValue = 0;
+
+        foreach ($ledgers as $ledger) {
+            $qtyIn = (float) $ledger->qty_in;
+            $qtyOut = (float) $ledger->qty_out;
+            $unitCost = (float) $ledger->unit_cost;
+
+            if ($qtyIn > 0) {
+                $stockQty += $qtyIn;
+                $stockValue += ($qtyIn * $unitCost);
+            }
+
+            if ($qtyOut > 0) {
+                $stockQty -= $qtyOut;
+                $stockValue -= ($qtyOut * $unitCost);
+            }
+        }
+
+        if ($stockQty <= 0 || $stockValue <= 0) {
+            $avgPurchasePrice = 0;
+        } else {
+            $avgPurchasePrice = $stockValue / $stockQty;
+        }
+        Item::where('company_id', $companyId)
+            ->where('id', $itemId)
+            ->update([
+                'avg_purchase_price' => round($avgPurchasePrice, 4),
+            ]);
     }
 }

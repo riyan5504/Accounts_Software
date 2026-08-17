@@ -59,6 +59,7 @@
         .table-hover tbody tr:hover {
             background-color: #f8f9fa;
         }
+
         .closing {
             font-weight: bold;
             background: #9fe2f3;
@@ -135,7 +136,14 @@
                     <div class="card-body p-0">
                         @php
                             $runningBalance = $openingBalance;
-                            $unitPrice = $item->unit_price ?? 0;
+                            if (($item->avg_purchase_price ?? 0) > 0) {
+                                $avgPrice = $item->avg_purchase_price;
+                            } elseif (($item->last_purchase_price ?? 0) > 0) {
+                                $avgPrice = $item->last_purchase_price;
+                            } else {
+                                $avgPrice = $item->unit_price ?? 0;
+                            }
+                            $unitPrice = $avgPrice;
                             $sl = 1;
                             $typeNames = [
                                 'opening' => 'Opening Stock',
@@ -240,7 +248,7 @@
                                     </td>
 
                                     <td class="text-right">
-                                       {{ number_format($runningBalance * $unitPrice, 2). ' '. 'TK' }}
+                                        {{ number_format($runningBalance * $unitPrice, 2) . ' ' . 'TK' }}
                                     </td>
                                 </tr>
                             </tbody>

@@ -121,7 +121,7 @@
 
                                 <div class="form-group col-md-2 mb-1">
                                     <input type="text" name="invoice_no" class="form-control invoice_no" id="invoice_no"
-                                        value="{{ $newPurchaseNo }}" placeholder=" "/>
+                                        value="{{ $newPurchaseNo }}" placeholder=" " />
                                     <label for="invoice_no" class="floating-label">Invoice Number</label>
                                 </div>
                             </div>
@@ -362,3 +362,19 @@
     </div>
 @endsection
 
+@push('script')
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Production Failed',
+                    text: @json(session('error')),
+                    confirmButtonText: 'OK'
+                });
+
+            });
+        </script>
+    @endif
+@endpush

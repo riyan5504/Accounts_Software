@@ -11,7 +11,7 @@
 
         body {
             font-family: DejaVu Sans;
-            font-size: 11px;
+            font-size: 13px;
             color: #333;
             line-height: 1.45;
             margin: 0;
@@ -116,7 +116,7 @@
             background: #f2f2f2;
             border: 1px solid #999;
             padding: 6px 1px;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: bold;
             text-align: center;
             word-wrap: break-word;
@@ -126,7 +126,7 @@
         td {
             border: 1px solid #ccc;
             padding: 1px;
-            font-size: 10px;
+            font-size: 12px;
             vertical-align: top;
             word-wrap: break-word;
             word-break: break-word;
@@ -147,7 +147,7 @@
             padding: 6px 8px;
             background: #ececec;
             border-left: 4px solid #555;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
         }
 
@@ -175,7 +175,7 @@
 
         .grand-total td {
             font-weight: bold;
-            font-size: 12px;
+            font-size: 13px;
             border-top: 1px solid #666;
         }
 
@@ -204,7 +204,7 @@
         .signature td {
             border: none;
             padding-top: 40px;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .signature-line {
@@ -220,13 +220,13 @@
         .footer {
             margin-top: 30px;
             text-align: center;
-            font-size: 10px;
+            font-size: 12px;
             color: #666;
         }
 
         .note {
             margin-top: 8px;
-            font-size: 10px;
+            font-size: 12px;
             color: #777;
             text-align: center;
         }

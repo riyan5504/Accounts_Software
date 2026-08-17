@@ -54,7 +54,7 @@ class ReportController extends Controller
             }], 'qty_in')
 
             ->withSum(['inventoryLedgers as sales_stock_sum' => function ($q) {
-                $q->where('module_type', 'sale');
+                $q->where('module_type', 'sales');
             }], 'qty_out')
 
             ->withSum(['inventoryLedgers as consume_sum' => function ($q) {
@@ -67,11 +67,7 @@ class ReportController extends Controller
 
             ->withSum(['inventoryLedgers as sales_return_sum' => function ($q) {
                 $q->where('module_type', 'sales_return');
-            }], 'qty_in')
-
-            ->withSum(['inventoryLedgers as damage_sum' => function ($q) {
-                $q->where('module_type', 'damage');
-            }], 'qty_out');
+            }], 'qty_in');
 
         // 🔥 FILTER LOGIC
         if ($request->type == 'item' && $request->item_id) {
@@ -102,7 +98,7 @@ class ReportController extends Controller
                 $q->where('module_type', 'production');
             }], 'qty_in')
             ->withSum(['inventoryLedgers as sales_stock_sum' => function ($q) {
-                $q->where('module_type', 'sale');
+                $q->where('module_type', 'sales');
             }], 'qty_out')
             ->withSum(['inventoryLedgers as consume_sum' => function ($q) {
                 $q->where('module_type', 'production');
@@ -112,10 +108,7 @@ class ReportController extends Controller
             }], 'qty_out')
             ->withSum(['inventoryLedgers as sales_return_sum' => function ($q) {
                 $q->where('module_type', 'sales_return');
-            }], 'qty_in')
-            ->withSum(['inventoryLedgers as damage_sum' => function ($q) {
-                $q->where('module_type', 'damage');
-            }], 'qty_out');
+            }], 'qty_in');
 
         // Filter by item
         if ($request->type == 'item' && $request->item_id) {

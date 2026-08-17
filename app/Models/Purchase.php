@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Purchase extends Model
@@ -91,10 +92,25 @@ class Purchase extends Model
         return $this->hasMany(JournalEntry::class, 'module_id')
             ->where('module_type', 'purchase');
     }
-    public function vendorPayments(): HasMany
+    public function vendorPaymentDetails(): HasMany
     {
-        return $this->hasMany(VendorPayment::class, 'module_id')
-            ->where('module_type', 'vendor_payment');
+        return $this->hasMany(
+            VendorPaymentDetails::class,
+            'purchase_id',
+            'id'
+        );
+    }
+
+    public function vendorPayments(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            VendorPayment::class,
+            VendorPaymentDetails::class,
+            'purchase_id',
+            'id',
+            'id',
+            'vendor_payment_id'
+        );
     }
 
     public function inventoryLedgers(): MorphMany
@@ -126,9 +142,14 @@ class Purchase extends Model
     // Accessors
     public function getTotalPaidAttribute(): float
     {
-        return $this->transactions->sum('paid_amt');
-    }
+        $purchasePayment = $this->transactions
+            ->sum('paid_amt');
 
+        $vendorPayment = $this->vendorPaymentDetails
+            ->sum('paid_amount');
+
+        return (float) ($purchasePayment + $vendorPayment);
+    }
     public function getRemainingDueAttribute(): float
     {
         return max(0, $this->grand_total - $this->total_paid);
@@ -169,5 +190,14 @@ class Purchase extends Model
 
         $this->due_amt = $this->remaining_due;
         $this->save();
+    }
+
+    public function purchaseReturns(): HasMany
+    {
+        return $this->hasMany(
+            PurchaseReturn::class,
+            'purchase_id',
+            'id'
+        );
     }
 }

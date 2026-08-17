@@ -116,6 +116,7 @@ class ItemController extends Controller
             'cat_id'        => 'required|exists:categories,id',
             'size'          => 'nullable|string|max:50',
             'unit_price'    => 'required|numeric|min:0',
+            'sales_price'   => 'nullable|numeric|min:0',
             'opening_stock' => 'nullable|numeric|min:0',
             'stock_unit'    => 'nullable|string|max:50',
         ]);
@@ -128,6 +129,7 @@ class ItemController extends Controller
             'size'          => $request->size,
             'stock_unit'    => $request->stock_unit,
             'unit_price'    => $request->unit_price,
+            'sales_price'    => $request->sales_price,
             'opening_stock' => $request->opening_stock ?? 0,
         ]);
 
@@ -155,6 +157,7 @@ class ItemController extends Controller
             'cat_id'        => 'required|exists:categories,id',
             'size'          => 'nullable|string|max:50',
             'unit_price'    => 'required|numeric|min:0',
+            'sales_price'   => 'nullable|numeric|min:0',
             'opening_stock' => 'nullable|numeric|min:0',
             'stock_unit'    => 'nullable|string|max:50',
         ]);
@@ -167,7 +170,8 @@ class ItemController extends Controller
             'cat_id'        => $request->cat_id,
             'size'          => $request->size,
             'unit_price'    => $request->unit_price,
-            'opening_stock' => $request->opening_stock ?? 0,            
+            'sales_price'    => $request->sales_price,
+            'opening_stock' => $request->opening_stock ?? 0,
             'stock_unit'    => $request->stock_unit,
         ]);
 
@@ -180,15 +184,6 @@ class ItemController extends Controller
     public function itemDelete($id)
     {
         $item = Item::findOrFail($id);
-
-        // 🔥 Relation check
-        // if (
-        //     $item->purchaseItems()->exists() ||
-        //     $item->inventoryLedgers()->exists() ||
-        //     $item->productions()->exists()
-        // ) {
-        //     return back()->with('error', 'Cannot delete! Item already used.');
-        // }
 
         $item->delete();
 

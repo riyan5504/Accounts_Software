@@ -14,6 +14,7 @@ class PurchaseReturn extends Model
         'vendor_id',
         'date',
         'invoice_no',
+        'purchase_id',
         'sub_total',
         'vat_amt',
         'dis_percent',
@@ -43,5 +44,14 @@ class PurchaseReturn extends Model
     {
         return $this->hasMany(Transaction::class, 'module_id')
             ->where('module_type', 'return');
+    }
+
+    public function purchase()
+    {
+        return $this->belongsTo(
+            Purchase::class,
+            'purchase_id',
+            'id'
+        );
     }
 }

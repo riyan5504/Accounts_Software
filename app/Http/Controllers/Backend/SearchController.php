@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\Customer;
 use App\Models\Item;
 use App\Models\User;
 use App\Models\Vendor;
@@ -45,6 +46,34 @@ class SearchController extends Controller
         return response()->json($data);
     }
 
+    public function customerSearch(Request $request)
+    {
+        $term = trim($request->get('term', ''));
+
+        if (empty($term)) {
+            return response()->json([]);
+        }
+
+        $customers = Customer::where('c_name', 'LIKE', "%{$term}%")
+            ->where('company_id', auth()->user()->company_id)
+            ->limit(10)
+            ->get(['id', 'c_name', 'phone', 'email', 'address']);
+
+        $data = $customers->map(function ($customer) {
+            return [
+                'id' => $customer->id,
+                'label' => $customer->c_name, // Autocomplete list এ দেখা যাবে
+                'value' => $customer->c_name, // Input field এ বসবে
+                'customer_id' => $customer->id,
+                'phone' => $customer->phone,
+                'email' => $customer->email ?? '',
+                'address' => $customer->address,
+            ];
+        });
+
+        return response()->json($data);
+    }
+
     // 🔹 Item Search
     public function itemSearch(Request $request)
     {
@@ -58,9 +87,32 @@ class SearchController extends Controller
             ->where('item_name', 'LIKE', "%{$term}%")
             ->where('company_id', auth()->user()->company_id)
             ->limit(10)
-            ->get(['id', 'item_name', 'item_code', 'cat_id', 'size', 'stock_unit', 'unit_price']);
+            ->get([
+                'id',
+                'item_name',
+                'item_code',
+                'cat_id',
+                'size',
+                'stock_unit',
+                'unit_price',
+                'avg_purchase_price',
+                'production_cost',
+                'sales_price'
+            ]);
 
         $data = $items->map(function ($item) {
+
+            if ($item->production_cost !== null && $item->production_cost > 0) {
+                $costPrice = $item->production_cost;
+                $priceType = 'production';
+            } elseif ($item->purchase_price !== null && $item->purchase_price > 0) {
+                $costPrice = $item->purchase_price;
+                $priceType = 'purchase';
+            } else {
+                $costPrice = $item->unit_price ?? 0;
+                $priceType = 'unit';
+            }
+
             return [
                 'id' => $item->id,
                 'label' => $item->item_name,
@@ -68,12 +120,20 @@ class SearchController extends Controller
                 'item_id' => $item->id,
                 'item_code' => $item->item_code,
                 'cat_id' => $item->cat_id,
-                'cat_name' => optional($item->category)->cat_name, // নিরাপদ access
+                'cat_name' => optional($item->category)->cat_name,
                 'size' => $item->size ?? '',
-                'stock_unit' => $$item->stock_unit ?? '',
+                'stock_unit' => $item->stock_unit ?? '',
+                // Existing prices
                 'unit_price' => $item->unit_price ?? 0,
+                'purchase_price' => $item->purchase_price ?? 0,
+                'production_cost' => $item->production_cost ?? 0,
+                'sales_price' => $item->sales_price ?? 0,
+                // Production costing-এর জন্য
+                'cost_price' => $costPrice,
+                'price_type' => $priceType,
             ];
         });
+
         return response()->json($data);
     }
 

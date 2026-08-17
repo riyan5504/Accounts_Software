@@ -71,4 +71,9 @@ class Transaction extends Model
     {
         return $query->where('return_amt', '>', 0);
     }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

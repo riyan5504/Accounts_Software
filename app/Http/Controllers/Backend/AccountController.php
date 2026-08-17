@@ -237,40 +237,77 @@ class AccountController extends Controller
     public function investmentStore(Request $request, JournalService $journalService)
     {
         $request->validate([
-            'date' => 'required|date',
-            'partner_id' => 'required',
-            'amount' => 'required|numeric|min:1',
-            'invest_type' => 'required|in:capital,loan',
-            'debit_account_id' => 'required',
-            'credit_account_id' => 'required',
+            'date'             => 'required|date',
+            'partner_id'       => 'required',
+            'amount'           => 'required|numeric|min:1',
+            'invest_type'      => 'required|in:capital,loan',
+            'debit_account_id' => 'required|integer',
+            'credit_account_id' => 'required|integer',
         ]);
 
-        // 🔹 File Upload (Laravel way)
-        $attachment = null;
-        if ($request->hasFile('attachment')) {
-            $attachment = $request->file('attachment')->store('investments', 'public');
-        }
+        DB::transaction(function () use ($request, $journalService) {
 
-        // 🔹 Investment Save
-        $investment = Investment::create([
-            'company_id' => auth()->user()->company_id ?? null,
-            'partner_id' => $request->partner_id,
-            'amount'     => $request->amount,
-            'attachment' => $attachment,
-            'invest_type' => $request->invest_type,
-            'reference'  => $request->reference,
-            'note'       => $request->note,
-            'date'       => $request->date,
-            'created_by' => auth()->id(),
-        ]);
-        
-        // 🔹 Journal Entry
-        $journalService->createInvestmentJournal(
-            $investment,
-            $request->debit_account_id,
-            $request->credit_account_id
+            /*| File Upload*/
+
+            $attachment = null;
+            if ($request->hasFile('attachment')) {
+                $attachment = $request->file('attachment')
+                    ->store('investments', 'public');
+            }
+            /*Investment Save*/
+            $investment = Investment::create([
+                'company_id'  => auth()->user()->company_id ?? null,
+                'partner_id'  => $request->partner_id,
+                'amount'      => $request->amount,
+                'attachment'  => $attachment,
+                'invest_type' => $request->invest_type,
+                'reference'   => $request->reference,
+                'note'        => $request->note,
+                'date'        => $request->date,
+                'created_by'  => auth()->id(),
+            ]);
+
+            /*Journal Entry
+        | Capital:
+        | Debit  = Cash / Bank
+        | Credit = Capital / Equity Account
+        |
+        | Loan:
+        | Debit  = Cash / Bank
+        | Credit = Loan / Liability Account
+        |
+        */
+            $particulars = $request->invest_type === 'capital'
+                ? 'Capital Investment'
+                : 'Loan Investment';
+            $journalService->createJournal([
+                'company_id'   => auth()->user()->company_id,
+                'module_type'  => 'investment',
+                'module_id'    => $investment->id,
+                'reference_no' => $request->reference,
+                'date'         => $request->date,
+                'particulars'   => $particulars,
+                'items' => [
+                    // Debit: টাকা Cash/Bank-এ এসেছে
+                    [
+                        'account' => $request->debit_account_id,
+                        'debit'   => $request->amount,
+                        'credit'  => 0,
+                    ],
+
+                    // Credit: Capital অথবা Loan
+                    [
+                        'account' => $request->credit_account_id,
+                        'debit'   => 0,
+                        'credit'  => $request->amount,
+                    ],
+                ],
+            ]);
+        });
+
+        return back()->with(
+            'success',
+            'Investment saved and journal created successfully'
         );
-
-        return back()->with('success', 'Investment saved successfully');
     }
 }

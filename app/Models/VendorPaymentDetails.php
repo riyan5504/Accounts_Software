@@ -15,4 +15,9 @@ class VendorPaymentDetails extends Model
     {
         return $this->belongsTo(VendorPayment::class, 'vendor_payment_id', 'id');
     }
+
+    public function purchase()
+    {
+        return $this->belongsTo(Purchase::class, 'purchase_id', 'id');
+    }
 }

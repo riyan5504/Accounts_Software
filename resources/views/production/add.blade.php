@@ -656,7 +656,7 @@
                     select: function(event, ui) {
                         $('.ra_name').val(ui.item.value);
                         $('.ra_item_id').val(ui.item.id);
-                        $('.raw_u_price').val(ui.item.unit_price).trigger('input');
+                        $('.raw_u_price').val(ui.item.cost_price).trigger('input');
 
                         return false;
                     }
@@ -961,4 +961,18 @@
 
         });
     </script>
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Production Failed',
+                    text: @json(session('error')),
+                    confirmButtonText: 'OK'
+                });
+
+            });
+        </script>
+    @endif
 @endpush

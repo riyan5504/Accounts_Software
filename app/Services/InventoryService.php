@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\InventoryLedger;
+use App\Models\Item;
 use Illuminate\Support\Facades\Auth;
 
 class InventoryService
@@ -53,7 +54,7 @@ class InventoryService
             'created_by'  => $userId ?? Auth::id(),
         ]);
     }
-    
+
 
     /**
      * Stock IN from purchase
@@ -80,27 +81,24 @@ class InventoryService
                 'created_by'  => $userId ?? Auth::id(),
             ]);
         }
-    }    
+    }
 
     /**
      * Consume stock for production
      */
-    public function consumeForProduction(
-        int $itemId,
-        float $qty,
-        float $unitCost,
-        int $productionId,
-        string $date
-    ): void {
-
-    if ($qty <= 0) {
-            return;
-        }
+    public function consumeForProduction(int $itemId, float $qty, float $unitCost, int $productionId, string $date): void
+    {
+        if ($qty <= 0) {return;}
 
         $stock = $this->getCurrentStock($itemId);
 
         if ($stock < $qty) {
-            throw new \Exception("Insufficient stock for item ID {$itemId}");
+            $item = Item::find($itemId);
+            $itemName = $item?->item_name ?? "Unknown Item";
+            throw new \Exception(
+                "Insufficient stock for {$itemName}. " .
+                    "Available stock: {$stock}, Required: {$qty}"
+            );
         }
 
         InventoryLedger::create([

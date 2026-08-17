@@ -89,10 +89,15 @@
                                     <input type="text" name="size" class="form-control size" placeholder=" " />
                                     <label for="size" class="floating-label">Pack Size</label>
                                 </div>
-                                <div class="form-group col-sm-4 col-md-2 mb-1">
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
                                     <input type="number" step="0.01" name="unit_price" class="form-control unit_price"
                                         placeholder=" " required />
                                     <label for="unit_price" class="floating-label">Unit Price</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
+                                    <input type="number" step="0.01" name="sales_price" class="form-control sales_price"
+                                        placeholder=" " />
+                                    <label for="sales_price" class="floating-label">Sales Price</label>
                                 </div>
                                 <div class="form-group col-sm-4 col-md-2 mb-1">
                                     <input type="number" name="opening_stock" class="form-control opening_stock"
@@ -100,10 +105,9 @@
                                     <label for="opening_stock" class="floating-label">Opening Stock Qty</label>
                                 </div>
                                 <div class="form-group col-sm-4 col-md-1 mb-1">
-                                    <select name="stock_unit" class="form-control stock_unit" placeholder=" "
-                                        required>
-                                        <option selected disabled>Select Unit</option>                                        
-                                        <option value="gm">gm</option>                                        
+                                    <select name="stock_unit" class="form-control stock_unit" placeholder=" " required>
+                                        <option selected disabled>Select Unit</option>
+                                        <option value="gm">gm</option>
                                         <option value="ml">ml</option>
                                         <option value="kg">Kg</option>
                                         <option value="ltr">Ltr</option>
@@ -139,13 +143,16 @@
                 <table class="table table-sm table-bordered custom-table">
                     <thead>
                         <tr>
-                            <th style="width: 70px">Sl. No.</th>
-                            <th style="width: 120px">Code</th>
-                            <th style="width: 200px">Name</th>
-                            <th style="width: 130px">Category</th>
-                            <th style="width: 130px">Pack Size</th>
-                            <th style="width: 130px">Unit Price</th>
-                            <th style="width: 130px">Opening Qty</th>
+                            <th style="width: 55px">Sl. No.</th>
+                            <th style="width: 100px">Code</th>
+                            <th style="width: 180px">Name</th>
+                            <th style="width: 120px">Category</th>
+                            <th style="width: 110px">Pack Size</th>
+                            <th style="width: 100px">Unit Price</th>
+                            <th style="width: 100px">Purchase Price</th>
+                            <th style="width: 120px">Production Cost</th>
+                            <th style="width: 100px">Sales Price</th>
+                            <th style="width: 100px">Opening Qty</th>
                             <th style="text-align:center">Action</th>
                         </tr>
                     </thead>
@@ -156,9 +163,12 @@
                                 <td>{{ $item->item_code }}</td>
                                 <td>{{ $item->item_name }}</td>
                                 <td>{{ optional($item->category)->cat_name }}</td>
-                                <td>{{ $item->size }}</td>
-                                <td>{{ $item->unit_price }}</td>
-                                <td>{{ $item->opening_stock }} {{$item->stock_unit}}</td>
+                                <td>{{ $item->size ?? '-' }}</td>
+                                <td>{{ $item->unit_price ?? '0.00' }}</td>
+                                <td>{{ $item->avg_purchase_price ?? '0.00' }}</td>
+                                <td>{{ $item->production_cost ?? '0.00' }}</td>
+                                <td>{{ $item->sales_price ?? '0.00' }}</td>
+                                <td>{{ $item->opening_stock }} {{ $item->stock_unit }}</td>
                                 <td style="text-align: center">
                                     <a href="{{ url('/item/edit/' . $item->id) }}" class="btn ms-0 me-0">
                                         <i class="bi bi-pencil text-primary"></i>

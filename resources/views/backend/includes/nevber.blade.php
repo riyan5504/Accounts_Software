@@ -46,7 +46,7 @@
                 </li>
 
                 <li class="nav-item text-center">
-                    <a href="#" class="nav-link nav-item-custom">
+                    <a href="{{ route('sales.index') }}" class="nav-link nav-item-custom {{ request()->routeIs('sales.*') ? 'active' : '' }}">
                         <i class="fas fa-shopping-cart text-danger"></i>
                         <span>Sales</span>
                     </a>

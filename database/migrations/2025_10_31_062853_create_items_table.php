@@ -19,6 +19,10 @@ return new class extends Migration
             $table->unsignedBigInteger('cat_id');
             $table->integer('size')->nullable();
             $table->decimal('unit_price');
+            $table->decimal('last_purchase_price')->nullable();
+            $table->decimal('avg_purchase_price')->nullable();
+            $table->decimal('production_cost')->nullable();
+            $table->decimal('sales_price')->nullable();
             $table->double('opening_stock')->nullable();
             $table->string('stock_unit')->nullable();
             $table->softDeletes()->nullable();

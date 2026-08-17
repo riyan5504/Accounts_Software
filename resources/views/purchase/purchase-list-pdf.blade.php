@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: DejaVu Sans;
-            font-size: 11px;
+            font-size: 13px;
             color: #333;
         }
 
@@ -41,7 +41,7 @@
         }
 
         .company-info {
-            font-size: 9px;
+            font-size: 11px;
             margin-top: 1px;
         }
 
@@ -58,7 +58,7 @@
 
         .report-info {
             margin-top: 5px;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         /* Table */
@@ -72,7 +72,7 @@
             background: #f2f2f2;
             border: 1px solid #999;
             padding: 6px;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         td {
@@ -98,7 +98,7 @@
         .signature td {
             border: none;
             padding-top: 40px;
-            font-size: 11px;
+            font-size: 12px;
         }
     </style>
 </head>

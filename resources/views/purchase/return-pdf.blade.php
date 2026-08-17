@@ -8,13 +8,9 @@
     <style>
         body {
             font-family: DejaVu Sans;
-            font-size: 12px;
+            font-size: 13px;
             color: #333;
             position: relative;
-        }
-
-        .watermark img {
-            width: 100%;
         }
 
         .text-center {
@@ -46,8 +42,23 @@
         }
 
         .company-info {
-            font-size: 9px;
+            font-size: 11px;
             margin-top: 1px;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            transform: translate(-50%, -50%);
+            opacity: 0.11;
+            z-index: -1;
+        }
+
+        .watermark img {
+            width: 100%;
+            height: auto;
         }
 
         .invoice-title {
@@ -80,13 +91,13 @@
             background: #f2f2f2;
             border: 1px solid #999;
             padding: 6px;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         td {
             border: 1px solid #ccc;
             padding: 5px;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         tbody tr:nth-child(even) {
@@ -141,12 +152,12 @@
         .signature td {
             border: none;
             padding-top: 40px;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .note {
             margin-top: 10px;
-            font-size: 10px;
+            font-size: 12px;
             text-align: center;
             color: #666;
         }
@@ -161,6 +172,11 @@
         <div class="company-info">A Trusted Source of Aloe Vera & Herb Product</div>
         <div class="company-info">Flat-3/A, House-53, Road-14, Sector-13, Uttara, Dhaka-1230</div>
         <div class="company-info">Mob: 01721336504</div>
+    </div>
+
+    <!-- Company Logo Watermark -->
+    <div class="watermark">
+        <img src="{{ public_path('backend/dist/assets/img/logo02.png') }}" alt="Company Logo">
     </div>
 
     <!-- Title -->
