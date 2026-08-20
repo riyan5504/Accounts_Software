@@ -98,7 +98,7 @@
             padding-bottom: 2px;
         }
 
-        /* CUSTOMER / INVOICE INFO */
+        /* vendor / INVOICE INFO */
         .info-table {
             width: 100%;
             margin-bottom: 10px;
@@ -111,7 +111,7 @@
             padding: 0;
         }
 
-        .customer-info {
+        .vendor-info {
             width: 55%;
             padding-right: 10px !important;
         }
@@ -164,7 +164,7 @@
             page-break-inside: avoid;
         }
 
-        /* BOTTOM SECTION LEFT  = CUSTOMER PAYMENT RIGHT = SUMMARY */
+        /* BOTTOM SECTION LEFT  = vendor PAYMENT RIGHT = SUMMARY */
         .bottom-layout {
             width: 100%;
             table-layout: fixed;
@@ -180,7 +180,7 @@
             vertical-align: top;
         }
 
-        /* LEFT COLUMN - CUSTOMER PAYMENT */
+        /* LEFT COLUMN - vendor PAYMENT */
         .payment-column {
             width: 48%;
             padding: 0 10px 0 0 !important;
@@ -273,10 +273,7 @@
         }
 
 
-        /* =========================================================
-   PAYMENT STATUS
-   ========================================================= */
-
+        /* PAYMENT STATUS */
         .status-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -305,10 +302,7 @@
             color: #fff;
         }
 
-        /* =========================
-       FOOTER
-    ========================= */
-
+        /* FOOTER */
         .footer {
             position: fixed;
             bottom: 0;
@@ -376,30 +370,30 @@
 
     {{-- ===== INVOICE TITLE==== --}}
     <div class="invoice-title-wrapper">
-        <span class="invoice-title">purchase INVOICE</span>
+        <span class="invoice-title">PURCHASE INVOICE</span>
     </div>
 
-    {{-- ======= CUSTOMER + INVOICE INFORMATION ========= --}}
+    {{-- ======= vendor + INVOICE INFORMATION ========= --}}
     <table class="info-table">
         <tr>
-            {{-- CUSTOMER INFORMATION --}}
-            <td class="customer-info">
+            {{-- vendor INFORMATION --}}
+            <td class="vendor-info">
                 <table class="info-inner-table">
                     <tr>
-                        <td class="info-label">Customer Name:</td>
-                        <td>{{ $purchase->customer->c_name ?? 'N/A' }}</td>
+                        <td class="info-label">Vendor Name:</td>
+                        <td>{{ $purchase->vendor->v_name ?? 'N/A' }}</td>
                     </tr>
                     <tr>
                         <td class="info-label">Address:</td>
-                        <td style="line-height: 14px;">{{ $purchase->customer->address ?? 'N/A' }}</td>
+                        <td style="line-height: 14px;">{{ $purchase->vendor->address ?? 'N/A' }}</td>
                     </tr>
                     <tr>
                         <td class="info-label">Phone:</td>
-                        <td>{{ $purchase->customer->phone ?? 'N/A' }}</td>
+                        <td>{{ $purchase->vendor->phone ?? 'N/A' }}</td>
                     </tr>
                     <tr>
                         <td class="info-label">Email:</td>
-                        <td>{{ $purchase->customer->email ?? 'N/A' }}</td>
+                        <td>{{ $purchase->vendor->email ?? 'N/A' }}</td>
                     </tr>
                 </table>
             </td>
@@ -445,7 +439,7 @@
                 <th style="width:5px;">SL</th>
                 <th style="width:23%;">Item Name</th>
                 <th style="width:12%;">Pack Size</th>
-                <th style="width:12%;">purchase Qty</th>
+                <th style="width:12%;">Purchase Qty</th>
                 <th style="width:12%;">Unit Price</th>
                 <th style="width:12%;">Amount</th>
                 <th style="width:10%;">VAT</th>
@@ -481,9 +475,9 @@
     <table class="bottom-layout">
         <tr>
             <td class="payment-column">
-                @if ($hasCustomerPayment)
+                @if ($hasVendorPayment)
                     <div class="payment-section-title">
-                        Later Customer Payments
+                        Later Vendor Payments
                     </div>
                     <table class="payment-history-table">
                         <thead>
@@ -496,9 +490,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($customerPaymentHistory as $detail)
+                            @foreach ($vendorPaymentHistory as $detail)
                                 @php
-                                    $vp = $detail->customerPayment;
+                                    $vp = $detail->vendorPayment;
                                     $allocatedAmount = (float) $detail->paid_amount;
                                 @endphp
                                 @if ($allocatedAmount > 0)
@@ -523,10 +517,10 @@
                         <tfoot>
                             <tr class="payment-total-row">
                                 <th colspan="4" class="text-right">
-                                    Customer Payment Total
+                                    Vendor Payment Total
                                 </th>
                                 <th class="text-right payment-amount">
-                                    {{ number_format($customerPayment, 2) }}
+                                    {{ number_format($vendorPayment, 2) }}
                                 </th>
                             </tr>
                         </tfoot>
@@ -573,12 +567,12 @@
                     <tr class="summary-border-top grand-total-row">
                         <th class="summary-label">Original Grand Total:</th>
                         <th class="summary-value">
-                            {{ number_format($originalpurchase, 2) }}
+                            {{ number_format($originalPurchase, 2) }}
                         </th>
                     </tr>
                     @if ($hasReturns)
                         <tr class="return-row">
-                            <td class="summary-label">purchase Return:</td>
+                            <td class="summary-label">Purchase Return:</td>
                             <td class="summary-value">
                                 @if ($totalReturn > 0)
                                     -{{ number_format($totalReturn, 2) }}
@@ -596,15 +590,15 @@
                             </td>
                         </tr>
                     @endif
-                    @if ($hasCustomerPayment)
+                    @if ($hasVendorPayment)
                         <tr class="payment-row">
-                            <td class="summary-label">Later Customer Payment:</td>
+                            <td class="summary-label">Vendor Payment:</td>
                             <td class="summary-value">
-                                {{ number_format($customerPayment, 2) }}
+                                {{ number_format($vendorPayment, 2) }}
                             </td>
                         </tr>
                     @endif
-                    @if ($hasInitialPayment || $hasCustomerPayment)
+                    @if ($hasInitialPayment || $hasVendorPayment)
                         <tr class="summary-border-top">
                             <th class="summary-label">Total Paid:</th>
                             <th class="summary-value">
@@ -612,7 +606,7 @@
                             </th>
                         </tr>
                     @endif
-                    @if ($hasReturns || $hasInitialPayment || $hasCustomerPayment)
+                    @if ($hasReturns || $hasInitialPayment || $hasVendorPayment)
                         <tr class="summary-border-top due-row">
                             <th
                                 class="summary-label
@@ -629,7 +623,7 @@
                     @if ($supplierCredit > 0)
                         <tr class="credit-row">
                             <th class="summary-label credit-danger">
-                                Customer Credit:
+                                Vendor Credit:
                             </th>
                             <th class="summary-value credit-danger">
                                 -{{ number_format($supplierCredit, 2) }}
@@ -655,13 +649,23 @@
         </tr>
     </table>
 
+    <!-- In Words -->
+    <p>
+        <strong>In Words:</strong>
+        @if ($due > 0)
+            Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($due)) }} Only
+        @else
+           Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($originalPurchase)) }} Only 
+        @endif        
+    </p>
+
 
     {{-- ==== FOOTER ======= --}}
     <div class="footer">
         <table class="signature-table">
             <tr>
                 <td class="text-left"> ----------------------------<br>
-                    Customer Signature
+                    Vendor Signature
                 </td>
 
 

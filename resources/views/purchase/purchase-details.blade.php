@@ -428,7 +428,8 @@
                                         <!-- DUE -->
                                         @if ($hasReturns || $hasInitialPayment || $hasVendorPayment)
                                             <tr class="border-top">
-                                                <th class="{{ $due > 0 ? 'text-danger' : 'text-success' }}">Remaining Due:
+                                                <th class="{{ $due > 0 ? 'text-danger' : 'text-success' }}">
+                                                    Remaining Due:
                                                 </th>
                                                 <th class="text-end {{ $due > 0 ? 'text-danger' : 'text-success' }}">
                                                     {{ number_format($due, 2) }}</th>
@@ -470,6 +471,16 @@
                                     </table>
                                 </div>
                             </div>
+                            <!-- In Words -->
+                            <p>
+                                <strong>In Words:</strong>
+                                @if ($due > 0)
+                                    Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($due)) }} Only
+                                @else
+                                    Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($originalPurchase)) }}
+                                    Only
+                                @endif
+                            </p>
                         </div>
                     </div>
                 </div>

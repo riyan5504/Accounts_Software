@@ -18,10 +18,7 @@
             margin-bottom: 85px;
         }
 
-        /* =========================
-       COMMON
-    ========================= */
-
+        /* COMMON */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -48,10 +45,7 @@
             font-weight: bold;
         }
 
-        /* =========================
-       COMPANY HEADER
-    ========================= */
-
+        /* COMPANY HEADER */
         .company-section {
             text-align: center;
             margin-bottom: 5px;
@@ -74,10 +68,7 @@
             margin-top: 2px;
         }
 
-        /* =========================
-       WATERMARK
-    ========================= */
-
+        /* WATERMARK */
         .watermark {
             position: fixed;
             top: 50%;
@@ -93,10 +84,7 @@
             height: auto;
         }
 
-        /* =========================
-       INVOICE TITLE
-    ========================= */
-
+        /* INVOICE TITLE */
         .invoice-title-wrapper {
             text-align: center;
             margin: 8px 0 10px 0;
@@ -110,10 +98,7 @@
             padding-bottom: 2px;
         }
 
-        /* =========================
-       CUSTOMER / INVOICE INFO
-    ========================= */
-
+        /* CUSTOMER / INVOICE INFO */
         .info-table {
             width: 100%;
             margin-bottom: 10px;
@@ -152,10 +137,7 @@
             white-space: nowrap;
         }
 
-        /* =========================
-       SALES ITEMS TABLE
-    ========================= */
-
+        /* SALES ITEMS TABLE */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -182,12 +164,7 @@
             page-break-inside: avoid;
         }
 
-        /* =========================================================
-   BOTTOM SECTION
-   LEFT  = CUSTOMER PAYMENT
-   RIGHT = SUMMARY
-   ========================================================= */
-
+        /* BOTTOM SECTION LEFT  = CUSTOMER PAYMENT RIGHT = SUMMARY */
         .bottom-layout {
             width: 100%;
             table-layout: fixed;
@@ -203,11 +180,7 @@
             vertical-align: top;
         }
 
-
-        /* =========================================================
-   LEFT COLUMN - CUSTOMER PAYMENT
-   ========================================================= */
-
+        /* LEFT COLUMN - CUSTOMER PAYMENT */
         .payment-column {
             width: 48%;
             padding: 0 10px 0 0 !important;
@@ -216,12 +189,7 @@
         }
 
 
-        /* =========================================================
-   RIGHT COLUMN - SUMMARY
-   IMPORTANT:
-   Summary must end exactly at the right edge of items table
-   ========================================================= */
-
+        /* RIGHT COLUMN - SUMMARY IMPORTANT */
         .summary-column {
             width: 48%;
             padding: 0 !important;
@@ -229,11 +197,7 @@
             vertical-align: top;
         }
 
-
-        /* =========================================================
-   SUMMARY BOX
-   ========================================================= */
-
+        /* SUMMARY BOX */
         .summary-box {
             width: 100%;
             margin: 0 !important;
@@ -242,11 +206,7 @@
             box-sizing: border-box;
         }
 
-
-        /* =========================================================
-   SUMMARY TABLE
-   ========================================================= */
-
+        /* SUMMARY TABLE */
         .summary-table {
             width: 100%;
             border-collapse: collapse;
@@ -273,33 +233,21 @@
             white-space: nowrap;
         }
 
-
-        /* =========================================================
-   SUMMARY SEPARATORS
-   ========================================================= */
-
+        /* SUMMARY SEPARATORS */
         .summary-border-top td,
         .summary-border-top th {
             border-top: 1px solid #777;
             padding-top: 5px;
         }
 
-
-        /* =========================================================
-   GRAND TOTAL
-   ========================================================= */
-
+        /* GRAND TOTAL */
         .grand-total-row td,
         .grand-total-row th {
             font-weight: bold;
             font-size: 11.5px;
         }
 
-
-        /* =========================================================
-   RETURN / PAYMENT / DUE / CREDIT
-   ========================================================= */
-
+        /* RETURN / PAYMENT / DUE / CREDIT */
         .return-row td {
             color: #dc3545;
         }
@@ -325,11 +273,7 @@
             color: #dc3545;
         }
 
-
-        /* =========================================================
-   PAYMENT STATUS
-   ========================================================= */
-
+        /* PAYMENT STATUS */
         .status-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -358,10 +302,7 @@
             color: #fff;
         }
 
-        /* =========================
-       FOOTER
-    ========================= */
-
+        /* FOOTER */
         .footer {
             position: fixed;
             bottom: 0;
@@ -393,10 +334,7 @@
             text-align: center;
         }
 
-        /* =========================
-       PAGE BREAK
-    ========================= */
-
+        /* PAGE BREAK */
         tr {
             page-break-inside: avoid;
         }
@@ -710,6 +648,16 @@
             </td>
         </tr>
     </table>
+
+    <!-- In Words -->
+    <p>
+        <strong>In Words:</strong>
+        @if ($due > 0)
+            Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($due)) }} Only
+        @else
+           Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($originalSales)) }} Only 
+        @endif        
+    </p>
 
 
     {{-- ==== FOOTER ======= --}}

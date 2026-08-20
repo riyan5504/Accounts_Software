@@ -80,26 +80,26 @@
 @endpush
 
 @section('content')
+    @php
+        $hasReturns = $returnedQtyByItem->sum() > 0;
+
+        $initialPaymentRows = $transactions->filter(function ($transaction) {
+            return (float) $transaction->paid_amt > 0;
+        });
+
+        $hasInitialPayment = $initialPaymentRows->isNotEmpty();
+
+        $hascustomerPayment = $customerPaymentHistory
+            ->filter(function ($detail) {
+                return (float) $detail->paid_amount > 0;
+            })
+            ->isNotEmpty();
+    @endphp
     <div class="app-content-header">
-        @php
-            $hasReturns = $returnedQtyByItem->sum() > 0;
-
-            $initialPaymentRows = $transactions->filter(function ($transaction) {
-                return (float) $transaction->paid_amt > 0;
-            });
-
-            $hasInitialPayment = $initialPaymentRows->isNotEmpty();
-
-            $hascustomerPayment = $customerPaymentHistory
-                ->filter(function ($detail) {
-                    return (float) $detail->paid_amount > 0;
-                })
-                ->isNotEmpty();
-        @endphp
         <div class="container-fluid">
             <div class="row bg-info opacity-75 rounded p-1">
                 <div class="col-sm-8">
-                    <ol class="breadcrumb float-sm-end">
+                    <ol class="breadcrumb float-sm">
                         <li class="breadcrumb-item">
                             <a href="{{ url('/sales') }}"
                                 class="{{ request()->is('sales') ? 'text-primary fw-bold' : 'text-dark' }}">
@@ -465,6 +465,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- In Words -->
+                        <p>
+                            <strong>In Words:</strong>
+                            @if ($due > 0)
+                                Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($due)) }} Only
+                            @else
+                                Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($originalSales)) }} Only
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>
