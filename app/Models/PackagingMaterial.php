@@ -11,7 +11,15 @@ class PackagingMaterial extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'item_id',
+        'pack_size',
+        'pack_qty',
+        'pack_price',
+        'total_price',
+    ];
 
     public function item()
     {

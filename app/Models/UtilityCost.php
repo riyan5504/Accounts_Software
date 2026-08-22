@@ -11,7 +11,12 @@ class UtilityCost extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
     
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'utility_name',
+        'cost_amt',
+    ];
 
     public function production()
     {

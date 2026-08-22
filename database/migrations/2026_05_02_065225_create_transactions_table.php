@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->date('date');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('module_type', 30); // purchase, sale, return
             $table->unsignedBigInteger('module_id');
@@ -20,7 +21,6 @@ return new class extends Migration
             $table->decimal('paid_amt', 15, 2)->default(0);
             $table->decimal('receive_amt', 15, 2)->default(0);
             $table->decimal('return_amt', 15, 2)->default(0);
-            $table->date('date');
             $table->timestamps();
 
             // Indexes

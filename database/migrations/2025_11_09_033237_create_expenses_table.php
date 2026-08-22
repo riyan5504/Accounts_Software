@@ -31,7 +31,6 @@ return new class extends Migration
             $table->string('expense_type')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->string('pay_to')->nullable();
-            $table->unsignedBigInteger('branch_id')->nullable();
             $table->softDeletes()->nullable();
             $table->timestamps();
         });

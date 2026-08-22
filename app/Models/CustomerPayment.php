@@ -9,7 +9,20 @@ use Illuminate\Database\Eloquent\Model;
 class CustomerPayment extends Model
 {
     use HasFactory, CompanyScope;
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'customer_id',
+        'date',
+        'voucher_no',
+        'reference',
+        'debit_account_id',
+        'credit_account_id',
+        'payment_method',
+        'payment_status',
+        'paid_amount',
+        'remarks',
+        'created_by',
+    ];
 
     public function customerPaymentDetails()
     {

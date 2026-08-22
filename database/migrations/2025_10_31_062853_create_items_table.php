@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('item_code')->nullable();
             $table->string('item_name');
             $table->unsignedBigInteger('cat_id');
-            $table->integer('size')->nullable();
+            $table->string('size')->nullable();
             $table->decimal('unit_price');
             $table->decimal('last_purchase_price')->nullable();
             $table->decimal('avg_purchase_price')->nullable();

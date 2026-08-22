@@ -11,7 +11,17 @@ class Investment extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
     protected $dates = ['deleted_at'];
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'partner_id',
+        'date',
+        'amount',
+        'invest_type',
+        'attachment',
+        'reference',
+        'note',
+        'created_by',
+    ];
 
     protected $casts = [
         'date' => 'date',

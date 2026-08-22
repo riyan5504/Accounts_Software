@@ -10,10 +10,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Expense extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
-    protected $guarded = [];
 
     protected $casts = [
         'date' => 'date', // বা 'datetime' যদি time থাকে
+    ];
+
+    protected $fillable = [
+        'date',
+        'company_id',
+        'voucher_no',
+        'reference_no',
+        'expense_account_id',
+        'payment_account_id',
+        'payment_method',
+        'payment_status',
+        'sub_total',
+        'tax_rate',
+        'tax_amount',
+        'total_amount',
+        'paid_amount',
+        'due_amount',
+        'attachment',
+        'expense_type',
+        'created_by',
+        'pay_to'
     ];
 
     public function debitAccount()

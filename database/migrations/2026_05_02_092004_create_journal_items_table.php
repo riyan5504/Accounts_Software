@@ -13,20 +13,15 @@ return new class extends Migration
     {
         Schema::create('journal_items', function (Blueprint $table) {
             $table->id();
-
+            $table->unsignedBigInteger('company_id')->nullable()->index();
+            $table->unsignedBigInteger('vendor_id')->nullable();
+            $table->unsignedBigInteger('customer_id')->nullable();
             $table->foreignId('journal_entry_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            
-            $table->unsignedBigInteger('company_id')->nullable()->index();
-
             $table->unsignedBigInteger('account_id');
-
             $table->decimal('debit', 15, 2)->default(0);
             $table->decimal('credit', 15, 2)->default(0);
-
-            $table->unsignedBigInteger('vendor_id')->nullable();
-            $table->unsignedBigInteger('customer_id')->nullable();
             $table->timestamps();
         });
     }

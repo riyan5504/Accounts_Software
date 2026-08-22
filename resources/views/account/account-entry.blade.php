@@ -136,7 +136,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse ($accounts as $account)
+                                        @foreach ($accounts as $account)
                                             <tr class="align-middle">
                                                 <td>{{ $loop->index + 1 }}</td>
                                                 <td>{{ $account->account_name }}</td>
@@ -155,11 +155,7 @@
                                                     </a>
                                                 </td>
                                             </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="8" class="text-center">No Data Found</td>
-                                            </tr>
-                                        @endforelse
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -180,7 +176,11 @@
 
             var table = $('#accountTable').DataTable({
                 pageLength: 10,
-                dom: 'rtip'
+                dom: 'rtip',
+
+                language: {
+                    emptyTable: 'No Data Found'
+                }
             });
 
             $('#customSearch').on('keyup', function() {

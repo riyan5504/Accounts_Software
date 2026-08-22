@@ -11,6 +11,7 @@ class SalesItems extends Model
 {
     use HasFactory, CompanyScope;
     protected $fillable = [
+        'company_id',
         'sales_id',
         'item_id',
         'qty',

@@ -11,7 +11,16 @@ class Chemical extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'item_id',
+        'used_percent',
+        'used_qty',
+        'ch_unit',
+        'u_price',
+        't_price',
+    ];
 
     public function item()
     {

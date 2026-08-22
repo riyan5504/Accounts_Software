@@ -11,10 +11,30 @@ class Production extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
-
     protected $casts = [
         'date' => 'date', // বা 'datetime' যদি time থাকে
+    ];
+
+    protected $fillable = [
+        'company_id',
+        'item_id',
+        'name',
+        'batch_no',
+        'batch_size',
+        'date',
+        'raw_qty',
+        'raw_unit',
+        'raw_u_price',
+        'raw_t_price',
+        'yield',
+        'yield_unit',
+        'ex_qty',
+        'ex_unit',
+        'yield_percent',
+        'final_qty',
+        'final_unit',
+        'unit_cost',
+        'grand_total',
     ];
 
     public function item()

@@ -11,7 +11,12 @@ class TransportCost extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'transport_type',
+        'transport_amt',
+    ];
 
     public function production()
     {

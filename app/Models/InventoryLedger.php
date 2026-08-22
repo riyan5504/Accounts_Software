@@ -10,7 +10,17 @@ class InventoryLedger extends Model
 {
     use HasFactory, CompanyScope;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'item_id',
+        'module_type',
+        'module_id',
+        'qty_in',
+        'qty_out',
+        'unit_cost',
+        'total_cost',
+        'date',
+    ];
 
     public function item()
     {

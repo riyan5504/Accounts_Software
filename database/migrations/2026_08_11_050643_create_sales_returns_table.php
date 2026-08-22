@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('sales_returns', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vendor_id')->constrained()->restrictOnDelete();
-            $table->foreignId('purchase_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('customer_id')->constrained()->restrictOnDelete();
+            $table->foreignId('sales_id')->constrained()->cascadeOnDelete();
             $table->date('date');
             $table->string('invoice_no');
             $table->string('reference')->nullable();
@@ -30,8 +30,8 @@ return new class extends Migration
             $table->decimal('grand_total', 15, 2);
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->index(['company_id', 'vendor_id']);
-            $table->index(['company_id', 'purchase_id']);
+            $table->index(['company_id', 'customer_id']);
+            $table->index(['company_id', 'sales_id']);
             $table->index(['company_id', 'date']);
             $table->unique(['company_id', 'invoice_no']);
         });

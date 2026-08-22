@@ -11,11 +11,17 @@ class ExpenseItem extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'expense_id',
+        'particulars',
+        'qty',
+        'rate',
+        'amount',
+    ];
 
     public function expense()
     {
         return $this->belongsTo(Expense::class, 'expense_id', 'id');
     }
-    
 }

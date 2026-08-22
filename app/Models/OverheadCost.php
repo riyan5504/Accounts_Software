@@ -11,7 +11,12 @@ class OverheadCost extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'overhead_type',
+        'fo_cost_amt',
+    ];
 
     public function production()
     {

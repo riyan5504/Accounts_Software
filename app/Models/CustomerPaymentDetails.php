@@ -10,7 +10,12 @@ class CustomerPaymentDetails extends Model
 {
     use HasFactory, CompanyScope;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'customer_payment_id',
+        'sales_id',
+        'paid_amount',
+    ];
 
     public function customerPayment()
     {

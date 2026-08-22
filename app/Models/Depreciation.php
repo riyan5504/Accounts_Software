@@ -11,7 +11,12 @@ class Depreciation extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'machine_name',
+        'machine_cost_amt',
+    ];
 
     public function production()
     {

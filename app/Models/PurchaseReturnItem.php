@@ -9,7 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 class PurchaseReturnItem extends Model
 {
     use HasFactory, CompanyScope;
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'item_id',
+        'return_id',
+        'qty',
+        'unit_price',
+        'price',
+        'vat_percent',
+        'vat_amount',
+        'total_price',
+    ];
 
     public function purchaseReturn()
     {

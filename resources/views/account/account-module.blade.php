@@ -49,24 +49,6 @@
                     <!--end::Small Box Widget 1-->
                 </div>
                 <!--end::Col-->
-               
-                <div class="col-lg-3 col-6">
-                    <!--begin::Small Box Widget 2-->
-                    <div class="small-box text-bg-warning">
-                        <div class="inner">
-                            <a href="{{ url('/account/list') }}"><p>Account List</p></a>
-                        </div>
-                        <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                            viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                            <path d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
-                        </svg>
-                        <a href="{{ url('/account/list') }}"
-                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                            Show List <i class="bi bi-link-45deg"></i>
-                        </a>
-                    </div>
-                    <!--end::Small Box Widget 2-->
-                </div>
                 <div class="col-lg-3 col-6">
                     <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-success">

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('customer_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vendor_id')->constrained()->restrictOnDelete();
+            $table->foreignId('customer_id')->constrained()->restrictOnDelete();
             $table->date('date');
             $table->string('voucher_no');
             $table->string('reference')->nullable();
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->text('remarks')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             // Index
-            $table->index(['company_id', 'vendor_id']);
+            $table->index(['company_id', 'customer_id']);
             $table->index(['company_id', 'date']);
 
             // Unique Voucher

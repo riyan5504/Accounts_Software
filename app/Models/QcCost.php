@@ -11,7 +11,12 @@ class QcCost extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'test_name',
+        'qc_amt',
+    ];
 
     public function production()
     {

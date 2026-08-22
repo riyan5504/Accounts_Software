@@ -16,20 +16,20 @@ return new class extends Migration
 
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
 
-            $table->foreignId('vendor_payment_id')
+            $table->foreignId('customer_payment_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->foreignId('purchase_id')
-                ->constrained('purchases')
+            $table->foreignId('sales_id')
+                ->constrained('sales')
                 ->cascadeOnDelete();
 
             $table->decimal('paid_amount', 15, 2);
 
             $table->timestamps();
 
-            $table->index(['company_id', 'purchase_id']);
-            $table->index(['company_id', 'vendor_payment_id']);
+            $table->index(['company_id', 'sales_id']);
+            $table->index(['company_id', 'customer_payment_id']);
         });
     }
 

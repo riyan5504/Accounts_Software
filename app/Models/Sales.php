@@ -7,12 +7,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sales extends Model
 {
-    use HasFactory, CompanyScope;
+    use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'customer_id',
+        'date',
+        'invoice_no',
+        'reference',
+        'narration',
+        'payment_status',
+        'payment_account_id',
+        'sub_total',
+        'vat_amt',
+        'dis_percent',
+        'dis_amt',
+        'grand_total',
+        'due_amt',
+        'pay_receive',
+        'created_by',
+    ];
 
     protected $casts = [
         'date' => 'date',

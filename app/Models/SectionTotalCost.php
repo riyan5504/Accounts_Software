@@ -11,7 +11,18 @@ class SectionTotalCost extends Model
 {
     use HasFactory, CompanyScope, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'production_id',
+        'raw_grand_price',
+        'pack_grand_price',
+        'labor_grand_price',
+        'depreciation_grand_price',
+        'utility_grand_price',
+        'overhead_grand_price',
+        'transport_grand_price',
+        'qc_grand_price',
+    ];
 
     public function production()
     {

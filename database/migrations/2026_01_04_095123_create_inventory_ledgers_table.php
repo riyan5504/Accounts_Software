@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('inventory_ledgers', function (Blueprint $table) {
             $table->id();
+            $table->date('date');
             $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->foreignId('item_id')->constrained()->cascadeOnDelete();
             $table->string('module_type'); // purchase, sale, adjustment
@@ -21,7 +22,6 @@ return new class extends Migration
             $table->decimal('qty_out', 15, 3)->default(0);
             $table->decimal('unit_cost', 15, 2)->default(0);
             $table->decimal('total_cost', 15, 2)->default(0);
-            $table->date('date');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });

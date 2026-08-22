@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('invoice_no', 50);
             $table->string('reference', 100)->nullable();
             $table->text('narration')->nullable();
-            $table->foreignId('payment_account_id ')->nullable()->constrained('accounts')->nullOnDelete();
+            $table->foreignId('payment_account_id')->nullable()->constrained('accounts')->nullOnDelete();
             $table->enum('payment_status', ['paid', 'unpaid', 'partial'])->default('unpaid');
             $table->decimal('sub_total', 15, 2);
             $table->decimal('vat_amt', 15, 2)->default(0);
@@ -34,7 +34,7 @@ return new class extends Migration
 
             // Indexes
             $table->index(['company_id', 'date']);
-            $table->index(['company_id', 'vendor_id']);
+            $table->index(['company_id', 'customer_id']);
             $table->index(['company_id', 'payment_status']);
             $table->unique(['company_id', 'invoice_no'], 'unique_invoice_per_company');
         });

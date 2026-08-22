@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 class VendorPaymentDetails extends Model
 {
    use HasFactory, CompanyScope;
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'vendor_payment_id',
+        'purchase_id',
+        'paid_amount',
+    ];
 
     public function vendorPayment()
     {

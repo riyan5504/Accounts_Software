@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('company_id')->nullable()->index();
             $table->unsignedBigInteger('item_id');
-            $table->unsignedBigInteger('purchase_id');
+            $table->unsignedBigInteger('sales_id');
             $table->integer('qty');            
-            $table->decimal('unit_price');
+            $table->decimal('sales_price');
             $table->decimal('price');
             $table->decimal('item_vat_percent')->nullable();
             $table->decimal('item_vat_amt')->nullable();

@@ -185,7 +185,7 @@
         </div>
 
         <!-- Login Form -->
-        <form id="loginForm" class="form active" action="{{ route('admin.login') }}" method="POST">
+        <form id="loginForm" class="form active" action="{{ route('admin.login.submit') }}" method="POST">
             @csrf
             <input type="email" name="email" placeholder="Email" required />
             @error('email')
@@ -209,6 +209,7 @@
             @csrf
             <input type="text" name="company_name" placeholder="Company Name" required />
             <input type="text" name="name" placeholder="Full Name" required />
+            <input type="text" name="address" placeholder="Full Address" />
             <input type="email" name="email" placeholder="Email" required />
             <input type="password" name="password" placeholder="Password" required />
             <input type="password" name="password_confirmation" placeholder="Confirm Password" required />
@@ -221,24 +222,27 @@
         const container = document.querySelector(".container");
         const loginTab = document.getElementById("loginTab");
         const registerTab = document.getElementById("registerTab");
+
         const loginForm = document.getElementById("loginForm");
         const registerForm = document.getElementById("registerForm");
 
-        // ✅ container open (only once)
-        container.addEventListener("click", () => {
-            if (!container.classList.contains("active")) {
-                container.classList.add("active");
+
+        // ==========================================
+        // CARD CLICK
+        // ==========================================
+        // Card-এর যেকোনো জায়গায় click করলে expand হবে
+        // এবং প্রথমে Login form দেখাবে
+        container.addEventListener("click", function(e) {
+
+            // যদি card আগে থেকেই open থাকে,
+            // তাহলে নতুন করে কিছু করার দরকার নেই
+            if (container.classList.contains("active")) {
+                return;
             }
-        });
 
-        // ✅ prevent form click bubbling
-        loginForm.addEventListener("click", e => e.stopPropagation());
-        registerForm.addEventListener("click", e => e.stopPropagation());
+            container.classList.add("active");
 
-        // ✅ login tab
-        loginTab.addEventListener("click", (e) => {
-            e.stopPropagation();
-
+            // Login default form
             loginTab.classList.add("active");
             registerTab.classList.remove("active");
 
@@ -246,23 +250,62 @@
             registerForm.classList.remove("active");
         });
 
-        // ✅ register tab (with reset)
-        registerTab.addEventListener("click", (e) => {
+
+        // ==========================================
+        // STOP CARD CLICK FROM FORM
+        // ==========================================
+        // Form-এর ভিতরে click করলে card-এর parent click
+        // event trigger হবে না
+        loginForm.addEventListener("click", function(e) {
+            e.stopPropagation();
+        });
+
+        registerForm.addEventListener("click", function(e) {
+            e.stopPropagation();
+        });
+
+
+        // ==========================================
+        // LOGIN TAB
+        // ==========================================
+        loginTab.addEventListener("click", function(e) {
+
             e.stopPropagation();
 
+            // Card expand
+            container.classList.add("active");
+
+            // Tab active
+            loginTab.classList.add("active");
+            registerTab.classList.remove("active");
+
+            // Form switch
+            loginForm.classList.add("active");
+            registerForm.classList.remove("active");
+        });
+
+
+        // ==========================================
+        // REGISTER TAB
+        // ==========================================
+        registerTab.addEventListener("click", function(e) {
+
+            e.stopPropagation();
+
+            // Card expand
+            container.classList.add("active");
+
+            // Tab active
             registerTab.classList.add("active");
             loginTab.classList.remove("active");
 
+            // Form switch
             registerForm.classList.add("active");
             loginForm.classList.remove("active");
 
-            // reset form
+            // Form reset
+            // @csrf token untouched থাকবে
             registerForm.reset();
-
-            // force clear
-            registerForm.querySelectorAll("input").forEach(input => {
-                input.value = "";
-            });
         });
     </script>
 </body>

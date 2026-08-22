@@ -46,6 +46,8 @@ class AdminLoginController extends Controller
 
         $company = Company::create([
             'name' => $request->company_name,
+            'email' => $request->email,
+            'address' => $request->address,
         ]);
 
         $user = User::create([

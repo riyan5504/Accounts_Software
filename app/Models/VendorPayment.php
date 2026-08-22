@@ -10,7 +10,20 @@ class VendorPayment extends Model
 {
     use HasFactory, CompanyScope;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'company_id',
+        'vendor_id',
+        'date',
+        'voucher_no',
+        'reference',
+        'debit_account_id',
+        'credit_account_id',
+        'payment_method',
+        'payment_status',
+        'paid_amount',
+        'remarks',
+        'created_by',
+    ];
 
     public function vendor()
     {

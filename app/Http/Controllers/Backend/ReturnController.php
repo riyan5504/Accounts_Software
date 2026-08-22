@@ -59,7 +59,7 @@ class ReturnController extends Controller
         }
 
         // নতুন invoice_no তৈরি করা (PRC-0001 ফরম্যাটে)
-        $newReturnNo = 'RTN-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        $newReturnNo = 'PRTN-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
 
         $accounts = Account::all();
         $users = User::all();
