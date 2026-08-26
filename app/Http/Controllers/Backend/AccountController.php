@@ -229,8 +229,10 @@ class AccountController extends Controller
 
     public function investmentEntry()
     {
-        $partners = Partner::get();
-        $accounts = Account::get();
+        $companyId = auth()->user()->company_id;
+        $partners = Partner::where('company_id', $companyId)->get();
+        $accounts = Account::where('company_id', $companyId)->get();
+
         return view('account.investment-create', compact('partners', 'accounts'));
     }
 
@@ -308,6 +310,139 @@ class AccountController extends Controller
         return back()->with(
             'success',
             'Investment saved and journal created successfully'
+        );
+    }
+
+    public function investmentList()
+    {
+        $companyId = auth()->user()->company_id;
+
+        $investments = Investment::with('partner')
+            ->where('company_id', $companyId)
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return view('account.invest-list', compact('investments'));
+    }
+
+    public function investmentReport(Request $request)
+    {
+        $companyId = auth()->user()->company_id;
+
+        /*
+    |--------------------------------------------------------------------------
+    | Investment Details Query
+    |--------------------------------------------------------------------------
+    */
+
+        $query = Investment::with('partner')
+            ->where('company_id', $companyId);
+
+
+        // Date From
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+
+        // Date To
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+
+        // Partner
+        if ($request->filled('partner_id')) {
+            $query->where('partner_id', $request->partner_id);
+        }
+
+
+        // Investment Type
+        if (
+            $request->filled('invest_type') &&
+            $request->invest_type !== 'all'
+        ) {
+            $query->where('invest_type', $request->invest_type);
+        }
+
+
+        $investments = $query
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Investment Summary
+    |--------------------------------------------------------------------------
+    */
+
+        $totalCapital = $investments
+            ->where('invest_type', 'capital')
+            ->sum('amount');
+
+
+        $totalPartnerLoan = $investments
+            ->where('invest_type', 'loan')
+            ->sum('amount');
+
+
+        $totalInvestment = $totalCapital + $totalPartnerLoan;
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Partner Investment Ledger
+    |--------------------------------------------------------------------------
+    */
+
+        $partnerLedger = $investments
+            ->groupBy('partner_id')
+            ->map(function ($partnerInvestments) {
+
+                $partner = $partnerInvestments->first()->partner;
+
+                $capital = $partnerInvestments
+                    ->where('invest_type', 'capital')
+                    ->sum('amount');
+
+                $loan = $partnerInvestments
+                    ->where('invest_type', 'loan')
+                    ->sum('amount');
+
+                return [
+                    'partner_id'   => $partner?->id,
+                    'partner_name' => $partner?->p_name ?? 'N/A',
+                    'capital'      => $capital,
+                    'loan'         => $loan,
+                    'total'        => $capital + $loan,
+                ];
+            })
+            ->values();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Partners
+    |--------------------------------------------------------------------------
+    */
+
+        $partners = Partner::where('company_id', $companyId)
+            ->orderBy('p_name')
+            ->get();
+
+
+        return view(
+            'account.investment-report',
+            compact(
+                'investments',
+                'partnerLedger',
+                'partners',
+                'totalCapital',
+                'totalPartnerLoan',
+                'totalInvestment'
+            )
         );
     }
 }

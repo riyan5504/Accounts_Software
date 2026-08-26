@@ -93,69 +93,61 @@
 
                         <div><button class="btn btn-primary">Save Investment</button></div>
                     </div>
-
+                </form>
+                <!--end::Form-->
             </div>
-            </form>
-            <!--end::Form-->
+            <!--end::Quick Example-->
         </div>
-        <!--end::Quick Example-->
-    </div>
-    <!--end::Container-->
+        <!--end::Container-->
     </div>
 
     <div class="modal fade" id="addAccountModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-
                 <form action="{{ url('/account/store') }}" method="POST">
                     @csrf
                     <!--begin::Body-->
-                        <div class="modal-body border-0 shadow-sm">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Entry Account Details</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="modal-body border-0 shadow-sm">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Entry Account Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="account-row row g-2 align-accounts-end mb-2">
+                            <div class="form-group col-sm-6 col-md-3 mb-1">
+                                <input type="text" name="account_name" class="form-control account_name"
+                                    placeholder=" " required />
+                                <label for="account_name" class="floating-label">Account Name</label>
                             </div>
-                            <div class="account-row row g-2 align-accounts-end mb-2">
-                                {{-- <div class="form-group col-sm-6 col-md-2 mb-1">
-                                    <input type="text" name="account_code" class="form-control account_code"
-                                        placeholder=" " />
-                                    <label for="account_code" class="floating-label">Account Code</label>
-                                </div> --}}
-                                <div class="form-group col-sm-6 col-md-3 mb-1">
-                                    <input type="text" name="account_name" class="form-control account_name"
-                                        placeholder=" " required />
-                                    <label for="account_name" class="floating-label">Account Name</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-3 mb-1">
-                                    <select name="ac_type" class="form-control ac_type" placeholder=" ">
-                                        <option selected disabled>Select Account Type</option>
-                                        <option value="asset">Asset</option>
-                                        <option value="liability">Liability</option>
-                                        <option value="equity">Equity</option>
-                                        <option value="revenue">Revenue</option>
-                                        <option value="expense">Expense</option>
-                                    </select>
-                                    <label for="unit" class="floating-label">Account Type</label>
-                                </div>
-                                <div class="form-group col-sm-6 col-md-3 mb-1">
-                                    <input type="text" name="ac_cat" class="form-control ac_cat" placeholder=" "
-                                        required />
-                                    <label for="ac_cat" class="floating-label">Account Category</label>
-                                </div>
+                            <div class="form-group col-sm-6 col-md-3 mb-1">
+                                <select name="ac_type" class="form-control ac_type" placeholder=" ">
+                                    <option selected disabled>Select Account Type</option>
+                                    <option value="asset">Asset</option>
+                                    <option value="liability">Liability</option>
+                                    <option value="equity">Equity</option>
+                                    <option value="revenue">Revenue</option>
+                                    <option value="expense">Expense</option>
+                                </select>
+                                <label for="unit" class="floating-label">Account Type</label>
+                            </div>
+                            <div class="form-group col-sm-6 col-md-3 mb-1">
+                                <input type="text" name="ac_cat" class="form-control ac_cat" placeholder=" "
+                                    required />
+                                <label for="ac_cat" class="floating-label">Account Category</label>
+                            </div>
 
-                                <div class="form-group col-sm-6 col-md-3 mb-1">
-                                    <input type="number" step="0.01" name="op_balance"
-                                        class="form-control op_balance" value="0" placeholder=" " required />
-                                    <label for="op_balance" class="floating-label">Opening Balance</label>
-                                </div>
+                            <div class="form-group col-sm-6 col-md-3 mb-1">
+                                <input type="number" step="0.01" name="op_balance" class="form-control op_balance"
+                                    value="0" placeholder=" " required />
+                                <label for="op_balance" class="floating-label">Opening Balance</label>
                             </div>
                         </div>
-                        <!--end::Body-->
-                        <!--begin::Footer-->
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary">💾 Save</button>
-                        </div>
-                        <!--end::Footer-->
+                    </div>
+                    <!--end::Body-->
+                    <!--begin::Footer-->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">💾 Save</button>
+                    </div>
+                    <!--end::Footer-->
                 </form>
             </div>
         </div>
@@ -165,36 +157,59 @@
 @push('script')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+
             const radios = document.querySelectorAll('input[name="invest_type"]');
             const creditSelect = document.querySelector('.credit_account_id');
             const options = creditSelect.querySelectorAll('option');
 
             radios.forEach(radio => {
+
                 radio.addEventListener('change', function() {
+
                     let selectedType = this.value;
 
                     options.forEach(option => {
-                        // 👉 default option সবসময় show থাকবে
+
+                        // Default option
                         if (!option.dataset.type) {
-                            option.style.display = 'block';
+                            option.hidden = false;
+                            option.disabled = false;
                             return;
                         }
 
-                        if (selectedType === 'capital' && option.dataset.type ===
-                            'equity') {
-                            option.style.display = 'block';
-                        } else if (selectedType === 'loan' && option.dataset.type ===
-                            'liability') {
-                            option.style.display = 'block';
-                        } else {
-                            option.style.display = 'none';
+                        // Capital → Equity
+                        if (
+                            selectedType === 'capital' &&
+                            option.dataset.type === 'equity'
+                        ) {
+                            option.hidden = false;
+                            option.disabled = false;
+                        }
+
+                        // Loan → Liability
+                        else if (
+                            selectedType === 'loan' &&
+                            option.dataset.type === 'liability'
+                        ) {
+                            option.hidden = false;
+                            option.disabled = false;
+                        }
+
+                        // Hide other accounts
+                        else {
+                            option.hidden = true;
+                            option.disabled = true;
                         }
                     });
 
-                    // 👉 dropdown reset করে default option select করাও
+                    // IMPORTANT:
+                    // Always select the default option
                     creditSelect.selectedIndex = 0;
+
                 });
+
             });
+
         });
     </script>
     @if ($errors->any())

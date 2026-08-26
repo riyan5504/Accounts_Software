@@ -14,6 +14,7 @@ use App\Http\Controllers\Backend\{
     SalesController,
     SalesReturnController,
     SearchController,
+    SettingController,
     VendorController,
     VendorPaymentController
 };
@@ -81,6 +82,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/investment/entry', [AccountController::class, 'investmentEntry'])->name('investment.entry');
         Route::post('/investment/store', [AccountController::class, 'investmentStore'])->name('investment.store');
         Route::get('/investment/list', [AccountController::class, 'investmentList'])->name('investment.list');
+        Route::get('/investment/edit/{id}', [AccountController::class, 'investmentEdit'])->name('investment.edit');
+        Route::get('/investment/delete/{id}', [AccountController::class, 'investmentDelete'])->name('investment.delete');
+        Route::get('/investment/report', [AccountController::class, 'investmentReport'])->name('investment.report');
     });
 
     // Item Module
@@ -231,5 +235,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-ledger/data', [ReportController::class, 'vendorLedgerData'])->name('vendor-ledger.data');
         Route::get('/vendor-due/pdf', [ReportController::class, 'vendorDuePdf'])->name('vendor-due.pdf');
         Route::get('/vendor-ledger/pdf', [ReportController::class, 'vendorLedgerPdf'])->name('vendor-ledger.pdf');
+    });
+
+    // Settings
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingController::class, 'settings'])->name('index');
     });
 });

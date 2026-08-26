@@ -129,7 +129,7 @@
 
             // ✅ Vendor Name Autocomplete
             $('.v_name').autocomplete({
-                source: "{{ route('vendor.search') }}",
+                source: "{{ route('search.vendor') }}",
                 minLength: 1,
                 select: function(event, ui) {
                     // যখন vendor select হবে

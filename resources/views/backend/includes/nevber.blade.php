@@ -97,7 +97,8 @@
                 </li>
 
                 <li class="nav-item text-center">
-                    <a href="#" class="nav-link nav-item-custom">
+                    <a href="{{ route('settings.index') }}"
+                        class="nav-link nav-item-custom text-danger {{ request()->routeIs('settings.*') ? 'active' : '' }}">
                         <i class="fas fa-cog"></i>
                         <span>Settings</span>
                     </a>

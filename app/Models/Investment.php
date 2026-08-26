@@ -34,6 +34,6 @@ class Investment extends Model
 
     public function partner()
     {
-        return $this->belongsTo(Partner::class);
+        return $this->belongsTo(Partner::class, 'partner_id', 'id');
     }
 }
