@@ -236,9 +236,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-due/pdf', [ReportController::class, 'vendorDuePdf'])->name('vendor-due.pdf');
         Route::get('/vendor-ledger/pdf', [ReportController::class, 'vendorLedgerPdf'])->name('vendor-ledger.pdf');
     });
-
-    // Settings
-    Route::prefix('settings')->name('settings.')->group(function () {
+    
+    Route::prefix('setting')->name('setting.')->group(function () {
         Route::get('/', [SettingController::class, 'settings'])->name('index');
+        Route::get('/company', [SettingController::class, 'company'])->name('company.settings');
+        Route::put('/company/update', [SettingController::class, 'companyUpdate'])->name('company.settings.update');
     });
 });

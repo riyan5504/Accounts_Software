@@ -9,7 +9,27 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Company extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $fillable = ['name', 'email', 'address'];
+
+    protected $fillable = [
+        'name',
+        'email',
+        'phone',
+        'mobile',
+        'address',
+        'website',
+        'logo',
+        'tax_number',
+        'registration_number',
+        'contact_person',
+        'currency',
+        'timezone',
+        'footer_text',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => 'boolean',
+    ];
 
     public function partners()
     {
