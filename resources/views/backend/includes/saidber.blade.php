@@ -67,7 +67,7 @@
                             <li class="nav-item">
                                 <a href="{{ route('report.stock') }}" class="nav-link">
                                     <i class="nav-icon bi bi-card-list"></i>
-                                    <p>Item Stock Report</p>
+                                    <p>Item Stock Ledger</p>
                                 </a>
                             </li>
                         </ul>
@@ -237,7 +237,7 @@
                             <li class="nav-item">
                                 <a href="{{ url('/account/investment/report') }}" class="nav-link">
                                     <i class="nav-icon bi bi-card-list"></i>
-                                    <p>Investment Report</p>
+                                    <p>Investment Ledger</p>
                                 </a>
                             </li>
 
@@ -270,7 +270,7 @@
                             <li class="nav-item">
                                 <a href="{{ url('/report/stock') }}" class="nav-link">
                                     <i class="nav-icon bi bi-circle"></i>
-                                    <p>Item Stock Report</p>
+                                    <p>Item Stock Ledger</p>
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -291,13 +291,19 @@
                                     <p>Vendor Ledger</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ url('/account/investment/report') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-card-list"></i>
+                                    <p>Investment Ledger</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 @endif
 
                 @if ($module == 'settings' || $module == 'all')
                     <li class="nav-item {{ $module == 'settings' ? 'menu-open' : '' }}">
-                        <a href="{{ url('/settings') }}" class="nav-link">
+                        <a href="{{ route('settings.index') }}" class="nav-link">
                             <i class="nav-icon bi bi-box-seam-fill"></i>
                             <p>
                                 Settings
@@ -306,7 +312,7 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="{{ route('settings.company.info') }}" class="nav-link">
                                     <i class="nav-icon bi bi-circle"></i>
                                     <p>Company Informetion</p>
                                 </a>

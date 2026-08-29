@@ -83,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/investment/store', [AccountController::class, 'investmentStore'])->name('investment.store');
         Route::get('/investment/list', [AccountController::class, 'investmentList'])->name('investment.list');
         Route::get('/investment/edit/{id}', [AccountController::class, 'investmentEdit'])->name('investment.edit');
+        Route::post('/investment/update/{id}', [AccountController::class, 'investmentUpdate'])->name('investment.update');
         Route::get('/investment/delete/{id}', [AccountController::class, 'investmentDelete'])->name('investment.delete');
         Route::get('/investment/report', [AccountController::class, 'investmentReport'])->name('investment.report');
     });
@@ -237,9 +238,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-ledger/pdf', [ReportController::class, 'vendorLedgerPdf'])->name('vendor-ledger.pdf');
     });
     
-    Route::prefix('setting')->name('setting.')->group(function () {
+    Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingController::class, 'settings'])->name('index');
-        Route::get('/company', [SettingController::class, 'company'])->name('company.settings');
-        Route::put('/company/update', [SettingController::class, 'companyUpdate'])->name('company.settings.update');
+        Route::get('/company/info', [SettingController::class, 'company'])->name('company.info');
+        Route::put('/company/update', [SettingController::class, 'companyUpdate'])->name('company.update');
     });
 });

@@ -127,7 +127,7 @@
                     <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-success bg-opacity-50">
                         <div class="inner">
-                            <a href="{{ url('/account/investment/report') }}"><p>Investment Report</p></a>
+                            <a href="{{ url('/account/investment/report') }}"><p>Investment Ledger</p></a>
                         </div>
                         <svg class="small-box-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">

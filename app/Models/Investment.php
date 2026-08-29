@@ -14,12 +14,14 @@ class Investment extends Model
     protected $fillable = [
         'company_id',
         'partner_id',
-        'date',
         'amount',
-        'invest_type',
         'attachment',
+        'invest_type',
+        'debit_account_id',
+        'credit_account_id',
         'reference',
         'note',
+        'date',
         'created_by',
     ];
 

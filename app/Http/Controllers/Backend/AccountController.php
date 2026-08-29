@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
 use App\Models\Investment;
+use App\Models\JournalEntry;
 use App\Models\Partner;
 use App\Models\User;
 use App\Services\JournalService;
@@ -180,7 +181,7 @@ class AccountController extends Controller
     public function partnerStore(Request $request)
     {
         $request->validate([
-            'p_name'     => 'required|string|max:255',
+            'p_name' => 'required|string|max:255',
             'p_phone' => [
                 'required',
                 'string',
@@ -239,10 +240,10 @@ class AccountController extends Controller
     public function investmentStore(Request $request, JournalService $journalService)
     {
         $request->validate([
-            'date'             => 'required|date',
-            'partner_id'       => 'required',
-            'amount'           => 'required|numeric|min:1',
-            'invest_type'      => 'required|in:capital,loan',
+            'date' => 'required|date',
+            'partner_id' => 'required',
+            'amount' => 'required|numeric|min:1',
+            'invest_type' => 'required|in:capital,loan',
             'debit_account_id' => 'required|integer',
             'credit_account_id' => 'required|integer',
         ]);
@@ -258,15 +259,17 @@ class AccountController extends Controller
             }
             /*Investment Save*/
             $investment = Investment::create([
-                'company_id'  => auth()->user()->company_id ?? null,
-                'partner_id'  => $request->partner_id,
-                'amount'      => $request->amount,
-                'attachment'  => $attachment,
+                'company_id' => auth()->user()->company_id,
+                'partner_id' => $request->partner_id,
+                'amount' => $request->amount,
+                'attachment' => $attachment,
                 'invest_type' => $request->invest_type,
-                'reference'   => $request->reference,
-                'note'        => $request->note,
-                'date'        => $request->date,
-                'created_by'  => auth()->id(),
+                'debit_account_id' => $request->debit_account_id,
+                'credit_account_id' => $request->credit_account_id,
+                'reference' => $request->reference,
+                'note' => $request->note,
+                'date' => $request->date,
+                'created_by' => auth()->id(),
             ]);
 
             /*Journal Entry
@@ -283,25 +286,25 @@ class AccountController extends Controller
                 ? 'Capital Investment'
                 : 'Loan Investment';
             $journalService->createJournal([
-                'company_id'   => auth()->user()->company_id,
-                'module_type'  => 'investment',
-                'module_id'    => $investment->id,
+                'company_id' => auth()->user()->company_id,
+                'module_type' => 'investment',
+                'module_id' => $investment->id,
                 'reference_no' => $request->reference,
-                'date'         => $request->date,
-                'particulars'   => $particulars,
+                'date' => $request->date,
+                'particulars' => $particulars,
                 'items' => [
                     // Debit: টাকা Cash/Bank-এ এসেছে
                     [
                         'account' => $request->debit_account_id,
-                        'debit'   => $request->amount,
-                        'credit'  => 0,
+                        'debit' => $request->amount,
+                        'credit' => 0,
                     ],
 
                     // Credit: Capital অথবা Loan
                     [
                         'account' => $request->credit_account_id,
-                        'debit'   => 0,
-                        'credit'  => $request->amount,
+                        'debit' => 0,
+                        'credit' => $request->amount,
                     ],
                 ],
             ]);
@@ -325,37 +328,207 @@ class AccountController extends Controller
         return view('account.invest-list', compact('investments'));
     }
 
+    public function investmentEdit($id)
+    {
+        $companyId = auth()->user()->company_id;
+        $accounts = Account::where('company_id', $companyId)->get();
+        $partners = Partner::where('company_id', $companyId)->get();
+
+        $investment = Investment::with('partner')
+            ->where('company_id', $companyId)
+            ->findOrFail($id);
+
+        return view('account.invest-edit', compact('investment', 'accounts', 'partners'));
+    }
+
+    public function investmentUpdate(Request $request, $id, JournalService $journalService)
+    {
+        $companyId = auth()->user()->company_id;
+
+        $request->validate([
+            'date' => 'required|date',
+            'partner_id' => 'required|integer',
+            'amount' => 'required|numeric|min:1',
+            'invest_type' => 'required|in:capital,loan',
+            'debit_account_id' => 'required|integer',
+            'credit_account_id' => 'required|integer',
+            'reference' => 'nullable|string|max:255',
+            'note' => 'nullable|string',
+            'attachment' => 'nullable|file|max:5120',
+        ]);
+
+        /* Validate Investment */
+        $investment = Investment::where('company_id', $companyId)
+            ->findOrFail($id);
+
+        /* Validate Partner */
+        $partner = Partner::where('company_id', $companyId)
+            ->findOrFail($request->partner_id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Debit Account
+        |--------------------------------------------------------------------------
+        | Debit must be Asset
+        */
+        $debitAccount = Account::where('company_id', $companyId)
+            ->where('id', $request->debit_account_id)
+            ->where('ac_type', 'asset')
+            ->first();
+
+        if (!$debitAccount) {
+            return back()
+                ->withErrors([
+                    'debit_account_id' => 'Invalid debit account.'
+                ])
+                ->withInput();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Credit Account
+        |--------------------------------------------------------------------------
+        | Capital = Equity
+        | Loan    = Liability
+        */
+
+        $requiredCreditType =
+            $request->invest_type === 'capital'
+            ? 'equity'
+            : 'liability';
+
+        $creditAccount = Account::where('company_id', $companyId)
+            ->where('id', $request->credit_account_id)
+            ->where('ac_type', $requiredCreditType)
+            ->first();
+        if (!$creditAccount) {
+            return back()
+                ->withErrors([
+                    'credit_account_id' =>
+                        'Invalid credit account for selected investment type.'
+                ])
+                ->withInput();
+        }
+
+        /* Update Investment + Journal */
+        DB::transaction(function () use ($request, $investment, $journalService, $companyId) {
+
+            /* Attachment */
+            $attachment = $investment->attachment;
+            if ($request->hasFile('attachment')) {
+                /* Delete old attachment */
+                if ($investment->attachment) {
+                    $oldFile = storage_path(
+                        'app/public/' . $investment->attachment
+                    );
+                    if (file_exists($oldFile)) {
+                        unlink($oldFile);
+                    }
+                }
+
+                /* Store new attachment */
+                $attachment = $request->file('attachment')
+                    ->store('investments', 'public');
+            }
+
+            /* Update Investment */
+            $investment->update([
+                'partner_id' => $request->partner_id,
+                'amount' => $request->amount,
+                'attachment' => $attachment,
+                'invest_type' => $request->invest_type,
+                'debit_account_id' => $request->debit_account_id,
+                'credit_account_id' => $request->credit_account_id,
+                'reference' => $request->reference,
+                'note' => $request->note,
+                'date' => $request->date,
+            ]);
+
+            /* Create New Investment Journal */
+            $particulars = $request->invest_type === 'capital'
+                ? 'Capital Investment'
+                : 'Loan Investment';
+            $journalService->createJournal([
+                'company_id' => auth()->user()->company_id,
+                'module_type' => 'investment',
+                'module_id' => $investment->id,
+                'reference_no' => $request->reference,
+                'date' => $request->date,
+                'particulars' => $particulars,
+                'items' => [
+                    // Debit: টাকা Cash/Bank-এ এসেছে
+                    [
+                        'account' => $request->debit_account_id,
+                        'debit' => $request->amount,
+                        'credit' => 0,
+                    ],
+
+                    // Credit: Capital অথবা Loan
+                    [
+                        'account' => $request->credit_account_id,
+                        'debit' => 0,
+                        'credit' => $request->amount,
+                    ],
+                ],
+            ]);
+        });
+
+        return redirect()
+            ->route('account.investment.list')
+            ->with('success', 'Investment and journal updated successfully!');
+    }
+
+    public function investmentDelete($id)
+    {
+        DB::transaction(function () use ($id) {
+            // CompanyScope automatically applies company_id
+            $investment = Investment::findOrFail($id);
+
+            // Delete related journal
+            JournalEntry::where('module_type', 'investment')
+                ->where('module_id', $investment->id)
+                ->delete();
+
+            // Delete attachment
+            if ($investment->attachment) {
+                $file = storage_path(
+                    'app/public/' . $investment->attachment
+                );
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+            }
+            // Delete investment
+            $investment->delete();
+        });
+
+        return redirect()
+            ->route('account.investment.list')
+            ->with('success', 'Investment and related journal deleted successfully!');
+    }
+
     public function investmentReport(Request $request)
     {
         $companyId = auth()->user()->company_id;
 
-        /*
-    |--------------------------------------------------------------------------
-    | Investment Details Query
-    |--------------------------------------------------------------------------
-    */
-
+        /* Investment Details Query */
         $query = Investment::with('partner')
             ->where('company_id', $companyId);
-
 
         // Date From
         if ($request->filled('date_from')) {
             $query->whereDate('date', '>=', $request->date_from);
         }
 
-
         // Date To
         if ($request->filled('date_to')) {
             $query->whereDate('date', '<=', $request->date_to);
         }
 
-
         // Partner
         if ($request->filled('partner_id')) {
             $query->where('partner_id', $request->partner_id);
         }
-
 
         // Investment Type
         if (
@@ -365,73 +538,48 @@ class AccountController extends Controller
             $query->where('invest_type', $request->invest_type);
         }
 
-
         $investments = $query
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->get();
 
 
-        /*
-    |--------------------------------------------------------------------------
-    | Investment Summary
-    |--------------------------------------------------------------------------
-    */
-
+        /* Investment Summary */
         $totalCapital = $investments
             ->where('invest_type', 'capital')
             ->sum('amount');
-
 
         $totalPartnerLoan = $investments
             ->where('invest_type', 'loan')
             ->sum('amount');
 
-
         $totalInvestment = $totalCapital + $totalPartnerLoan;
 
-
-        /*
-    |--------------------------------------------------------------------------
-    | Partner Investment Ledger
-    |--------------------------------------------------------------------------
-    */
-
+        /* Partner Investment Ledger */
         $partnerLedger = $investments
             ->groupBy('partner_id')
             ->map(function ($partnerInvestments) {
-
                 $partner = $partnerInvestments->first()->partner;
-
                 $capital = $partnerInvestments
                     ->where('invest_type', 'capital')
                     ->sum('amount');
-
                 $loan = $partnerInvestments
                     ->where('invest_type', 'loan')
                     ->sum('amount');
-
                 return [
-                    'partner_id'   => $partner?->id,
+                    'partner_id' => $partner?->id,
                     'partner_name' => $partner?->p_name ?? 'N/A',
-                    'capital'      => $capital,
-                    'loan'         => $loan,
-                    'total'        => $capital + $loan,
+                    'capital' => $capital,
+                    'loan' => $loan,
+                    'total' => $capital + $loan,
                 ];
             })
             ->values();
 
-
-        /*
-    |--------------------------------------------------------------------------
-    | Partners
-    |--------------------------------------------------------------------------
-    */
-
+        /* Partners */
         $partners = Partner::where('company_id', $companyId)
             ->orderBy('p_name')
             ->get();
-
 
         return view(
             'account.investment-report',

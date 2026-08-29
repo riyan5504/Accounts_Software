@@ -45,27 +45,25 @@
             font-weight: bold;
         }
 
-        /* COMPANY HEADER */
+        /* Company Section */
         .company-section {
             text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
-        .company-logo {
-            width: 55px;
-            height: auto;
+        .company-section img {
+            width: 70px;
             margin-bottom: 3px;
         }
 
         .company-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
         }
 
         .company-info {
-            font-size: 10.5px;
-            line-height: 13px;
-            margin-top: 2px;
+            font-size: 11px;
+            margin-top: 1px;
         }
 
         /* WATERMARK */
@@ -349,18 +347,14 @@
 
     {{-- ======= COMPANY HEADER ====== --}}
     <div class="company-section">
-        <img class="company-logo" src="{{ public_path('backend/dist/assets/img/logo02.png') }}" alt="Company Logo">
-        <div class="company-title">
-            {{ $companyName ?? 'Company Name' }}
-        </div>
-        <div class="company-info">
-            Lakshmipur Kholabaria, Natore Sadar,<br>
-            Natore-6400, Bangladesh
-            <br>
-            Email: ponnoobd@gmail.com
-            <br>
-            Hotline: 01721336504
-        </div>
+         @if($logoPath)
+            <img src="{{ $logoPath }}" alt="{{ $company->name }}">
+        @endif
+        <div class="company-title">{{ $company->name ?? 'Company Name' }}</div>
+        <div class="company-info">A Trusted Source of Aloe Vera & Herb Product</div>
+        <div class="company-info">{{$company->address}}</div>
+        <div class="company-info">Mob: {{$company->phone}}</div>
+        <div class="company-info">{{$company->email}}</div>
     </div>
 
     {{-- ===== WATERMARK ======= --}}
@@ -608,14 +602,12 @@
                     @endif
                     @if ($hasReturns || $hasInitialPayment || $hasCustomerPayment)
                         <tr class="summary-border-top due-row">
-                            <th
-                                class="summary-label
-                                    {{ $due > 0 ? 'due-danger' : 'due-success' }}">
+                            <th class="summary-label
+                                            {{ $due > 0 ? 'due-danger' : 'due-success' }}">
                                 Remaining Due:
                             </th>
-                            <th
-                                class="summary-value
-                                    {{ $due > 0 ? 'due-danger' : 'due-success' }}">
+                            <th class="summary-value
+                                            {{ $due > 0 ? 'due-danger' : 'due-success' }}">
                                 {{ number_format($due, 2) }}
                             </th>
                         </tr>
@@ -655,8 +647,8 @@
         @if ($due > 0)
             Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($due)) }} Only
         @else
-           Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($originalSales)) }} Only 
-        @endif        
+            Taka {{ ucwords(\App\Helpers\NumberHelper::numberToWords($originalSales)) }} Only
+        @endif
     </p>
 
 

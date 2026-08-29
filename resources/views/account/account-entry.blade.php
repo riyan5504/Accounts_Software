@@ -21,11 +21,6 @@
                                 </a>
                             </div>
                             <div class="account-row row g-2 align-accounts-end mb-2">
-                                {{-- <div class="form-group col-sm-6 col-md-2 mb-1">
-                                    <input type="text" name="account_code" class="form-control account_code"
-                                        placeholder=" " />
-                                    <label for="account_code" class="floating-label">Account Code</label>
-                                </div> --}}
                                 <div class="form-group col-sm-6 col-md-3 mb-1">
                                     <input type="text" name="account_name" class="form-control account_name"
                                         placeholder=" " required />

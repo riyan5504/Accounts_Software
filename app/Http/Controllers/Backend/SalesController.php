@@ -242,13 +242,13 @@ class SalesController extends Controller
             'paid_amt' => 'nullable|numeric|min:0',
 
             'payment_status' =>
-            'required|in:paid,partial,unpaid',
+                'required|in:paid,partial,unpaid',
 
             'payment_account_id' =>
-            'nullable|exists:accounts,id',
+                'nullable|exists:accounts,id',
 
             'payment_method' =>
-            'required|in:cash,bank,cheque,mobile_bank,due',
+                'required|in:cash,bank,cheque,mobile_bank,due',
         ]);
 
 
@@ -292,7 +292,7 @@ class SalesController extends Controller
 
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'payment_account_id' =>
-                    'Payment account is required for paid or partial sales.'
+                        'Payment account is required for paid or partial sales.'
                 ]);
             }
 
@@ -316,7 +316,7 @@ class SalesController extends Controller
 
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'payment_account_id' =>
-                    'Invalid payment account.'
+                        'Invalid payment account.'
                 ]);
             }
 
@@ -374,7 +374,7 @@ class SalesController extends Controller
             return back()
                 ->withErrors([
                     'invoice_no' =>
-                    'Invoice already exists: '
+                        'Invoice already exists: '
                         . $request->invoice_no
                 ])
                 ->withInput();
@@ -383,16 +383,7 @@ class SalesController extends Controller
 
         try {
 
-            DB::transaction(function () use (
-                $request,
-                $sales,
-                $companyId,
-                $grandTotal,
-                $paid,
-                $due,
-                $paymentAccountId,
-                $oldItemIds
-            ) {
+            DB::transaction(function () use ($request, $sales, $companyId, $grandTotal, $paid, $due, $paymentAccountId, $oldItemIds) {
 
 
                 // ====================================================
@@ -502,46 +493,46 @@ class SalesController extends Controller
                 $sales->update([
 
                     'customer_id' =>
-                    $customer->id,
+                        $customer->id,
 
                     'date' =>
-                    $request->date,
+                        $request->date,
 
                     'invoice_no' =>
-                    $request->invoice_no,
+                        $request->invoice_no,
 
                     'sub_total' =>
-                    (float) ($request->sub_total ?? 0),
+                        (float) ($request->sub_total ?? 0),
 
                     'vat_amt' =>
-                    (float) ($request->vat_amt ?? 0),
+                        (float) ($request->vat_amt ?? 0),
 
                     'dis_percent' =>
-                    (float) ($request->dis_percent ?? 0),
+                        (float) ($request->dis_percent ?? 0),
 
                     'dis_amt' =>
-                    (float) ($request->dis_amt ?? 0),
+                        (float) ($request->dis_amt ?? 0),
 
                     'grand_total' =>
-                    $grandTotal,
+                        $grandTotal,
 
                     'due_amt' =>
-                    $due,
+                        $due,
 
                     'reference' =>
-                    $request->reference,
+                        $request->reference,
 
                     'narration' =>
-                    $request->narration,
+                        $request->narration,
 
                     'payment_status' =>
-                    $request->payment_status,
+                        $request->payment_status,
 
                     'pay_receive' =>
-                    $request->pay_receive,
+                        $request->pay_receive,
 
                     'payment_account_id' =>
-                    $paymentAccountId,
+                        $paymentAccountId,
 
                 ]);
 
@@ -557,19 +548,19 @@ class SalesController extends Controller
                     'module_id' => $sales->id,
 
                     'customer_id' =>
-                    $customer->id,
+                        $customer->id,
 
                     'reference_no' =>
-                    $sales->invoice_no,
+                        $sales->invoice_no,
 
                     'payment_method' =>
-                    $request->payment_method,
+                        $request->payment_method,
 
                     'paid_amt' =>
-                    $paid,
+                        $paid,
 
                     'date' =>
-                    $sales->date,
+                        $sales->date,
                 ]);
 
 
@@ -804,11 +795,22 @@ class SalesController extends Controller
         $sales = $query->latest('date')->get();
 
         // Get company name
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
 
         $pdf = Pdf::loadView('sales.sales-list-pdf', [
             'sales' => $sales,
-            'companyName' => $companyName,
+            'company' => $company,
+            'logoPath' => $logoPath,
             'fromDate' => $request->from_date,
             'toDate' => $request->to_date,
         ])->setPaper('a4', 'landscape');
@@ -886,7 +888,17 @@ class SalesController extends Controller
             ->sortByDesc('date')
             ->values();
         $hasReturns = $returnedQtyByItem->sum() > 0;
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
         $pdf = Pdf::loadView('sales.invoice-pdf', compact(
             'sales',
             'originalSales',
@@ -910,7 +922,8 @@ class SalesController extends Controller
             'returnedAmountByItem',
             'returnHistory',
             'hasReturns',
-            'companyName'
+            'company',
+            'logoPath'
         ));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->download(
@@ -1207,7 +1220,7 @@ class SalesController extends Controller
                 if ($availableQty < $outQty) {
                     throw new \Exception(
                         "Insufficient stock while recalculating item ID: {$itemId}. "
-                            . "Required: {$outQty}, Available: {$availableQty}"
+                        . "Required: {$outQty}, Available: {$availableQty}"
                     );
                 }
 

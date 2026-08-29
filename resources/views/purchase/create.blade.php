@@ -7,10 +7,10 @@
         <div class="container-fluid">
             <!--begin::Row-->
             <div class="row bg-info opasity-50 rounded">
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                     <h4 class="mb-0 mt-0">Purchase Entry</h4>
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-9">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item">
                             <a href="{{ url('/purchase') }}"

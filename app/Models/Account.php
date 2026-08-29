@@ -18,6 +18,10 @@ class Account extends Model
         'op_balance'
     ];
 
+    protected $casts = [
+        'date' => 'date',
+    ];
+
     // Expense এর expense_account_id এর সাথে relation
     public function expenseEntries()
     {

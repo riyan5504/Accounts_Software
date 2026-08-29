@@ -12,19 +12,16 @@ class Company extends Model
 
     protected $fillable = [
         'name',
+        'short_name',
         'email',
         'phone',
-        'mobile',
         'address',
         'website',
         'logo',
         'tax_number',
         'registration_number',
         'contact_person',
-        'currency',
-        'timezone',
-        'footer_text',
-        'status',
+        'established_date',
     ];
 
     protected $casts = [
