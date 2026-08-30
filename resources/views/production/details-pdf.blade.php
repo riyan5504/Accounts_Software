@@ -40,26 +40,23 @@
 
         .company-section {
             text-align: center;
-            border-bottom: 2px solid #999;
-            padding-bottom: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 7px;
         }
 
         .company-section img {
-            width: 55px;
-            margin-bottom: 5px;
+            max-width: 80px;
+            max-height: 55px;
+            margin-bottom: 2px;
         }
 
         .company-title {
             font-size: 18px;
             font-weight: bold;
-            color: #000;
         }
 
         .company-info {
-            font-size: 10px;
-            color: #555;
-            line-height: 1.3;
+            font-size: 11px;
+            margin-top: 2px;
         }
 
         .invoice-title {
@@ -237,11 +234,18 @@
 
     <!-- Company -->
     <div class="company-section">
-        <img src="{{ public_path('backend/dist/assets/img/logo1.png') }}">
-        <div class="company-title">{{ $companyName ?? 'Veshoz Village Private Limited' }}</div>
+        @if ($logoPath)
+            <img src="{{ $logoPath }}" alt="{{ $company->name }}">
+        @endif
+        <div class="company-title">{{ $company->name ?? 'Company Name' }}</div>
         <div class="company-info">A Trusted Source of Aloe Vera & Herb Product</div>
-        <div class="company-info">Flat-3/A, House-53, Road-14, Sector-13, Uttara, Dhaka-1230</div>
-        <div class="company-info">Mob: 01721336504</div>
+        <div class="company-info">{{ $company->address ?? '' }}</div>
+        <div class="company-info">
+            @if ($company->phone)
+                Mob: {{ $company->phone }}
+            @endif
+        </div>
+        <div class="company-info">{{ $company->email ?? '' }}</div>
     </div>
 
     <div class="title">

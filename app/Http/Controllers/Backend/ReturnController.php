@@ -575,9 +575,19 @@ class ReturnController extends Controller
     public function downloadPdf($id)
     {
         $return = PurchaseReturn::with(['vendor', 'purchaseReturnItems.item'])->findOrFail($id);
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $company = Company::find(auth()->user()->company_id);
 
-        $pdf = Pdf::loadView('purchase.return-pdf', compact('return', 'companyName'))
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
+
+        $pdf = Pdf::loadView('purchase.return-pdf', compact('return', 'company', 'logoPath'))
             ->setPaper('a4', 'portrait');
 
         return $pdf->download('Return_Invoice_' . $return->invoice_no . '.pdf');
@@ -602,7 +612,17 @@ class ReturnController extends Controller
         }
 
         $returns = $query->get();
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
 
         // 🔥 ADD THIS
         $fromDate = $request->from_date;
@@ -610,9 +630,10 @@ class ReturnController extends Controller
 
         $pdf = Pdf::loadView('purchase.return-list-pdf', compact(
             'returns',
-            'companyName',
+            'company',
             'fromDate',
-            'toDate'
+            'toDate',
+            'logoPath'
         ))->setPaper('a4', 'Landscape');
 
         return $pdf->download('Return_List.pdf');

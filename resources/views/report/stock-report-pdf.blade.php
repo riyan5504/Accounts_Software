@@ -33,16 +33,17 @@
         /* Company Header */
         .company-section {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 7px;
         }
 
         .company-section img {
-            height: 60px;
-            margin-bottom: 5px;
+            max-width: 80px;
+            max-height: 55px;
+            margin-bottom: 2px;
         }
 
         .company-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
         }
 
@@ -143,12 +144,18 @@
 <body onload="window.print()">
     <div class="header">
         <div class="company-section">
-            <img src="{{ public_path('backend/dist/assets/img/logo02.png') }}">
-            <div class="company-title">{{ $companyName ?? 'Company Name' }}</div>
+            @if ($logoPath)
+                <img src="{{ $logoPath }}" alt="{{ $company->name }}">
+            @endif
+            <div class="company-title">{{ $company->name ?? 'Company Name' }}</div>
             <div class="company-info">A Trusted Source of Aloe Vera & Herb Product</div>
-            <div class="company-info">Mob: 01721336504</div>
-            <div class="company-info">Flat-3/A, House-53, Road-14</div>
-            <div class="company-info">Sector-13, Uttara, Dhaka-1230</div>
+            <div class="company-info">{{ $company->address ?? '' }}</div>
+            <div class="company-info">
+                @if ($company->phone)
+                    Mob: {{ $company->phone }}
+                @endif
+            </div>
+            <div class="company-info">{{ $company->email ?? '' }}</div>
         </div>
         <div>
             <p>Stock Report:- Generated on: {{ $filterDate }}</p>
@@ -192,8 +199,7 @@
                         $preturn = $item->purchase_return_sum ?? 0;
                         $sreturn = $item->sales_return_sum ?? 0;
 
-                        $currentStock =
-                            $opening + $purchase + $production + $sreturn - ($sales + $consume + $preturn);
+                        $currentStock = $opening + $purchase + $production + $sreturn - ($sales + $consume + $preturn);
 
                         // Stock valuation price
                         if (($item->avg_purchase_price ?? 0) > 0) {

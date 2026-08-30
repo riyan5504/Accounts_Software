@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Chemical;
+use App\Models\Company;
 use App\Models\Depreciation;
 use App\Models\InventoryLedger;
 use App\Models\Item;
@@ -22,6 +23,7 @@ use App\Services\JournalService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class ProductionController extends Controller
 {
@@ -841,6 +843,7 @@ class ProductionController extends Controller
     }
     public function downloadListPdf(Request $request)
     {
+        $companyId = auth()->user()->company_id;
         $query = Production::query();
 
         if ($request->filled('from_date')) {
@@ -863,7 +866,22 @@ class ProductionController extends Controller
         $fromDate = $request->from_date;
         $toDate   = $request->to_date;
 
-        $companyName = auth()->user()->company->name ?? 'Company Name';
+        // Company
+        $company = Company::where('id', $companyId)->first();
+
+        // Company Logo
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+
+            $path = public_path(
+                'backend/dist/assets/img/' . $company->logo
+            );
+
+            if (File::exists($path)) {
+                $logoPath = $path;
+            }
+        }
 
         $productions = $query
             ->latest()
@@ -880,7 +898,8 @@ class ProductionController extends Controller
             'summary',
             'fromDate',
             'toDate',
-            'companyName'
+            'company',
+            'logoPath'
         ));
 
         $pdf->setPaper('a4', 'landscape');
@@ -890,6 +909,7 @@ class ProductionController extends Controller
 
     public function downloadPdf($id)
     {
+        $companyId = auth()->user()->company_id;
         $production = Production::with(
             'item',
             'chemicals',
@@ -928,11 +948,29 @@ class ProductionController extends Controller
             $costPerUnit = $production->grand_total / $batchSizeNumeric;
         }
 
+        // Company
+        $company = Company::where('id', $companyId)->first();
+
+        // Company Logo
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+
+            $path = public_path(
+                'backend/dist/assets/img/' . $company->logo
+            );
+
+            if (File::exists($path)) {
+                $logoPath = $path;
+            }
+        }
+
         $pdf = Pdf::loadView('production.details-pdf', [
             'production'      => $production,
+            'company' => $company,
+            'logoPath' => $logoPath,
             'costPerUnit'     => $costPerUnit,
             'highestCostHead' => $highestCostHead,
-            'companyName'     => auth()->user()->company->name ?? 'Your Company Name',
         ]);
 
         $pdf->setPaper('a4', 'portrait');

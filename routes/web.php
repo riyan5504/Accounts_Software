@@ -86,6 +86,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/investment/update/{id}', [AccountController::class, 'investmentUpdate'])->name('investment.update');
         Route::get('/investment/delete/{id}', [AccountController::class, 'investmentDelete'])->name('investment.delete');
         Route::get('/investment/report', [AccountController::class, 'investmentReport'])->name('investment.report');
+        Route::get('/investment/report/pdf', [AccountController::class, 'investmentReportPdf'])->name('investment.report.pdf');
     });
 
     // Item Module

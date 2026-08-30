@@ -564,12 +564,22 @@ class PurchaseController extends Controller
 
         $purchases = $query->latest('date')->get();
 
-        // Get company name
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
 
         $pdf = Pdf::loadView('purchase.purchase-list-pdf', [
             'purchases' => $purchases,
-            'companyName' => $companyName,
+            'company' => $company,
+            'logoPath' => $logoPath,
             'fromDate' => $request->from_date,
             'toDate' => $request->to_date,
         ])->setPaper('a4', 'landscape');
@@ -649,7 +659,18 @@ class PurchaseController extends Controller
             ->sortByDesc('date')
             ->values();
         $hasReturns = $returnedQtyByItem->sum() > 0;
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
+
         $pdf = Pdf::loadView('purchase.purchase-pdf', compact(
             'purchase',
             'originalPurchase',
@@ -673,7 +694,8 @@ class PurchaseController extends Controller
             'returnedAmountByItem',
             'returnHistory',
             'hasReturns',
-            'companyName'
+            'company',
+            'logoPath'
         ));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->download(

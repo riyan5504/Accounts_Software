@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Company;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
 use App\Models\Investment;
@@ -11,8 +12,10 @@ use App\Models\JournalEntry;
 use App\Models\Partner;
 use App\Models\User;
 use App\Services\JournalService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
 
 class AccountController extends Controller
@@ -246,6 +249,7 @@ class AccountController extends Controller
             'invest_type' => 'required|in:capital,loan',
             'debit_account_id' => 'required|integer',
             'credit_account_id' => 'required|integer',
+            'attachment' => 'nullable|file|max:5120',
         ]);
 
         DB::transaction(function () use ($request, $journalService) {
@@ -253,9 +257,26 @@ class AccountController extends Controller
             /*| File Upload*/
 
             $attachment = null;
+
             if ($request->hasFile('attachment')) {
-                $attachment = $request->file('attachment')
-                    ->store('investments', 'public');
+
+                // Investment attachment folder
+                $uploadPath = public_path('backend/dist/assets/invest');
+
+                // Folder না থাকলে তৈরি করবে
+                if (!File::exists($uploadPath)) {
+                    File::makeDirectory($uploadPath, 0755, true);
+                }
+
+                // Original extension সহ unique filename
+                $file = $request->file('attachment');
+                $fileName = 'invest_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                // File move করে নির্দিষ্ট folder এ রাখবে
+                $file->move($uploadPath, $fileName);
+
+                // Database এ শুধু filename রাখবে
+                $attachment = $fileName;
             }
             /*Investment Save*/
             $investment = Investment::create([
@@ -405,7 +426,7 @@ class AccountController extends Controller
             return back()
                 ->withErrors([
                     'credit_account_id' =>
-                        'Invalid credit account for selected investment type.'
+                    'Invalid credit account for selected investment type.'
                 ])
                 ->withInput();
         }
@@ -415,20 +436,31 @@ class AccountController extends Controller
 
             /* Attachment */
             $attachment = $investment->attachment;
+
             if ($request->hasFile('attachment')) {
-                /* Delete old attachment */
+                $uploadPath = public_path('backend/dist/assets/invest');
+
+                // Folder না থাকলে তৈরি করবে
+                if (!File::exists($uploadPath)) {
+                    File::makeDirectory($uploadPath, 0755, true);
+                }
+
+                // Delete old attachment
                 if ($investment->attachment) {
-                    $oldFile = storage_path(
-                        'app/public/' . $investment->attachment
-                    );
-                    if (file_exists($oldFile)) {
-                        unlink($oldFile);
+                    $oldFile = $uploadPath . '/' . $investment->attachment;
+                    if (File::exists($oldFile)) {
+                        File::delete($oldFile);
                     }
                 }
 
-                /* Store new attachment */
-                $attachment = $request->file('attachment')
-                    ->store('investments', 'public');
+                // Upload new attachment
+                $file = $request->file('attachment');
+                $fileName = 'invest_' . time() . '_' . uniqid() . '.' .
+                    $file->getClientOriginalExtension();
+                $file->move($uploadPath, $fileName);
+
+                // Database এ শুধু filename থাকবে
+                $attachment = $fileName;
             }
 
             /* Update Investment */
@@ -592,5 +624,119 @@ class AccountController extends Controller
                 'totalInvestment'
             )
         );
+    }
+
+    public function investmentReportPdf(Request $request)
+    {
+        $companyId = auth()->user()->company_id;
+
+        $query = Investment::with('partner')
+            ->where('company_id', $companyId);
+
+        // Date From
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        // Date To
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        // Partner
+        if ($request->filled('partner_id')) {
+            $query->where('partner_id', $request->partner_id);
+        }
+
+        // Investment Type
+        if (
+            $request->filled('invest_type') &&
+            $request->invest_type !== 'all'
+        ) {
+            $query->where('invest_type', $request->invest_type);
+        }
+
+        $investments = $query
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        // Summary
+        $totalCapital = $investments
+            ->where('invest_type', 'capital')
+            ->sum('amount');
+
+        $totalPartnerLoan = $investments
+            ->where('invest_type', 'loan')
+            ->sum('amount');
+
+        $totalInvestment = $totalCapital + $totalPartnerLoan;
+
+        // Partner Wise Ledger
+        $partnerLedger = $investments
+            ->groupBy('partner_id')
+            ->map(function ($partnerInvestments) {
+
+                $partner = $partnerInvestments->first()->partner;
+
+                $capital = $partnerInvestments
+                    ->where('invest_type', 'capital')
+                    ->sum('amount');
+
+                $loan = $partnerInvestments
+                    ->where('invest_type', 'loan')
+                    ->sum('amount');
+
+                return [
+                    'partner_id'   => $partner?->id,
+                    'partner_name' => $partner?->p_name ?? 'N/A',
+                    'capital'      => $capital,
+                    'loan'         => $loan,
+                    'total'        => $capital + $loan,
+                ];
+            })
+            ->values();
+
+        // Selected Partner
+        $selectedPartner = null;
+
+        if ($request->filled('partner_id')) {
+            $selectedPartner = Partner::where('company_id', $companyId)
+                ->find($request->partner_id);
+        }
+
+        // Company
+        $company = Company::where('id', $companyId)->first();
+
+        // Company Logo
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+
+            $path = public_path(
+                'backend/dist/assets/img/' . $company->logo
+            );
+
+            if (File::exists($path)) {
+                $logoPath = $path;
+            }
+        }
+
+        // Generate PDF
+        $pdf = Pdf::loadView(
+            'account.investment-report-pdf',
+            compact(
+                'investments',
+                'partnerLedger',
+                'totalCapital',
+                'totalPartnerLoan',
+                'totalInvestment',
+                'selectedPartner',
+                'logoPath',
+                'company'
+            )
+        );
+
+        return $pdf->download('investment-report.pdf');
     }
 }

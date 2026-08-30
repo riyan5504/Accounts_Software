@@ -80,8 +80,6 @@ class ReportController extends Controller
         return view('report.stock-report', compact('stocks', 'items', 'type'));
     }
 
-    // app/Http/Controllers/Backend/ReportController.php
-
     // Add this method to your existing ReportController
     public function stockReportPdf(Request $request)
     {
@@ -116,13 +114,26 @@ class ReportController extends Controller
         }
 
         $stocks = $query->get();
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
+
         // Generate PDF
         $pdf = Pdf::loadView('report.stock-report-pdf', [
             'stocks' => $stocks,
             'type' => $type,
             'filterDate' => now()->format('d-m-Y'),
-            'companyName' => $companyName,
+            'company' => $company,
+            'logoPath' => $logoPath,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('Stock_Report_' . now()->format('d-m-Y') . '.pdf');
@@ -161,7 +172,17 @@ class ReportController extends Controller
                 ->orderBy('id')
                 ->get();
         }
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
 
         return compact(
             'item',
@@ -169,7 +190,8 @@ class ReportController extends Controller
             'openingBalance',
             'fromDate',
             'toDate',
-            'companyName'
+            'company',
+            'logoPath'
         );
     }
 
@@ -411,13 +433,26 @@ class ReportController extends Controller
                 'balance' => $balance,
             ];
         }
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
+
         // 🔹 PDF
         $pdf = Pdf::loadView('report.vendor-due-pdf', [
             'reportData' => $reportData,
             'type' => $type,
             'filterDate' => now()->format('d-m-Y'),
-            'companyName' => $companyName,
+            'company' => $company,
+            'logoPath' => $logoPath,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('vendor-due-' . now()->format('d-m-Y') . '.pdf');
@@ -519,7 +554,19 @@ class ReportController extends Controller
         // =========================
         $totalDebit = $ledger->sum('debit');
         $totalCredit = $ledger->sum('credit');
-        $companyName = Company::find(auth()->user()->company_id)->name ?? 'Company Name';
+        
+        $company = Company::find(auth()->user()->company_id);
+
+        $logoPath = null;
+
+        if ($company && $company->logo) {
+            $path = public_path('backend/dist/assets/img/' . $company->logo);
+
+            if (file_exists($path)) {
+                $logoPath = $path;
+            }
+        }
+
         // =========================
         // PDF
         // =========================
@@ -532,7 +579,8 @@ class ReportController extends Controller
             'closing' => $running,
             'from' => $from,
             'to' => $to,
-            'companyName' => $companyName,
+            'company' => $company,
+            'logoPath' => $logoPath,
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download('vendor-ledger.pdf');

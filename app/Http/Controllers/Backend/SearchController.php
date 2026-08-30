@@ -105,8 +105,8 @@ class SearchController extends Controller
             if ($item->production_cost !== null && $item->production_cost > 0) {
                 $costPrice = $item->production_cost;
                 $priceType = 'production';
-            } elseif ($item->purchase_price !== null && $item->purchase_price > 0) {
-                $costPrice = $item->purchase_price;
+            } elseif ($item->avg_purchase_price !== null && $item->avg_purchase_price > 0) {
+                $costPrice = $item->avg_purchase_price;
                 $priceType = 'purchase';
             } else {
                 $costPrice = $item->unit_price ?? 0;
@@ -125,7 +125,7 @@ class SearchController extends Controller
                 'stock_unit' => $item->stock_unit ?? '',
                 // Existing prices
                 'unit_price' => $item->unit_price ?? 0,
-                'purchase_price' => $item->purchase_price ?? 0,
+                'avg_purchase_price' => $item->avg_purchase_price ?? 0,
                 'production_cost' => $item->production_cost ?? 0,
                 'sales_price' => $item->sales_price ?? 0,
                 // Production costing-এর জন্য

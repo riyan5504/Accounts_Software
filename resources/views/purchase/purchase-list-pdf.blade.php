@@ -24,25 +24,25 @@
             text-align: left;
         }
 
-        /* Company Section */
         .company-section {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
 
         .company-section img {
-            width: 50px;
-            margin-bottom: 3px;
+            max-width: 80px;
+            max-height: 55px;
+            margin-bottom: 2px;
         }
 
         .company-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
         }
 
         .company-info {
             font-size: 11px;
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         /* Title */
@@ -107,12 +107,18 @@
 
     <!-- Company Info -->
     <div class="company-section">
-        <img src="{{ public_path('backend/dist/assets/img/logo02.png') }}">
-        <div class="company-title">{{ $companyName ?? 'Company Name' }}</div>
+        @if ($logoPath)
+            <img src="{{ $logoPath }}" alt="{{ $company->name }}">
+        @endif
+        <div class="company-title">{{ $company->name ?? 'Company Name' }}</div>
         <div class="company-info">A Trusted Source of Aloe Vera & Herb Product</div>
-        <div class="company-info">Mob: 01721336504</div>
-        <div class="company-info">Flat-3/A, House-53, Road-14</div>
-        <div class="company-info">Sector-13, Uttara, Dhaka-1230</div>
+        <div class="company-info">{{ $company->address ?? '' }}</div>
+        <div class="company-info">
+            @if ($company->phone)
+                Mob: {{ $company->phone }}
+            @endif
+        </div>
+        <div class="company-info">{{ $company->email ?? '' }}</div>
     </div>
 
     <!-- Title -->

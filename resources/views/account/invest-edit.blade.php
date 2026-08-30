@@ -29,8 +29,9 @@
                                     <select name="partner_id" class="form-control partner_id" required>
                                         <option value="">Select Partner</option>
                                         @foreach ($partners as $partner)
-                                            <option value="{{ $partner->id }}" {{ old('partner_id', $investment->partner_id) == $partner->id ? 'selected' : '' }}>
-                                                {{$partner->p_name}}
+                                            <option value="{{ $partner->id }}"
+                                                {{ old('partner_id', $investment->partner_id) == $partner->id ? 'selected' : '' }}>
+                                                {{ $partner->p_name }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -45,26 +46,28 @@
 
                                 <div class="col-md-6 d-flex align-items-center mb-1">
                                     <label class="me-2">Type:</label>
-                                    <input type="radio" name="invest_type" value="capital" id="invest_capital" class="ms-1"
+                                    <input type="radio" name="invest_type" value="capital" id="invest_capital"
+                                        class="ms-1"
                                         {{ old('invest_type', $investment->invest_type) == 'capital' ? 'checked' : '' }}>
                                     <label for="invest_capital" class="ms-1">Capital</label>
 
                                     <input type="radio" name="invest_type" value="loan" id="invest_loan" class="ms-2"
-                                        required {{ old('invest_type', $investment->invest_type) == 'loan' ? 'checked' : '' }}>
+                                        required
+                                        {{ old('invest_type', $investment->invest_type) == 'loan' ? 'checked' : '' }}>
                                     <label for="invest_loan" class="ms-1">Loan</label>
-                                    @if ($investment->attachment)
-                                        <small class="text-muted d-block mt-1">
-                                            Current file:
-                                            <a href="{{ asset('storage/' . $investment->attachment) }}" target="_blank">
-                                                View Attachment
-                                            </a>
-                                        </small>
-                                    @endif
-
                                 </div>
                                 <div class="form-group mb-1">
                                     <input type="file" name="attachment" class="form-control attachment">
                                     <label for="attachment" class="floating-label">Attachment</label>
+                                    @if ($investment->attachment)
+                                        <small class="text-muted d-block mt-1">
+                                            Current file:
+                                            <a href="{{ asset('backend/dist/assets/invest/' . $investment->attachment) }}"
+                                                target="_blank">
+                                                View Attachment
+                                            </a>
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -75,18 +78,18 @@
 
                                     <select name="debit_account_id" class="form-control debit_account_id" required>
 
-                                        <option value="" disabled {{ !$investment->debit_account_id ? 'selected' : '' }}>
+                                        <option value="" disabled
+                                            {{ !$investment->debit_account_id ? 'selected' : '' }}>
                                             Select Debit Account
                                         </option>
 
                                         @foreach ($accounts->where('ac_type', 'asset') as $account)
-
-                                            <option value="{{ $account->id }}" {{ old('debit_account_id', $investment->debit_account_id) == $account->id ? 'selected' : '' }}>
+                                            <option value="{{ $account->id }}"
+                                                {{ old('debit_account_id', $investment->debit_account_id) == $account->id ? 'selected' : '' }}>
 
                                                 {{ $account->account_name }}
 
                                             </option>
-
                                         @endforeach
 
                                     </select>
@@ -108,19 +111,19 @@
 
                                     <select name="credit_account_id" class="form-control credit_account_id" required>
 
-                                        <option value="" disabled {{ !$investment->credit_account_id ? 'selected' : '' }}>
+                                        <option value="" disabled
+                                            {{ !$investment->credit_account_id ? 'selected' : '' }}>
                                             Select Credit Account
                                         </option>
 
                                         @foreach ($accounts as $account)
-
-                                            <option value="{{ $account->id }}" data-type="{{ strtolower($account->ac_type) }}"
+                                            <option value="{{ $account->id }}"
+                                                data-type="{{ strtolower($account->ac_type) }}"
                                                 {{ old('credit_account_id', $investment->credit_account_id) == $account->id ? 'selected' : '' }}>
 
                                                 {{ $account->account_name }}
 
                                             </option>
-
                                         @endforeach
 
                                     </select>
@@ -137,8 +140,7 @@
                                     <label for="reference" class="floating-label">Reference</label>
                                 </div>
                                 <div class="form-group mb-1">
-                                    <textarea name="note" rows="1"
-                                        class="form-control note">{{ old('note', $investment->note) }}</textarea>
+                                    <textarea name="note" rows="1" class="form-control note">{{ old('note', $investment->note) }}</textarea>
                                     <label for="note" class="floating-label">Note</label>
                                 </div>
                             </div>
@@ -175,8 +177,8 @@
                         </div>
                         <div class="account-row row g-2 align-accounts-end mb-2">
                             <div class="form-group col-sm-6 col-md-3 mb-1">
-                                <input type="text" name="account_name" class="form-control account_name" placeholder=" "
-                                    required />
+                                <input type="text" name="account_name" class="form-control account_name"
+                                    placeholder=" " required />
                                 <label for="account_name" class="floating-label">Account Name</label>
                             </div>
                             <div class="form-group col-sm-6 col-md-3 mb-1">
@@ -191,13 +193,14 @@
                                 <label for="unit" class="floating-label">Account Type</label>
                             </div>
                             <div class="form-group col-sm-6 col-md-3 mb-1">
-                                <input type="text" name="ac_cat" class="form-control ac_cat" placeholder=" " required />
+                                <input type="text" name="ac_cat" class="form-control ac_cat" placeholder=" "
+                                    required />
                                 <label for="ac_cat" class="floating-label">Account Category</label>
                             </div>
 
                             <div class="form-group col-sm-6 col-md-3 mb-1">
-                                <input type="number" step="0.01" name="op_balance" class="form-control op_balance" value="0"
-                                    placeholder=" " required />
+                                <input type="number" step="0.01" name="op_balance" class="form-control op_balance"
+                                    value="0" placeholder=" " required />
                                 <label for="op_balance" class="floating-label">Opening Balance</label>
                             </div>
                         </div>
@@ -216,7 +219,7 @@
 
 @push('script')
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const radios = document.querySelectorAll(
                 'input[name="invest_type"]'
             );
@@ -232,7 +235,7 @@
                 const options = creditSelect.querySelectorAll(
                     'option[data-type]'
                 );
-                options.forEach(function (option) {
+                options.forEach(function(option) {
                     const accountType = option.dataset.type;
                     if (
                         (investType === 'capital' &&
@@ -266,8 +269,8 @@
             }
 
             /* Radio Change */
-            radios.forEach(function (radio) {
-                radio.addEventListener('change', function () {
+            radios.forEach(function(radio) {
+                radio.addEventListener('change', function() {
                     filterCreditAccounts(this.value);
                 });
             });
@@ -286,7 +289,7 @@
     </script>
     @if ($errors->any())
         <script>
-            document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("DOMContentLoaded", function() {
                 var myModal = new bootstrap.Modal(document.getElementById('addAccountModal'));
                 myModal.show();
             });

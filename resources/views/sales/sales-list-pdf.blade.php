@@ -27,22 +27,23 @@
         /* Company Section */
         .company-section {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
 
         .company-section img {
-            width: 70px;
-            margin-bottom: 3px;
+            max-width: 80px;
+            max-height: 55px;
+            margin-bottom: 2px;
         }
 
         .company-title {
-            font-size: 15px;
+            font-size: 18px;
             font-weight: bold;
         }
 
         .company-info {
             font-size: 11px;
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         /* Title */
@@ -107,14 +108,18 @@
 
     <!-- Company Info -->
     <div class="company-section">
-        @if($logoPath)
+        @if ($logoPath)
             <img src="{{ $logoPath }}" alt="{{ $company->name }}">
         @endif
         <div class="company-title">{{ $company->name ?? 'Company Name' }}</div>
         <div class="company-info">A Trusted Source of Aloe Vera & Herb Product</div>
-        <div class="company-info">{{$company->address}}</div>
-        <div class="company-info">Mob: {{$company->phone}}</div>
-        <div class="company-info">{{$company->email}}</div>
+        <div class="company-info">{{ $company->address ?? '' }}</div>
+        <div class="company-info">
+            @if ($company->phone)
+                Mob: {{ $company->phone }}
+            @endif
+        </div>
+        <div class="company-info">{{ $company->email ?? '' }}</div>
     </div>
 
     <!-- Title -->

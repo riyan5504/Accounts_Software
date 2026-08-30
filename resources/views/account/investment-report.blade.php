@@ -8,11 +8,22 @@
             <div class="row g-4">
                 <div class="col-md-12">
                     <div class="card card-primary card-outline">
-                        <div class="bg-info ps-3 rounded">
-                            <h5 class="py-2 mb-0">Investment Report</h5>
+                        <div class="row bg-info m-1 ps-1 rounded">
+                            <div class="col-md-8">
+                                <h5 class="py-2 mb-0">Investment Report</h5>
+                            </div>
+                            <div class="col-sm-4 text-end no-print mt-1">
+                                <a href="{{ route('account.investment.report.pdf', request()->query()) }}"
+                                    class="btn btn-outline-danger btn-sm" title="Download PDF">
+                                    <i class="bi bi-file-pdf"></i>
+                                </a>
+                                <a href="{{ url()->previous() }}" class="btn btn-sm btn-outline-warning" title="Go Back">
+                                    <i class="bi bi-arrow-left"></i>
+                                </a>
+                            </div>
                         </div>
 
-                        {{--FILTER --}}
+                        {{-- FILTER --}}
                         <div class="card-body">
                             <form method="GET" action="{{ route('account.investment.report') }}">
                                 <div class="row g-3">
@@ -30,7 +41,8 @@
                                         <select name="partner_id" class="form-control">
                                             <option value="">All Partners</option>
                                             @foreach ($partners as $partner)
-                                                <option value="{{ $partner->id }}" {{ request('partner_id') == $partner->id ? 'selected' : '' }}>
+                                                <option value="{{ $partner->id }}"
+                                                    {{ request('partner_id') == $partner->id ? 'selected' : '' }}>
                                                     {{ $partner->p_name }}
                                                 </option>
                                             @endforeach
@@ -39,13 +51,16 @@
                                     </div>
                                     <div class="form-group col-md-2">
                                         <select name="invest_type" class="form-control">
-                                            <option value="all" {{ request('invest_type', 'all') == 'all' ? 'selected' : '' }}>
+                                            <option value="all"
+                                                {{ request('invest_type', 'all') == 'all' ? 'selected' : '' }}>
                                                 All
                                             </option>
-                                            <option value="capital" {{ request('invest_type') == 'capital' ? 'selected' : '' }}>
+                                            <option value="capital"
+                                                {{ request('invest_type') == 'capital' ? 'selected' : '' }}>
                                                 Capital
                                             </option>
-                                            <option value="loan" {{ request('invest_type') == 'loan' ? 'selected' : '' }}>
+                                            <option value="loan"
+                                                {{ request('invest_type') == 'loan' ? 'selected' : '' }}>
                                                 Loan
                                             </option>
                                         </select>
@@ -188,7 +203,8 @@
                                             <th>Partner Name</th>
                                             <th>Invest Type</th>
                                             <th class="text-end">Amount</th>
-                                            <th class="text-center">Reference</th> 
+                                            <th class="text-center">Reference</th>
+                                            <th class="text-center">Attachment</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -206,6 +222,16 @@
                                                 </td>
                                                 <td class="text-end">{{ number_format($investment->amount, 2) }}</td>
                                                 <td class="text-center">{{ $investment->reference ?? '-' }}</td>
+                                                <td class="text-center">
+                                                    @if ($investment->attachment)
+                                                        <a href="{{ asset('backend/dist/assets/invest/' . $investment->attachment) }}"
+                                                            target="_blank">
+                                                            View Attachment
+                                                        </a>
+                                                    @else
+                                                        <span>-</span>
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>

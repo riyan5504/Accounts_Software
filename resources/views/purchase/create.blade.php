@@ -142,6 +142,10 @@
                                     <input type="text" name="item_name[]" class="form-control item_name"
                                         placeholder=" " required />
                                     <label for="item_name" class="floating-label">Item Name</label>
+                                    <button class="add-btn" type="button" data-bs-toggle="modal"
+                                        data-bs-target="#addItemModal">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
                                     <input type="hidden" name="item_id[]" class="item_id">
                                 </div>
                                 <div class="form-group col-md-1 mb-1">
