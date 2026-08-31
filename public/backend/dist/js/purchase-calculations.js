@@ -192,6 +192,9 @@ $(document).ready(function() {
     newRow.find('input').val('');
     newRow.find('select').prop('selectedIndex', 0);
     newRow.find('[id]').remove();
+
+     // ❌ New row থেকে Item Modal button remove
+    newRow.find('.add-btn[data-bs-target="#addItemModal"]').remove();
     newRow.data('selected', false);
 
     // 🔥 FIX START

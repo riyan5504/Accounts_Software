@@ -364,6 +364,83 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="addItemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('item.store') }}" method="POST">
+                    @csrf
+                    <!--begin::Body-->
+                    <div class="card-body">
+                        <div id="itemsContainer" class="border-0 shadow-sm">
+                            <div
+                                class="bg-success text-white d-flex justify-content-between align-items-center mb-3 px-1 py-1 rounded">
+                                <h4 class="mb-0 ms-1">Item Details</h4>
+                            </div>
+                            <div class="item-row row g-2 align-items-end">
+                                <div class="form-group col-sm-4 col-md-2 mb-1">
+                                    <input type="text" name="item_name" class="form-control item_name"
+                                        placeholder=" " required />
+                                    <label for="item_name" class="floating-label">Item Name</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-2 mb-1">
+                                    <input type="text" name="item_code" class="form-control item_code"
+                                        placeholder=" " />
+                                    <label for="item_code" class="floating-label">Item Code</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-2 mb-1 position-relative">
+                                    <input type="text" name="cat_name" class="form-control cat_name" id="cat_name"
+                                        placeholder=" " required />
+                                    <label for="cat_id" class="floating-label">Category</label>
+
+                                    <input type="hidden" name="cat_id" class="cat_id" id="cat_id">
+                                    <button class="add-btn" type="button" data-bs-toggle="modal"
+                                        data-bs-target="#addCategoryModal">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
+                                    <input type="text" name="size" class="form-control size" placeholder=" " />
+                                    <label for="size" class="floating-label">Pack Size</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
+                                    <input type="number" step="0.01" name="unit_price"
+                                        class="form-control unit_price" placeholder=" " required />
+                                    <label for="unit_price" class="floating-label">Unit Price</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
+                                    <input type="number" step="0.01" name="sales_price"
+                                        class="form-control sales_price" placeholder=" " />
+                                    <label for="sales_price" class="floating-label">Sales Price</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-2 mb-1">
+                                    <input type="number" name="opening_stock" class="form-control opening_stock"
+                                        placeholder=" " />
+                                    <label for="opening_stock" class="floating-label">Opening Stock Qty</label>
+                                </div>
+                                <div class="form-group col-sm-4 col-md-1 mb-1">
+                                    <select name="stock_unit" class="form-control stock_unit" placeholder=" " required>
+                                        <option selected disabled>Select Unit</option>
+                                        <option value="gm">gm</option>
+                                        <option value="ml">ml</option>
+                                        <option value="kg">Kg</option>
+                                        <option value="ltr">Ltr</option>
+                                        <option value="nos">nos</option>
+                                    </select>
+                                    <label for="stock_unit" class="floating-label">Unit</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Body-->
+                        <!--begin::Footer-->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        <!--end::Footer-->
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('script')
@@ -378,6 +455,15 @@
                     confirmButtonText: 'OK'
                 });
 
+            });
+        </script>
+    @endif
+
+    @if ($errors->has('item_name'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var myModal = new bootstrap.Modal(document.getElementById('addItemModal'));
+                myModal.show();
             });
         </script>
     @endif
